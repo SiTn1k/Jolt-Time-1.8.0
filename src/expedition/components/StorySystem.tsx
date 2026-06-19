@@ -29,7 +29,8 @@ export function StorySystem({
   storyState,
   onInteractWithNpc,
   onStartQuest,
-}: StorySystemProps) {
+  onCompleteQuest,
+}: StorySystemProps & { onCompleteQuest?: (questId: string) => void }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('npcs');
   const [selectedNpc, setSelectedNpc] = useState<StoryNpc | null>(null);
@@ -306,7 +307,7 @@ export function StorySystem({
                                   {isActive ? (
                                     allComplete ? (
                                       <Button
-                                        onClick={() => onStartQuest(quest.id)}
+                                        onClick={() => onCompleteQuest ? onCompleteQuest(quest.id) : onStartQuest(quest.id)}
                                         style={{ backgroundColor: '#10B981', color: '#0D1117', padding: '4px 12px', fontSize: '12px' }}
                                       >
                                         {t('quest.completed')}

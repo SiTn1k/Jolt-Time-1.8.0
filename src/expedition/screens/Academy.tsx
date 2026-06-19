@@ -17,6 +17,7 @@ export function Academy() {
   const storyState = useExpeditionStore((s) => s.storyState);
   const interactWithNpc = useExpeditionStore((s) => s.interactWithNpc);
   const startQuest = useExpeditionStore((s) => s.startQuest);
+  const completeQuest = useExpeditionStore((s) => s.completeQuest);
   
   // Other store state
   const academyLevel = useExpeditionStore((s) => s.academyLevel);
@@ -36,6 +37,11 @@ export function Academy() {
   // Handle quest start - delegate to store
   const handleStartQuest = (questId: string) => {
     startQuest(questId);
+  };
+
+  // Handle quest complete - delegate to store
+  const handleCompleteQuest = (questId: string) => {
+    completeQuest(questId);
   };
 
   return (
@@ -154,6 +160,7 @@ export function Academy() {
         storyState={storyState}
         onInteractWithNpc={handleInteractWithNpc}
         onStartQuest={handleStartQuest}
+        onCompleteQuest={handleCompleteQuest}
       />
 
       <div className="relative z-10">

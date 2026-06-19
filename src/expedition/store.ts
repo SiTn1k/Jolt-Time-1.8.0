@@ -222,36 +222,6 @@ export const useExpeditionStore = create<GameState>()(
         
         // Track NPC interaction quest objective
         get().updateQuestObjective(`speak_${npcId}`, 1);
-        
-        // Check for completed quests and grant rewards
-        const completedQuests = storyQuests.filter(q => 
-          get().isQuestComplete(q.id)
-        );
-        completedQuests.forEach(quest => {
-          get().completeQuest(quest.id);
-          // Grant rewards
-          quest.rewards.forEach(reward => {
-            switch (reward.type) {
-              case 'karbovanets':
-                get().addKarbovanets(reward.amount);
-                break;
-              case 'xp':
-              case 'academy_xp':
-                // Grant XP (not implemented yet)
-                break;
-              case 'reputation':
-                set(st => ({ reputation: st.reputation + reward.amount }));
-                break;
-              case 'artifact':
-                // Grant artifact by ID
-                break;
-              case 'hero_fragment':
-                // Grant hero fragment
-                break;
-            }
-          });
-          get().pushToast(`Квест "${quest.titleKey}" виконано!`, '#10B981');
-        });
       },
       
       startQuest: (questId) => {
@@ -277,6 +247,33 @@ export const useExpeditionStore = create<GameState>()(
       },
       
       completeQuest: (questId) => {
+        // Find quest data to get rewards
+        const quest = storyQuests.find(q => q.id === questId);
+        if (!quest) return;
+
+        // Grant rewards before removing from active
+        quest.rewards.forEach(reward => {
+          switch (reward.type) {
+            case 'karbovanets':
+              get().addKarbovanets(reward.amount);
+              break;
+            case 'xp':
+            case 'academy_xp':
+              // Grant XP (not implemented yet)
+              break;
+            case 'reputation':
+              set(st => ({ reputation: st.reputation + reward.amount }));
+              break;
+            case 'artifact':
+              // Grant artifact by ID
+              break;
+            case 'hero_fragment':
+              // Grant hero fragment
+              break;
+          }
+        });
+
+        // Remove from active and add to completed
         set((state) => {
           const questProgress = state.storyState.activeQuests.find(qp => qp.questId === questId);
           if (!questProgress) return state;
@@ -289,6 +286,9 @@ export const useExpeditionStore = create<GameState>()(
             },
           };
         });
+
+        // Show completion toast
+        get().pushToast(`Квест "${quest.titleKey}" виконано!`, '#10B981');
       },
 
       updateQuestObjective: (objectiveKey, increment) => {
