@@ -6,8 +6,10 @@ import { Card, Badge, Button, Progress } from '../ui';
 import { useState } from 'react';
 import { UkrainianPattern } from '../components/UkrainianPattern';
 import { useTickValue } from '../useTick';
+import { useTranslation } from '../../i18n';
 
 export function WorldMap() {
+  const { t } = useTranslation();
   const regions = useExpeditionStore((s) => s.regions);
   const heroes = useExpeditionStore((s) => s.heroes);
   const expeditions = useExpeditionStore((s) => s.expeditions);
@@ -29,6 +31,15 @@ export function WorldMap() {
   const handleStart = () => {
     if (startExpedition(selectedRegion.id, team)) {
       setTeam([]);
+    }
+  };
+
+  const getStatusLabel = (status: string, ready: boolean) => {
+    if (ready) return t('expedition.status_completed');
+    switch (status) {
+      case 'returning': return t('expedition.status_returning');
+      case 'excavating': return t('expedition.status_excavating');
+      default: return t('expedition.status_traveling');
     }
   };
 
@@ -74,9 +85,9 @@ export function WorldMap() {
         </div>
         <div className="absolute top-4 left-4 right-4">
           <h1 className="text-xl" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>
-            Карта експедицій України
+            {t('expedition.world_map_title')}
           </h1>
-          <p className="text-xs text-muted-foreground">Оберіть регіон та команду героїв</p>
+          <p className="text-xs text-muted-foreground">{t('expedition.select_region')}</p>
         </div>
       </div>
 
@@ -85,7 +96,7 @@ export function WorldMap() {
         {activeExpeditions.length > 0 && (
           <div className="mb-4 space-y-2">
             <h2 className="text-sm" style={{ fontFamily: "'Exo 2', sans-serif" }}>
-              Активні експедиції ({activeExpeditions.length}/{useExpeditionStore.getState().expeditionSlots})
+              {t('expedition.expedition_active')} ({activeExpeditions.length}/{useExpeditionStore.getState().expeditionSlots})
             </h2>
             {activeExpeditions.map((exp) => {
               const remaining = Math.max(0, Math.ceil((exp.endsAt - now) / 1000));
@@ -96,7 +107,7 @@ export function WorldMap() {
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm" style={{ fontFamily: "'Exo 2', sans-serif" }}>{exp.region}</span>
                     <Badge style={{ backgroundColor: ready ? '#10B981' : '#FFC72C', color: '#0D1117' }}>
-                      {ready ? 'Готово' : exp.status === 'returning' ? 'Повернення' : exp.status === 'excavating' ? 'Розкопки' : 'У дорозі'}
+                      {getStatusLabel(exp.status, ready)}
                     </Badge>
                   </div>
                   <Progress value={ready ? 100 : ratio} className="h-1.5 mb-2" />
@@ -107,12 +118,12 @@ export function WorldMap() {
                       style={{ backgroundColor: '#10B981', color: '#0D1117', fontFamily: "'Exo 2', sans-serif" }}
                     >
                       <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Забрати результат
+                      {t('expedition.collect_result')}
                     </Button>
                   ) : (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Clock className="w-3 h-3" />
-                      Залишилось {remaining}с · шанс успіху {exp.successChance}%
+                      {t('common.remaining')}: {remaining}{t('common.per_second')} · {t('expedition.success_chance')}: {exp.successChance}%
                     </div>
                   )}
                 </Card>
@@ -129,7 +140,7 @@ export function WorldMap() {
                 <p className="text-xs text-muted-foreground mb-2">{selectedRegion.era}</p>
               </div>
               <Badge className="px-2 py-1" style={{ backgroundColor: '#FFC72C', color: '#0D1117' }}>
-                Складність {selectedRegion.difficulty}
+                {t('expedition.difficulty')} {selectedRegion.difficulty}
               </Badge>
             </div>
 
@@ -139,16 +150,16 @@ export function WorldMap() {
               <div className="bg-[#0D1117] rounded p-2">
                 <div className="flex items-center gap-2 mb-1">
                   <Clock className="w-3 h-3" style={{ color: '#00E5FF' }} />
-                  <span className="text-xs text-muted-foreground">Тривалість</span>
+                  <span className="text-xs text-muted-foreground">{t('common.duration')}</span>
                 </div>
                 <div className="text-sm" style={{ fontFamily: "'Exo 2', sans-serif", color: '#00E5FF' }}>
-                  {expeditionSeconds(selectedRegion)}с
+                  {expeditionSeconds(selectedRegion)}{t('common.per_second').replace('/', '')}
                 </div>
               </div>
               <div className="bg-[#0D1117] rounded p-2">
                 <div className="flex items-center gap-2 mb-1">
                   <TrendingUp className="w-3 h-3" style={{ color: '#FFC72C' }} />
-                  <span className="text-xs text-muted-foreground">Базовий шанс</span>
+                  <span className="text-xs text-muted-foreground">{t('expedition.base_chance')}</span>
                 </div>
                 <div className="text-sm" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>
                   {selectedRegion.successChance}%
@@ -159,7 +170,7 @@ export function WorldMap() {
             <div className="mb-4">
               <div className="flex items-center gap-2 mb-2">
                 <Star className="w-4 h-4" style={{ color: '#FF2A5F' }} />
-                <span className="text-xs" style={{ fontFamily: "'Exo 2', sans-serif" }}>Можливі артефакти</span>
+                <span className="text-xs" style={{ fontFamily: "'Exo 2', sans-serif" }}>{t('expedition.possible_artifacts')}</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {selectedRegion.artifacts.map((artifact, index) => (
@@ -176,11 +187,11 @@ export function WorldMap() {
                 <div className="flex items-center gap-2 mb-2">
                   <Users className="w-4 h-4" style={{ color: '#9747FF' }} />
                   <span className="text-xs" style={{ fontFamily: "'Exo 2', sans-serif" }}>
-                    Команда ({team.length} обрано)
+                    {t('expedition.team')} ({team.length} {t('expedition.team_selected')})
                   </span>
                 </div>
                 {availableHeroes.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">Усі герої зайняті в експедиціях.</p>
+                  <p className="text-xs text-muted-foreground">{t('expedition.no_heroes_available')}</p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {availableHeroes.map((h) => {
@@ -196,7 +207,7 @@ export function WorldMap() {
                             color: sel ? '#00E5FF' : '#8B949E',
                           }}
                         >
-                          {h.name} · Рів {h.level}
+                          {h.name} · {t('common.level')} {h.level}
                         </button>
                       );
                     })}
@@ -208,12 +219,12 @@ export function WorldMap() {
             {selectedRegion.unlocked ? (
               <Button className="w-full" onClick={handleStart} style={{ backgroundColor: '#FFC72C', color: '#0D1117', fontFamily: "'Exo 2', sans-serif" }}>
                 <MapPin className="w-4 h-4 mr-2" />
-                Розпочати експедицію
+                {t('expedition.start_expedition')}
               </Button>
             ) : (
               <Button className="w-full" disabled style={{ backgroundColor: '#30363D', color: '#8B949E', fontFamily: "'Exo 2', sans-serif" }}>
                 <Lock className="w-4 h-4 mr-2" />
-                Заблоковано — пройдіть попередні регіони
+                {t('common.locked')}
               </Button>
             )}
           </Card>

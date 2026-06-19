@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useGame } from './hooks/useGame';
+import { useTranslation } from './i18n';
 import { TapArea } from './components/TapArea';
 import { GeneratorShop } from './components/GeneratorShop';
 import { TapUpgrade } from './components/StatsPanel';
@@ -18,7 +19,7 @@ import { EPOCHS, ARTIFACTS, getEpochById } from './data/epochs';
 import { initTelegramMiniApp, hapticImpact, hapticNotification, getTelegramWebApp, getTelegramUserId } from './lib/telegram';
 import { rpcTrackSession } from './lib/rpc';
 import { supabase } from './lib/supabase';
-import { Crown, ShoppingBag, Trophy, Gift, Loader2, Users, X, Shield, Zap, Star, ChevronRight, Wifi, RefreshCw, Timer, AlertTriangle, Battery, BatteryLow } from 'lucide-react';
+import { Crown, ShoppingBag, Trophy, Gift, Loader2, Users, X, Shield, Zap, Star, ChevronRight, Wifi, RefreshCw, Timer, AlertTriangle, Battery, BatteryLow, Globe } from 'lucide-react';
 import type { EpochId } from './types/game';
 import { formatNumber } from './lib/utils';
 import { getTodayDateStr } from './data/tasks';
@@ -74,6 +75,9 @@ function App() {
   const [showError, setShowError] = useState<string | null>(null);
   const [purchasingBooster, setPurchasingBooster] = useState<string | null>(null);
   const [showTutorial, setShowTutorial] = useState(false);
+
+  // i18n
+  const { locale, toggleLocale, t } = useTranslation();
 
   // Session Ad hook - triggers after 20 min of play
   const { shouldShowSessionAd, dismissSessionAd } = useSessionAdTrigger(
@@ -325,16 +329,16 @@ function App() {
         <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
           <div className="bg-gray-900 rounded-2xl p-6 max-w-sm w-full text-center border border-yellow-500/40">
             <AlertTriangle className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
-            <h3 className="text-lg font-bold text-white mb-2">Гру відкрито в іншій вкладці</h3>
+            <h3 className="text-lg font-bold text-white mb-2">{t('duplicate_tab.title')}</h3>
             <p className="text-sm text-gray-400 mb-4">
-              Гра активна в іншому вікні. Відкрийте лише одну вкладку щоб уникнути втрати прогресу.
+              {t('duplicate_tab.description')}
             </p>
             <div className="space-y-2">
               <button
                 onClick={() => window.close()}
                 className="w-full py-3 bg-yellow-500 text-black font-bold rounded-xl hover:bg-yellow-400 transition-colors"
               >
-                Закрити цю вкладку
+                {t('duplicate_tab.close_tab')}
               </button>
               <button
                 onClick={() => {
@@ -342,7 +346,7 @@ function App() {
                 }}
                 className="w-full py-2.5 bg-gray-700 text-gray-200 rounded-xl hover:bg-gray-600 transition-colors text-sm"
               >
-                Грати тут (може спричинити втрату прогресу)
+                {t('duplicate_tab.play_anyway')}
               </button>
             </div>
           </div>
@@ -360,8 +364,8 @@ function App() {
         >
           <span className="text-xl">{epoch.currencyIcon}</span>
           <div className="text-left">
-            <div className="text-xs font-medium">{epoch.name.ua}</div>
-            <div className="text-[10px] opacity-70">Рівень {state.level}</div>
+            <div className="text-xs font-medium">{locale === 'uk' ? epoch.name.ua : epoch.name.en}</div>
+            <div className="text-[10px] opacity-70">{t('common.level')} {state.level}</div>
           </div>
           <ChevronRight className="w-4 h-4 opacity-50" />
         </button>
@@ -398,6 +402,15 @@ function App() {
             {syncStatus === 'offline' && <Wifi className="w-3 h-3 text-gray-500" />}
             {syncStatus === 'error' && <Wifi className="w-3 h-3 text-red-400" />}
           </div>
+          {/* Language toggle */}
+          <button
+            onClick={toggleLocale}
+            className="flex items-center gap-1 text-xs px-2 py-1 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+            title={locale === 'uk' ? 'Switch to English' : 'Перейти на українську'}
+          >
+            <Globe className="w-4 h-4" />
+            <span className="font-medium">{locale.toUpperCase()}</span>
+          </button>
         </div>
       </div>
 

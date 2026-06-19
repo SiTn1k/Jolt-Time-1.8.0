@@ -5,8 +5,10 @@ import { TrendingUp, Coins, Eye, Send, Award } from 'lucide-react';
 import { Card, Badge, Progress } from '../ui';
 import { NPCSystem } from '../components/NPCSystem';
 import { UkrainianPattern } from '../components/UkrainianPattern';
+import { useTranslation } from '../../i18n';
 
 export function Academy() {
+  const { t } = useTranslation();
   const academyLevel = useExpeditionStore((s) => s.academyLevel);
   const reputation = useExpeditionStore((s) => s.reputation);
   const karbovanets = useExpeditionStore((s) => s.karbovanets);
@@ -24,15 +26,15 @@ export function Academy() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>
-              Археологічна Академія
+              {t('expedition.academy_title')}
             </h1>
-            <p className="text-sm text-muted-foreground">України</p>
+            <p className="text-sm text-muted-foreground">{t('expedition.academy_subtitle')}</p>
           </div>
           <Badge
             className="px-3 py-1"
             style={{ backgroundColor: '#FFC72C', color: '#0D1117', fontFamily: "'Exo 2', sans-serif" }}
           >
-            Рівень {academyLevel}
+            {t('common.level')} {academyLevel}
           </Badge>
         </div>
 
@@ -40,7 +42,7 @@ export function Academy() {
           <Card className="border-white/10 p-3">
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp className="w-4 h-4" style={{ color: '#FFC72C' }} />
-              <span className="text-xs text-muted-foreground">Репутація</span>
+              <span className="text-xs text-muted-foreground">{t('expedition.reputation')}</span>
             </div>
             <div className="text-xl" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>
               {Math.round(reputation).toLocaleString()}
@@ -50,7 +52,7 @@ export function Academy() {
           <Card className="border-white/10 p-3">
             <div className="flex items-center gap-2 mb-1">
               <Coins className="w-4 h-4" style={{ color: '#FFC72C' }} />
-              <span className="text-xs text-muted-foreground">Карбованці</span>
+              <span className="text-xs text-muted-foreground">{t('expedition.karbovanets')}</span>
             </div>
             <div className="text-xl" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>
               {Math.round(karbovanets).toLocaleString()}
@@ -60,7 +62,7 @@ export function Academy() {
           <Card className="border-white/10 p-3">
             <div className="flex items-center gap-2 mb-1">
               <Eye className="w-4 h-4" style={{ color: '#00E5FF' }} />
-              <span className="text-xs text-muted-foreground">Відвідувачі</span>
+              <span className="text-xs text-muted-foreground">{t('expedition.visitors')}</span>
             </div>
             <div className="text-xl" style={{ fontFamily: "'Exo 2', sans-serif", color: '#00E5FF' }}>
               {museumVisitors}
@@ -70,7 +72,7 @@ export function Academy() {
           <Card className="border-white/10 p-3">
             <div className="flex items-center gap-2 mb-1">
               <Send className="w-4 h-4" style={{ color: '#9747FF' }} />
-              <span className="text-xs text-muted-foreground">Експедиції</span>
+              <span className="text-xs text-muted-foreground">{t('expedition.expeditions')}</span>
             </div>
             <div className="text-xl" style={{ fontFamily: "'Exo 2', sans-serif", color: '#9747FF' }}>
               {activeExpeditions}
@@ -82,7 +84,7 @@ export function Academy() {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Award className="w-4 h-4" style={{ color: '#FF2A5F' }} />
-              <span className="text-sm">Історичний престиж</span>
+              <span className="text-sm">{t('expedition.historical_prestige')}</span>
             </div>
             <span className="text-sm" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FF2A5F' }}>
               {Math.round(historicalPrestige)} / 5000
@@ -94,7 +96,7 @@ export function Academy() {
 
       <div className="relative z-10">
         <h2 className="text-lg mb-3" style={{ fontFamily: "'Exo 2', sans-serif" }}>
-          Будівлі кампусу
+          {t('expedition.buildings_title')}
         </h2>
 
         <div className="grid grid-cols-2 gap-3">
@@ -111,7 +113,7 @@ export function Academy() {
                     {building.name}
                   </h3>
                   <Badge variant="outline" className="text-[10px] px-1.5 py-0" style={{ borderColor: '#FFC72C', color: '#FFC72C' }}>
-                    Рів {building.level}
+                    {t('common.level')} {building.level}
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{building.description}</p>
@@ -126,7 +128,7 @@ export function Academy() {
                       animate={{ opacity: [1, 0.3, 1] }}
                       transition={{ repeat: Infinity, duration: 2 }}
                     />
-                    <span className="text-[10px]" style={{ color: '#00E5FF' }}>Активна</span>
+                    <span className="text-[10px]" style={{ color: '#00E5FF' }}>{t('common.active')}</span>
                   </div>
                 ) : null}
               </Card>

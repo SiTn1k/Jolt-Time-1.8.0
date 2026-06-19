@@ -17,6 +17,7 @@ import {
 import { useExpeditionStore } from '../store';
 import { npcColors, type Npc, type NpcRole } from '../data';
 import { Button } from '../ui';
+import { useTranslation } from '../../i18n';
 
 const roleIcons: Record<NpcRole, typeof Shield> = {
   researcher: FlaskConical,
@@ -66,7 +67,7 @@ function NpcMarker({ npc, onClick }: { npc: Npc; onClick: () => void }) {
   );
 }
 
-function NpcCard({ npc, onClick }: { npc: Npc; onClick: () => void }) {
+function NpcCard({ npc, onClick, t }: { npc: Npc; onClick: () => void; t: (key: string) => string }) {
   const Icon = roleIcons[npc.role];
   const color = npcColors[npc.role];
   return (
@@ -105,13 +106,14 @@ function NpcCard({ npc, onClick }: { npc: Npc; onClick: () => void }) {
           backgroundColor: npc.working ? '#10B98122' : '#30363D',
         }}
       >
-        {npc.working ? 'Працює' : 'Вільн.'}
+        {npc.working ? t('expedition.npc_work') : t('expedition.npc_free')}
       </span>
     </button>
   );
 }
 
 export function NPCSystem() {
+  const { t } = useTranslation();
   const npcs = useExpeditionStore((s) => s.npcs);
   const toggleNpcWork = useExpeditionStore((s) => s.toggleNpcWork);
   const collectNpc = useExpeditionStore((s) => s.collectNpc);
@@ -137,7 +139,7 @@ export function NPCSystem() {
   return (
     <div className="relative z-10 mt-6">
       <h2 className="text-lg mb-3" style={{ fontFamily: "'Exo 2', sans-serif" }}>
-        Мешканці академії
+        {t('expedition.npc_title')}
       </h2>
 
       {/* Animated courtyard scene */}
@@ -156,19 +158,19 @@ export function NPCSystem() {
           <NpcMarker key={npc.id} npc={npc} onClick={() => open(npc)} />
         ))}
         <span className="absolute top-1.5 right-2.5 text-[9px] text-muted-foreground">
-          Подвір'я
+          {t('npc.courtyard')}
         </span>
       </div>
 
       {/* Reliable tappable roster */}
       <div className="grid grid-cols-2 gap-2">
         {npcs.map((npc) => (
-          <NpcCard key={npc.id} npc={npc} onClick={() => open(npc)} />
+          <NpcCard key={npc.id} npc={npc} onClick={() => open(npc)} t={t} />
         ))}
       </div>
 
       <p className="text-xs text-muted-foreground mt-3 text-center">
-        Натисніть на NPC, щоб поговорити, призначити на роботу та зібрати дохід.
+        {t('npc.instruction')}
       </p>
 
       <AnimatePresence>
@@ -211,7 +213,7 @@ export function NPCSystem() {
               <div className="bg-[#0D1117] rounded-xl p-3 mb-3 border border-white/5">
                 <div className="flex items-center gap-2 mb-1">
                   <MessageCircle className="w-3.5 h-3.5" style={{ color }} />
-                  <span className="text-[10px] text-muted-foreground">Діалог</span>
+                  <span className="text-[10px] text-muted-foreground">{t('npc.dialogue')}</span>
                 </div>
                 <p className="text-sm leading-relaxed">«{line}»</p>
               </div>
@@ -219,8 +221,8 @@ export function NPCSystem() {
               {/* Status */}
               <div className="flex items-center justify-between bg-[#0D1117] rounded-xl p-3 mb-3 border border-white/5">
                 <div className="text-xs text-muted-foreground">
-                  Дохід: <span style={{ color: '#FFC72C' }}>{selected.ratePerMin}/хв</span>{' '}
-                  · Репутація: <span style={{ color: '#FF2A5F' }}>{selected.repPerMin}/хв</span>
+                  {t('npc.income')}: <span style={{ color: '#FFC72C' }}>{selected.ratePerMin}{t('common.per_minute')}</span>{' '}
+                  · {t('npc.reputation')}: <span style={{ color: '#FF2A5F' }}>{selected.repPerMin}{t('common.per_minute')}</span>
                 </div>
                 <span
                   className="text-[10px] px-2 py-0.5 rounded"
@@ -229,7 +231,7 @@ export function NPCSystem() {
                     backgroundColor: selected.working ? '#10B98122' : '#30363D',
                   }}
                 >
-                  {selected.working ? 'Працює' : 'Відпочиває'}
+                  {selected.working ? t('expedition.npc_work') : t('npc.resting')}
                 </span>
               </div>
 
@@ -241,7 +243,7 @@ export function NPCSystem() {
                   className="flex-col gap-1 py-2 text-xs"
                 >
                   <MessageCircle className="w-4 h-4" />
-                  Поговорити
+                  {t('expedition.npc_talk')}
                 </Button>
                 <Button
                   onClick={() => toggleNpcWork(selected.id)}
@@ -252,7 +254,7 @@ export function NPCSystem() {
                   className="flex-col gap-1 py-2 text-xs"
                 >
                   {selected.working ? <Pause className="w-4 h-4" /> : <Briefcase className="w-4 h-4" />}
-                  {selected.working ? 'Зупинити' : 'До роботи'}
+                  {selected.working ? t('expedition.npc_stop') : t('expedition.npc_assign')}
                 </Button>
                 <Button
                   onClick={() => collectNpc(selected.id)}
@@ -261,7 +263,7 @@ export function NPCSystem() {
                   disabled={!selected.working}
                 >
                   <Coins className="w-4 h-4" />
-                  Зібрати
+                  {t('expedition.npc_collect')}
                 </Button>
               </div>
             </motion.div>

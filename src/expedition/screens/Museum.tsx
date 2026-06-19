@@ -3,12 +3,13 @@ import { motion } from 'motion/react';
 import { Landmark, Users, TrendingUp, Award, Sparkles, Eye } from 'lucide-react';
 import { Card, Badge, Progress } from '../ui';
 import type { Artifact, Rarity } from '../data';
+import { useTranslation } from '../../i18n';
 
-const rarityConfig: Record<Rarity, { color: string; label: string }> = {
-  common: { color: '#8B949E', label: 'Звичайний' },
-  rare: { color: '#00E5FF', label: 'Рідкісний' },
-  epic: { color: '#9747FF', label: 'Епічний' },
-  legendary: { color: '#FF2A5F', label: 'Легендарний' },
+const rarityConfig: Record<Rarity, { color: string; labelKey: string }> = {
+  common: { color: '#8B949E', labelKey: 'artifacts.rarity_common' },
+  rare: { color: '#00E5FF', labelKey: 'artifacts.rarity_rare' },
+  epic: { color: '#9747FF', labelKey: 'artifacts.rarity_epic' },
+  legendary: { color: '#FF2A5F', labelKey: 'artifacts.rarity_legendary' },
 };
 
 const eraColors = ['#FFC72C', '#00E5FF', '#9747FF', '#FF2A5F', '#10B981'];
@@ -21,6 +22,7 @@ function visitorsFor(a: Artifact): number {
 }
 
 export function Museum() {
+  const { t } = useTranslation();
   const artifacts = useExpeditionStore((s) => s.artifacts);
   const museumVisitors = useExpeditionStore((s) => s.museumVisitors);
   const reputation = useExpeditionStore((s) => s.reputation);
@@ -40,8 +42,8 @@ export function Museum() {
             <Landmark className="w-6 h-6" style={{ color: '#9747FF' }} />
           </div>
           <div>
-            <h1 className="text-xl" style={{ fontFamily: "'Exo 2', sans-serif" }}>Національний музей</h1>
-            <p className="text-xs text-muted-foreground">історії України</p>
+            <h1 className="text-xl" style={{ fontFamily: "'Exo 2', sans-serif" }}>{t('museum.title')}</h1>
+            <p className="text-xs text-muted-foreground">{t('museum.subtitle')}</p>
           </div>
         </div>
 
@@ -49,28 +51,28 @@ export function Museum() {
           <Card className="border-white/10 p-3">
             <div className="flex items-center gap-2 mb-1">
               <Sparkles className="w-4 h-4" style={{ color: '#9747FF' }} />
-              <span className="text-xs text-muted-foreground">Експонати</span>
+              <span className="text-xs text-muted-foreground">{t('museum.exhibits')}</span>
             </div>
             <div className="text-2xl" style={{ fontFamily: "'Exo 2', sans-serif", color: '#9747FF' }}>{museumArtifacts.length}</div>
           </Card>
           <Card className="border-white/10 p-3">
             <div className="flex items-center gap-2 mb-1">
               <Eye className="w-4 h-4" style={{ color: '#00E5FF' }} />
-              <span className="text-xs text-muted-foreground">Відвідувачі</span>
+              <span className="text-xs text-muted-foreground">{t('museum.visitors')}</span>
             </div>
             <div className="text-2xl" style={{ fontFamily: "'Exo 2', sans-serif", color: '#00E5FF' }}>{museumVisitors}</div>
           </Card>
           <Card className="border-white/10 p-3">
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp className="w-4 h-4" style={{ color: '#FFC72C' }} />
-              <span className="text-xs text-muted-foreground">Дохід/год</span>
+              <span className="text-xs text-muted-foreground">{t('museum.income_per_hour')}</span>
             </div>
             <div className="text-xl" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>+{hourlyIncome}</div>
           </Card>
           <Card className="border-white/10 p-3">
             <div className="flex items-center gap-2 mb-1">
               <Award className="w-4 h-4" style={{ color: '#FF2A5F' }} />
-              <span className="text-xs text-muted-foreground">Бонус престижу</span>
+              <span className="text-xs text-muted-foreground">{t('museum.prestige_bonus')}</span>
             </div>
             <div className="text-xl" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FF2A5F' }}>+{totalPrestige}</div>
           </Card>
@@ -78,22 +80,22 @@ export function Museum() {
 
         <Card className="border-white/10 p-3">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm">Репутація музею</span>
+            <span className="text-sm">{t('museum.museum_reputation')}</span>
             <span className="text-sm" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>{Math.round(reputation)} / 2000</span>
           </div>
           <Progress value={(reputation / 2000) * 100} className="h-2" />
-          <p className="text-xs text-muted-foreground mt-2">Наступна віха: міжнародне визнання</p>
+          <p className="text-xs text-muted-foreground mt-2">{t('museum.next_milestone')}</p>
         </Card>
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-lg" style={{ fontFamily: "'Exo 2', sans-serif" }}>Виставкові зали</h2>
+        <h2 className="text-lg" style={{ fontFamily: "'Exo 2', sans-serif" }}>{t('museum.exhibition_halls')}</h2>
 
         {museumArtifacts.length === 0 && (
           <Card className="border-white/10 p-8 text-center">
             <Sparkles className="w-10 h-10 mx-auto mb-2 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">Музей поки порожній</p>
-            <p className="text-xs text-muted-foreground mt-1">Реставруйте артефакти та передавайте їх сюди</p>
+            <p className="text-sm text-muted-foreground">{t('museum.museum_empty')}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('museum.send_to_museum_hint')}</p>
           </Card>
         )}
 
@@ -108,7 +110,7 @@ export function Museum() {
                     <div className="w-3 h-3 rounded" style={{ backgroundColor: color }} />
                     <h3 className="text-sm" style={{ fontFamily: "'Exo 2', sans-serif" }}>{era}</h3>
                   </div>
-                  <Badge variant="outline" style={{ borderColor: color, color }}>{eraArtifacts.length} експ.</Badge>
+                  <Badge variant="outline" style={{ borderColor: color, color }}>{eraArtifacts.length} {t('museum.exhibits_count')}</Badge>
                 </div>
                 <div className="space-y-2">
                   {eraArtifacts.map((artifact, artifactIndex) => (
@@ -122,17 +124,17 @@ export function Museum() {
                           <p className="text-xs text-muted-foreground line-clamp-2">{artifact.description}</p>
                         </div>
                         <Badge className="ml-2" style={{ backgroundColor: rarityConfig[artifact.rarity].color, color: '#0D1117', fontSize: '9px' }}>
-                          {rarityConfig[artifact.rarity].label}
+                          {t(rarityConfig[artifact.rarity].labelKey)}
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between pt-2 border-t border-white/5">
                         <div className="flex items-center gap-3">
                           <div className="text-xs">
-                            <span className="text-muted-foreground">Цінність: </span>
+                            <span className="text-muted-foreground">{t('museum.value')}: </span>
                             <span style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>{artifact.value.toLocaleString()}</span>
                           </div>
                           <div className="text-xs">
-                            <span className="text-muted-foreground">Престиж: </span>
+                            <span className="text-muted-foreground">{t('expedition.historical_prestige')}: </span>
                             <span style={{ fontFamily: "'Exo 2', sans-serif", color: '#FF2A5F' }}>+{artifact.prestigeBonus}</span>
                           </div>
                         </div>
@@ -153,7 +155,7 @@ export function Museum() {
       <Card className="bg-gradient-to-br from-[#161B22] to-[#0D1117] border-white/10 p-4 mt-4">
         <div className="text-center">
           <div className="text-3xl mb-2" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>{totalValue.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground">Загальна цінність колекції</p>
+          <p className="text-xs text-muted-foreground">{t('museum.total_collection_value')}</p>
         </div>
       </Card>
     </div>
