@@ -20,6 +20,10 @@ import {
   calculateMuseumIncome,
   getUpgradeCost,
 } from './museumData';
+import {
+  StoryProgress,
+  initialStoryProgress,
+} from './storyData';
 
 const rarityRank: Record<Rarity, number> = {
   common: 0,
@@ -95,6 +99,9 @@ interface GameState {
 
   // Museum state
   museumState: MuseumState;
+  
+  // Story/Quest state
+  storyState: StoryProgress;
 
   // expeditions
   startExpedition: (regionId: string, heroIds: string[]) => boolean;
@@ -114,6 +121,11 @@ interface GameState {
   collectMuseumIncome: () => void;
   purchaseMuseumUpgrade: (upgradeId: string) => boolean;
   expandExhibitionSlots: () => boolean;
+
+  // story/quests
+  interactWithNpc: (npcId: string) => void;
+  startQuest: (questId: string) => void;
+  completeQuest: (questId: string) => void;
 
   // economy helpers
   addKarbovanets: (amount: number) => void;
@@ -148,6 +160,9 @@ export const useExpeditionStore = create<GameState>()(
 
       // Museum state
       museumState: initialMuseumState,
+      
+      // Story/Quest state
+      storyState: initialStoryProgress,
 
       pushToast: (message, color = '#FFC72C') =>
         set((s) => ({
@@ -164,6 +179,70 @@ export const useExpeditionStore = create<GameState>()(
           return true;
         }
         return false;
+      },
+      
+      // Story/Quest actions
+      interactWithNpc: (npcId) => {
+        set((state) => {
+          const current = state.storyState.npcRelationships[npcId] || {
+            npcId,
+            relationshipLevel: 1 as const,
+            trustPoints: 0,
+            completedQuests: [],
+            lastInteraction: Date.now(),
+          };
+          
+          const newTrust = Math.min(500, current.trustPoints + 5);
+          let newLevel = current.relationshipLevel;
+          
+          // Level up logic
+          if (newTrust >= 300 && current.relationshipLevel < 5) newLevel = 5;
+          else if (newTrust >= 150 && current.relationshipLevel < 4) newLevel = 4;
+          else if (newTrust >= 80 && current.relationshipLevel < 3) newLevel = 3;
+          else if (newTrust >= 30 && current.relationshipLevel < 2) newLevel = 2;
+          
+          return {
+            storyState: {
+              ...state.storyState,
+              npcRelationships: {
+                ...state.storyState.npcRelationships,
+                [npcId]: {
+                  ...current,
+                  trustPoints: newTrust,
+                  relationshipLevel: newLevel,
+                  lastInteraction: Date.now(),
+                },
+              },
+            },
+          };
+        });
+      },
+      
+      startQuest: (questId) => {
+        set((state) => {
+          if (state.storyState.activeQuests.includes(questId)) return state;
+          return {
+            storyState: {
+              ...state.storyState,
+              activeQuests: [...state.storyState.activeQuests, questId],
+            },
+          };
+        });
+      },
+      
+      completeQuest: (questId) => {
+        set((state) => {
+          const quest = state.storyState.activeQuests.find(q => q === questId);
+          if (!quest) return state;
+          
+          return {
+            storyState: {
+              ...state.storyState,
+              activeQuests: state.storyState.activeQuests.filter(q => q !== questId),
+              completedQuests: [...state.storyState.completedQuests, questId],
+            },
+          };
+        });
       },
 
       // Museum actions
@@ -613,7 +692,7 @@ export const useExpeditionStore = create<GameState>()(
     }),
     {
       name: 'expedition_state',
-      version: 2,
+      version: 3,
       partialize: (s) => ({
         academyLevel: s.academyLevel,
         reputation: s.reputation,
@@ -629,6 +708,7 @@ export const useExpeditionStore = create<GameState>()(
         lastTick: s.lastTick,
         incomeBuffer: s.incomeBuffer,
         museumState: s.museumState,
+        storyState: s.storyState,
       }),
     },
   ),

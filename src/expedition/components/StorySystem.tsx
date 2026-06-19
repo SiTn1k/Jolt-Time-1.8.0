@@ -9,14 +9,14 @@ import {
   type StoryNpc, 
   type StoryQuest,
   type NpcRelationship,
-  type RelationshipLevel 
+  type RelationshipLevel,
+  type StoryProgress 
 } from '../storyData';
 
 interface StorySystemProps {
   isOpen: boolean;
   onClose: () => void;
-  npcRelationships: Record<string, NpcRelationship>;
-  activeQuests: string[];
+  storyState: StoryProgress;
   onInteractWithNpc: (npcId: string) => void;
   onStartQuest: (questId: string) => void;
 }
@@ -26,8 +26,7 @@ type Tab = 'npcs' | 'quests';
 export function StorySystem({
   isOpen,
   onClose,
-  npcRelationships,
-  activeQuests,
+  storyState,
   onInteractWithNpc,
   onStartQuest,
 }: StorySystemProps) {
@@ -37,7 +36,7 @@ export function StorySystem({
   const [npcDialogue, setNpcDialogue] = useState<string>('');
 
   const getRelationship = (npcId: string): NpcRelationship => {
-    return npcRelationships[npcId] || {
+    return storyState.npcRelationships[npcId] || {
       npcId,
       relationshipLevel: 1,
       trustPoints: 0,
@@ -71,13 +70,13 @@ export function StorySystem({
   const availableQuests = storyQuests.filter(q => {
     const relationship = getRelationship(q.npcId);
     return relationship.relationshipLevel >= q.requiredRelationshipLevel && 
-           !activeQuests.includes(q.id) && 
-           !getRelationship(q.npcId).completedQuests.includes(q.id);
+           !storyState.activeQuests.includes(q.id) && 
+           !storyState.completedQuests.includes(q.id);
   });
 
-  const activeQuestsList = storyQuests.filter(q => activeQuests.includes(q.id));
+  const activeQuestsList = storyQuests.filter(q => storyState.activeQuests.includes(q.id));
   const completedQuests = storyQuests.filter(q => 
-    getRelationship(q.npcId).completedQuests.includes(q.id)
+    storyState.completedQuests.includes(q.id)
   );
 
   const getQuestProgress = (quest: StoryQuest) => {
@@ -232,7 +231,7 @@ export function StorySystem({
                                   <h5 className="text-sm font-medium">{t(quest.titleKey)}</h5>
                                   <p className="text-xs text-muted-foreground">{t(quest.descriptionKey)}</p>
                                 </div>
-                                {activeQuests.includes(quest.id) ? (
+                                {storyState.activeQuests.includes(quest.id) ? (
                                   <Badge style={{ backgroundColor: '#FFC72C', color: '#0D1117' }}>
                                     {t('quest.in_progress')}
                                   </Badge>

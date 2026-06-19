@@ -8,35 +8,17 @@ import { NPCSystem } from '../components/NPCSystem';
 import { UkrainianPattern } from '../components/UkrainianPattern';
 import { StorySystem } from '../components/StorySystem';
 import { useTranslation } from '../../i18n';
-import { type NpcRelationship } from '../storyData';
 
 export function Academy() {
   const { t } = useTranslation();
   const [showStory, setShowStory] = useState(false);
-  const [npcRelationships, setNpcRelationships] = useState<Record<string, NpcRelationship>>(() => {
-    // Load from localStorage or use initial
-    const saved = localStorage.getItem('expedition_npc_relationships');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return {};
-      }
-    }
-    return {};
-  });
-  const [activeQuests, setActiveQuests] = useState<string[]>(() => {
-    const saved = localStorage.getItem('expedition_active_quests');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return [];
-      }
-    }
-    return [];
-  });
 
+  // Story state from store
+  const storyState = useExpeditionStore((s) => s.storyState);
+  const interactWithNpc = useExpeditionStore((s) => s.interactWithNpc);
+  const startQuest = useExpeditionStore((s) => s.startQuest);
+  
+  // Other store state
   const academyLevel = useExpeditionStore((s) => s.academyLevel);
   const reputation = useExpeditionStore((s) => s.reputation);
   const karbovanets = useExpeditionStore((s) => s.karbovanets);
@@ -46,50 +28,14 @@ export function Academy() {
 
   const activeExpeditions = expeditions.filter((e) => !e.collected).length;
 
-  // Handle NPC interaction
+  // Handle NPC interaction - delegate to store
   const handleInteractWithNpc = (npcId: string) => {
-    setNpcRelationships(prev => {
-      const current = prev[npcId] || {
-        npcId,
-        relationshipLevel: 1,
-        trustPoints: 0,
-        completedQuests: [],
-        lastInteraction: Date.now(),
-      };
-
-      // Add trust points
-      const newTrust = Math.min(500, current.trustPoints + 5);
-      let newLevel = current.relationshipLevel;
-
-      // Check for level up
-      if (newTrust >= 300 && current.relationshipLevel < 5) newLevel = 5;
-      else if (newTrust >= 150 && current.relationshipLevel < 4) newLevel = 4;
-      else if (newTrust >= 80 && current.relationshipLevel < 3) newLevel = 3;
-      else if (newTrust >= 30 && current.relationshipLevel < 2) newLevel = 2;
-
-      const updated = {
-        ...prev,
-        [npcId]: {
-          ...current,
-          trustPoints: newTrust,
-          relationshipLevel: newLevel,
-          lastInteraction: Date.now(),
-        },
-      };
-
-      // Save to localStorage
-      localStorage.setItem('expedition_npc_relationships', JSON.stringify(updated));
-      return updated;
-    });
+    interactWithNpc(npcId);
   };
 
-  // Handle quest start
+  // Handle quest start - delegate to store
   const handleStartQuest = (questId: string) => {
-    setActiveQuests(prev => {
-      const updated = [...prev, questId];
-      localStorage.setItem('expedition_active_quests', JSON.stringify(updated));
-      return updated;
-    });
+    startQuest(questId);
   };
 
   return (
@@ -190,9 +136,9 @@ export function Academy() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {activeQuests.length > 0 && (
+              {storyState.activeQuests.length > 0 && (
                 <Badge style={{ backgroundColor: '#FFC72C', color: '#0D1117', fontSize: '10px' }}>
-                  {activeQuests.length} {t('quest.in_progress')}
+                  {storyState.activeQuests.length} {t('quest.in_progress')}
                 </Badge>
               )}
               <MessageCircle className="w-5 h-5 text-muted-foreground" />
@@ -205,8 +151,7 @@ export function Academy() {
       <StorySystem
         isOpen={showStory}
         onClose={() => setShowStory(false)}
-        npcRelationships={npcRelationships}
-        activeQuests={activeQuests}
+        storyState={storyState}
         onInteractWithNpc={handleInteractWithNpc}
         onStartQuest={handleStartQuest}
       />
