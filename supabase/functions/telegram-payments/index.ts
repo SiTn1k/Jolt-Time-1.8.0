@@ -84,6 +84,82 @@ async function tgCall(method: string, body: Record<string, unknown>) {
   return res.json();
 }
 
+// Anti-abuse: Purchase validation constants
+const PURCHASE_COOLDOWNS: Record<string, number> = {
+  xp_boost_1h: 60 * 60 * 1000,
+  currency_boost_1h: 60 * 60 * 1000,
+  super_boost_30m: 30 * 60 * 1000,
+  legendary_gacha: 5 * 60 * 1000,
+  great_patron: 0,
+  professor: 0,
+  secret_expedition: 60 * 60 * 1000,
+  support_dev: 0,
+};
+
+interface ValidationResult {
+  allowed: boolean;
+  error?: string;
+  retry_after?: number;
+}
+
+async function validatePurchaseInternal(
+  supabase: ReturnType<typeof createClient>,
+  telegramId: number,
+  boosterId: string,
+): Promise<ValidationResult> {
+  // Check cooldown
+  const cooldown = PURCHASE_COOLDOWNS[boosterId];
+  if (cooldown && cooldown > 0) {
+    const { data } = await supabase
+      .from("game_progress")
+      .select("active_boosters")
+      .eq("telegram_id", telegramId)
+      .maybeSingle();
+
+    if (data) {
+      const boosters = (data.active_boosters as Record<string, unknown>) ?? {};
+      const purchaseLog = (boosters.purchase_log as Array<{ booster_id: string; timestamp: number }>) ?? [];
+      const lastPurchase = purchaseLog
+        .filter(p => p.booster_id === boosterId)
+        .sort((a, b) => b.timestamp - a.timestamp)[0];
+
+      if (lastPurchase) {
+        const elapsed = Date.now() - lastPurchase.timestamp;
+        if (elapsed < cooldown) {
+          return {
+            allowed: false,
+            error: "Please wait before purchasing this item again",
+            retry_after: Math.ceil((cooldown - elapsed) / 1000)
+          };
+        }
+      }
+    }
+  }
+
+  // Check one-time purchases
+  if (boosterId === 'great_patron' || boosterId === 'professor') {
+    const { data } = await supabase
+      .from("game_progress")
+      .select("prestige_research, active_boosters")
+      .eq("telegram_id", telegramId)
+      .maybeSingle();
+
+    if (data) {
+      const research = (data.prestige_research as Record<string, unknown>) ?? {};
+      const boosters = (data.active_boosters as Record<string, unknown>) ?? {};
+
+      if (boosterId === 'great_patron' && boosters.offline_cap_hours === 9) {
+        return { allowed: false, error: "Already purchased" };
+      }
+      if (boosterId === 'professor' && research.stars_xp_bonus) {
+        return { allowed: false, error: "Already purchased" };
+      }
+    }
+  }
+
+  return { allowed: true };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -282,6 +358,15 @@ Deno.serve(async (req: Request) => {
         return json({ error: "Unknown booster" }, 400);
       }
 
+      // Anti-abuse: Validate purchase before creating invoice
+      const validation = await validatePurchaseInternal(supabase, telegram_id, booster_id);
+      if (!validation.allowed) {
+        return json({ 
+          error: validation.error || "Purchase not allowed",
+          retry_after: validation.retry_after 
+        }, 429);
+      }
+
       const result = await tgCall("createInvoiceLink", {
         title: booster.title,
         description: booster.description,
@@ -430,11 +515,13 @@ async function applyBooster(
     updates.artifact_parts = artifactParts;
   }
 
-  // Log the charge ID for refund support
+  // Log the charge ID for refund support and anti-abuse tracking
   if (!boosters.purchase_log) boosters.purchase_log = [];
   (boosters.purchase_log as unknown[]).push({
     id: boosterId,
+    booster_id: boosterId,
     charge_id: chargeId,
+    timestamp: Date.now(),
     purchased_at: new Date().toISOString(),
   });
 

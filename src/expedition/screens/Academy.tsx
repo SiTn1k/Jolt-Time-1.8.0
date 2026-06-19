@@ -1,14 +1,42 @@
+import { useState } from 'react';
 import { useExpeditionStore } from '../store';
 import { buildings } from '../data';
 import { motion } from 'motion/react';
-import { TrendingUp, Coins, Eye, Send, Award } from 'lucide-react';
+import { TrendingUp, Coins, Eye, Send, Award, BookOpen, MessageCircle } from 'lucide-react';
 import { Card, Badge, Progress } from '../ui';
 import { NPCSystem } from '../components/NPCSystem';
 import { UkrainianPattern } from '../components/UkrainianPattern';
+import { StorySystem } from '../components/StorySystem';
 import { useTranslation } from '../../i18n';
+import { type NpcRelationship } from '../storyData';
 
 export function Academy() {
   const { t } = useTranslation();
+  const [showStory, setShowStory] = useState(false);
+  const [npcRelationships, setNpcRelationships] = useState<Record<string, NpcRelationship>>(() => {
+    // Load from localStorage or use initial
+    const saved = localStorage.getItem('expedition_npc_relationships');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return {};
+      }
+    }
+    return {};
+  });
+  const [activeQuests, setActiveQuests] = useState<string[]>(() => {
+    const saved = localStorage.getItem('expedition_active_quests');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
+
   const academyLevel = useExpeditionStore((s) => s.academyLevel);
   const reputation = useExpeditionStore((s) => s.reputation);
   const karbovanets = useExpeditionStore((s) => s.karbovanets);
@@ -17,6 +45,52 @@ export function Academy() {
   const expeditions = useExpeditionStore((s) => s.expeditions);
 
   const activeExpeditions = expeditions.filter((e) => !e.collected).length;
+
+  // Handle NPC interaction
+  const handleInteractWithNpc = (npcId: string) => {
+    setNpcRelationships(prev => {
+      const current = prev[npcId] || {
+        npcId,
+        relationshipLevel: 1,
+        trustPoints: 0,
+        completedQuests: [],
+        lastInteraction: Date.now(),
+      };
+
+      // Add trust points
+      const newTrust = Math.min(500, current.trustPoints + 5);
+      let newLevel = current.relationshipLevel;
+
+      // Check for level up
+      if (newTrust >= 300 && current.relationshipLevel < 5) newLevel = 5;
+      else if (newTrust >= 150 && current.relationshipLevel < 4) newLevel = 4;
+      else if (newTrust >= 80 && current.relationshipLevel < 3) newLevel = 3;
+      else if (newTrust >= 30 && current.relationshipLevel < 2) newLevel = 2;
+
+      const updated = {
+        ...prev,
+        [npcId]: {
+          ...current,
+          trustPoints: newTrust,
+          relationshipLevel: newLevel,
+          lastInteraction: Date.now(),
+        },
+      };
+
+      // Save to localStorage
+      localStorage.setItem('expedition_npc_relationships', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  // Handle quest start
+  const handleStartQuest = (questId: string) => {
+    setActiveQuests(prev => {
+      const updated = [...prev, questId];
+      localStorage.setItem('expedition_active_quests', JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   return (
     <div className="min-h-full bg-[#0D1117] p-4 pb-20 relative overflow-hidden">
@@ -92,7 +166,50 @@ export function Academy() {
           </div>
           <Progress value={(historicalPrestige / 5000) * 100} className="h-2" />
         </Card>
+
+        {/* Story System Button */}
+        <Card 
+          className="border-[#FFC72C]/30 p-3 mt-3 cursor-pointer hover:border-[#FFC72C]/50 transition-colors"
+          onClick={() => setShowStory(true)}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div 
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: '#FFC72C20', border: '1px solid #FFC72C' }}
+              >
+                <BookOpen className="w-5 h-5" style={{ color: '#FFC72C' }} />
+              </div>
+              <div>
+                <h3 className="text-sm font-medium" style={{ fontFamily: "'Exo 2', sans-serif" }}>
+                  {t('story.story_system') || 'Story System'}
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  {t('story.npcs_quests') || 'NPCs & Quests'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {activeQuests.length > 0 && (
+                <Badge style={{ backgroundColor: '#FFC72C', color: '#0D1117', fontSize: '10px' }}>
+                  {activeQuests.length} {t('quest.in_progress')}
+                </Badge>
+              )}
+              <MessageCircle className="w-5 h-5 text-muted-foreground" />
+            </div>
+          </div>
+        </Card>
       </div>
+
+      {/* Story System Modal */}
+      <StorySystem
+        isOpen={showStory}
+        onClose={() => setShowStory(false)}
+        npcRelationships={npcRelationships}
+        activeQuests={activeQuests}
+        onInteractWithNpc={handleInteractWithNpc}
+        onStartQuest={handleStartQuest}
+      />
 
       <div className="relative z-10">
         <h2 className="text-lg mb-3" style={{ fontFamily: "'Exo 2', sans-serif" }}>

@@ -238,12 +238,45 @@ export function useGame() {
     };
   }, []);
 
-  // Multiple tab detection
+  // Multiple tab detection with BroadcastChannel for real-time sync
   useEffect(() => {
     const STORAGE_KEY = 'game_active_tab';
+    const CHANNEL_NAME = 'jolt_time_tab_channel';
+    let channel: BroadcastChannel | null = null;
+    let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
 
     // Claim active tab on mount
     localStorage.setItem(STORAGE_KEY, TAB_ID);
+
+    // Try BroadcastChannel for better cross-tab communication
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        channel = new BroadcastChannel(CHANNEL_NAME);
+        
+        // Announce this tab
+        channel.postMessage({
+          type: 'tab_active',
+          tabId: TAB_ID,
+          timestamp: Date.now(),
+        });
+
+        // Listen for other tabs
+        channel.onmessage = (event) => {
+          const { type, tabId } = event.data;
+          if (tabId === TAB_ID) return; // Ignore own messages
+
+          if (type === 'tab_active') {
+            setDuplicateTab(true);
+          } else if (type === 'tab_closed') {
+            // Another tab closed, we can claim active status
+            setDuplicateTab(false);
+            localStorage.setItem(STORAGE_KEY, TAB_ID);
+          }
+        };
+      } catch {
+        console.warn('BroadcastChannel not supported');
+      }
+    }
 
     const checkTab = () => {
       const activeTab = localStorage.getItem(STORAGE_KEY);
@@ -253,10 +286,16 @@ export function useGame() {
         // Other tab closed/released — reclaim and clear warning
         localStorage.setItem(STORAGE_KEY, TAB_ID);
         setDuplicateTab(false);
+        // Notify other tabs
+        channel?.postMessage({
+          type: 'tab_active',
+          tabId: TAB_ID,
+          timestamp: Date.now(),
+        });
       }
     };
 
-    const interval = setInterval(checkTab, 1000);
+    heartbeatTimer = setInterval(checkTab, 1000);
 
     // Listen for storage events from other tabs
     const handleStorage = (e: StorageEvent) => {
@@ -270,8 +309,15 @@ export function useGame() {
     window.addEventListener('storage', handleStorage);
 
     return () => {
-      clearInterval(interval);
+      clearInterval(heartbeatTimer);
       window.removeEventListener('storage', handleStorage);
+      // Notify other tabs we're closing
+      channel?.postMessage({
+        type: 'tab_closed',
+        tabId: TAB_ID,
+        timestamp: Date.now(),
+      });
+      channel?.close();
       if (localStorage.getItem(STORAGE_KEY) === TAB_ID) {
         localStorage.removeItem(STORAGE_KEY);
       }
