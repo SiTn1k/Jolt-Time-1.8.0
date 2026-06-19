@@ -12,6 +12,14 @@ import {
   initialRegions,
   initialNpcs,
 } from './data';
+import {
+  MuseumState,
+  MuseumUpgradeState,
+  museumUpgrades,
+  initialMuseumState,
+  calculateMuseumIncome,
+  getUpgradeCost,
+} from './museumData';
 
 const rarityRank: Record<Rarity, number> = {
   common: 0,
@@ -85,6 +93,9 @@ interface GameState {
   incomeBuffer: number;
   toasts: Toast[];
 
+  // Museum state
+  museumState: MuseumState;
+
   // expeditions
   startExpedition: (regionId: string, heroIds: string[]) => boolean;
   collectExpedition: (expeditionId: string) => void;
@@ -96,6 +107,13 @@ interface GameState {
   // npc
   toggleNpcWork: (npcId: string) => void;
   collectNpc: (npcId: string) => void;
+
+  // museum
+  placeArtifactInExhibition: (artifactId: string, slotIndex: number) => boolean;
+  removeArtifactFromExhibition: (slotIndex: number) => void;
+  collectMuseumIncome: () => void;
+  purchaseMuseumUpgrade: (upgradeId: string) => boolean;
+  expandExhibitionSlots: () => boolean;
 
   // economy helpers
   addKarbovanets: (amount: number) => void;
@@ -128,6 +146,9 @@ export const useExpeditionStore = create<GameState>()(
       incomeBuffer: 0,
       toasts: [],
 
+      // Museum state
+      museumState: initialMuseumState,
+
       pushToast: (message, color = '#FFC72C') =>
         set((s) => ({
           toasts: [...s.toasts, { id: toastSeq++, message, color }].slice(-4),
@@ -143,6 +164,183 @@ export const useExpeditionStore = create<GameState>()(
           return true;
         }
         return false;
+      },
+
+      // Museum actions
+      placeArtifactInExhibition: (artifactId, slotIndex) => {
+        const s = get();
+        const museumState = s.museumState;
+        
+        // Check if slot exists
+        if (slotIndex < 0 || slotIndex >= museumState.exhibitions.length) {
+          s.pushToast('Невірний слот', '#FF2A5F');
+          return false;
+        }
+        
+        // Check if slot is empty
+        const slot = museumState.exhibitions[slotIndex];
+        if (slot.artifactId) {
+          s.pushToast('Слот вже зайнятий', '#FF2A5F');
+          return false;
+        }
+        
+        // Find the artifact
+        const artifact = s.artifacts.find(a => a.id === artifactId);
+        if (!artifact) {
+          s.pushToast('Артефакт не знайдено', '#FF2A5F');
+          return false;
+        }
+        
+        // Check artifact is restored and in museum
+        if (artifact.status !== 'museum') {
+          s.pushToast('Артефакт повинен бути в музеї', '#FF2A5F');
+          return false;
+        }
+        
+        // Place artifact
+        set((state) => ({
+          museumState: {
+            ...state.museumState,
+            exhibitions: state.museumState.exhibitions.map((ex, idx) =>
+              idx === slotIndex
+                ? { ...ex, artifactId, placedAt: Date.now() }
+                : ex
+            ),
+          },
+        }));
+        
+        s.pushToast('Артефакт виставлено!', '#FFC72C');
+        return true;
+      },
+
+      removeArtifactFromExhibition: (slotIndex) => {
+        const s = get();
+        const museumState = s.museumState;
+        
+        if (slotIndex < 0 || slotIndex >= museumState.exhibitions.length) {
+          return;
+        }
+        
+        const slot = museumState.exhibitions[slotIndex];
+        if (!slot.artifactId) return;
+        
+        set((state) => ({
+          museumState: {
+            ...state.museumState,
+            exhibitions: state.museumState.exhibitions.map((ex, idx) =>
+              idx === slotIndex
+                ? { ...ex, artifactId: null, placedAt: 0 }
+                : ex
+            ),
+          },
+        }));
+        
+        s.pushToast('Артефакт прибрано', '#FFC72C');
+      },
+
+      collectMuseumIncome: () => {
+        const s = get();
+        const museumState = s.museumState;
+        
+        // Get exhibited artifacts
+        const museumArtifacts = s.artifacts.filter(a => a.status === 'museum');
+        const exhibitedArtifactIds = museumState.exhibitions
+          .filter(ex => ex.artifactId)
+          .map(ex => ex.artifactId);
+        const exhibitedArtifacts = museumArtifacts.filter(a => exhibitedArtifactIds.includes(a.id));
+        const totalValue = exhibitedArtifacts.reduce((sum, a) => sum + a.value, 0);
+        
+        // Calculate income
+        const income = calculateMuseumIncome(museumState, totalValue);
+        
+        if (income > 0) {
+          set((state) => ({
+            karbovanets: state.karbovanets + income,
+            museumState: {
+              ...state.museumState,
+              totalIncomeAllTime: state.museumState.totalIncomeAllTime + income,
+              lastIncomeCollected: Date.now(),
+            },
+          }));
+          
+          s.pushToast(`+${income.toLocaleString()} 💰`, '#FFC72C');
+        }
+      },
+
+      purchaseMuseumUpgrade: (upgradeId) => {
+        const s = get();
+        const museumState = s.museumState;
+        
+        // Find upgrade
+        const upgrade = museumUpgrades.find(u => u.id === upgradeId);
+        if (!upgrade) {
+          s.pushToast('Невідоме покращення', '#FF2A5F');
+          return false;
+        }
+        
+        // Get current level
+        const currentLevel = museumState.upgrades[upgradeId as keyof MuseumUpgradeState] || 0;
+        if (currentLevel >= upgrade.maxLevel) {
+          s.pushToast('Максимальний рівень досягнуто', '#FF2A5F');
+          return false;
+        }
+        
+        // Calculate cost
+        const cost = getUpgradeCost(upgrade, currentLevel);
+        if (s.karbovanets < cost) {
+          s.pushToast('Недостатньо карбованців', '#FF2A5F');
+          return false;
+        }
+        
+        // Purchase upgrade
+        set((state) => ({
+          karbovanets: state.karbovanets - cost,
+          museumState: {
+            ...state.museumState,
+            upgrades: {
+              ...state.museumState.upgrades,
+              [upgradeId]: currentLevel + 1,
+            },
+          },
+        }));
+        
+        s.pushToast(`${upgrade.icon} ${upgrade.nameKey} оновлено!`, '#FFC72C');
+        return true;
+      },
+
+      expandExhibitionSlots: () => {
+        const s = get();
+        const museumState = s.museumState;
+        
+        const maxSlots = 12; // Final max
+        if (museumState.exhibitions.length >= maxSlots) {
+          s.pushToast('Всі слоти відкрито', '#FF2A5F');
+          return false;
+        }
+        
+        // Cost increases for each expansion
+        const expansionsCount = museumState.exhibitions.length - 3; // Base is 3
+        const cost = 5000 * Math.pow(2, expansionsCount);
+        
+        if (s.karbovanets < cost) {
+          s.pushToast('Недостатньо карбованців', '#FF2A5F');
+          return false;
+        }
+        
+        const newSlotIndex = museumState.exhibitions.length;
+        set((state) => ({
+          karbovanets: state.karbovanets - cost,
+          museumState: {
+            ...state.museumState,
+            exhibitions: [
+              ...state.museumState.exhibitions,
+              { slotIndex: newSlotIndex, artifactId: null, placedAt: 0 },
+            ],
+          },
+        }));
+        
+        s.pushToast(`📍 Новий слот відкрито!`, '#FFC72C');
+        return true;
       },
 
       startExpedition: (regionId, heroIds) => {
@@ -415,7 +613,7 @@ export const useExpeditionStore = create<GameState>()(
     }),
     {
       name: 'expedition_state',
-      version: 1,
+      version: 2,
       partialize: (s) => ({
         academyLevel: s.academyLevel,
         reputation: s.reputation,
@@ -430,6 +628,7 @@ export const useExpeditionStore = create<GameState>()(
         expeditionSlots: s.expeditionSlots,
         lastTick: s.lastTick,
         incomeBuffer: s.incomeBuffer,
+        museumState: s.museumState,
       }),
     },
   ),

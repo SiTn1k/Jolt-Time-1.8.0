@@ -1,163 +1,106 @@
+import { useState } from 'react';
 import { useExpeditionStore } from '../store';
-import { motion } from 'motion/react';
-import { Landmark, Users, TrendingUp, Award, Sparkles, Eye } from 'lucide-react';
-import { Card, Badge, Progress } from '../ui';
-import type { Artifact, Rarity } from '../data';
+import { Landmark, Settings } from 'lucide-react';
+import { Card } from '../ui';
+import { MuseumSystem } from '../components/MuseumSystem';
 import { useTranslation } from '../../i18n';
-
-const rarityConfig: Record<Rarity, { color: string; labelKey: string }> = {
-  common: { color: '#8B949E', labelKey: 'artifacts.rarity_common' },
-  rare: { color: '#00E5FF', labelKey: 'artifacts.rarity_rare' },
-  epic: { color: '#9747FF', labelKey: 'artifacts.rarity_epic' },
-  legendary: { color: '#FF2A5F', labelKey: 'artifacts.rarity_legendary' },
-};
-
-const eraColors = ['#FFC72C', '#00E5FF', '#9747FF', '#FF2A5F', '#10B981'];
-
-/** Stable pseudo-random visitor count per artifact (no per-render flicker). */
-function visitorsFor(a: Artifact): number {
-  let h = 0;
-  for (let i = 0; i < a.id.length; i++) h = (h * 31 + a.id.charCodeAt(i)) % 1000;
-  return 10 + (h % 50);
-}
+import { getReputationLevel } from '../museumData';
 
 export function Museum() {
   const { t } = useTranslation();
+  const [showFullMuseum, setShowFullMuseum] = useState(false);
+
   const artifacts = useExpeditionStore((s) => s.artifacts);
-  const museumVisitors = useExpeditionStore((s) => s.museumVisitors);
-  const reputation = useExpeditionStore((s) => s.reputation);
+  const museumState = useExpeditionStore((s) => s.museumState);
 
   const museumArtifacts = artifacts.filter((a) => a.status === 'museum');
   const totalValue = museumArtifacts.reduce((sum, a) => sum + a.value, 0);
-  const totalPrestige = museumArtifacts.reduce((sum, a) => sum + a.prestigeBonus, 0);
-  const hourlyIncome = Math.floor(totalValue / 10);
-
-  const eras = Array.from(new Set(museumArtifacts.map((a) => a.era)));
+  const exhibitedCount = museumState.exhibitions.filter((ex) => ex.artifactId).length;
+  const repLevel = getReputationLevel(museumState.reputation);
 
   return (
-    <div className="min-h-full bg-[#0D1117] p-4 pb-20">
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#9747FF20', border: '1px solid #9747FF' }}>
-            <Landmark className="w-6 h-6" style={{ color: '#9747FF' }} />
+    <>
+      <div className="min-h-full bg-[#0D1117] p-4 pb-20">
+        {/* Header with Full System Button */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#9747FF20', border: '1px solid #9747FF' }}>
+              <Landmark className="w-6 h-6" style={{ color: '#9747FF' }} />
+            </div>
+            <div>
+              <h1 className="text-xl" style={{ fontFamily: "'Exo 2', sans-serif" }}>{t('museum.title')}</h1>
+              <p className="text-xs text-muted-foreground">{t('museum.subtitle')}</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl" style={{ fontFamily: "'Exo 2', sans-serif" }}>{t('museum.title')}</h1>
-            <p className="text-xs text-muted-foreground">{t('museum.subtitle')}</p>
-          </div>
+          <button
+            onClick={() => setShowFullMuseum(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl"
+            style={{ backgroundColor: '#9747FF20', border: '1px solid #9747FF' }}
+          >
+            <Settings className="w-4 h-4" style={{ color: '#9747FF' }} />
+            <span className="text-sm" style={{ color: '#9747FF' }}>{t('museum.open_system')}</span>
+          </button>
         </div>
 
+        {/* Quick Stats */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           <Card className="border-white/10 p-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Sparkles className="w-4 h-4" style={{ color: '#9747FF' }} />
-              <span className="text-xs text-muted-foreground">{t('museum.exhibits')}</span>
+            <div className="text-xs text-muted-foreground mb-1">{t('museum.exhibits')}</div>
+            <div className="text-xl" style={{ fontFamily: "'Exo 2', sans-serif", color: '#9747FF' }}>
+              {exhibitedCount} / {museumState.exhibitions.length}
             </div>
-            <div className="text-2xl" style={{ fontFamily: "'Exo 2', sans-serif", color: '#9747FF' }}>{museumArtifacts.length}</div>
           </Card>
           <Card className="border-white/10 p-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Eye className="w-4 h-4" style={{ color: '#00E5FF' }} />
-              <span className="text-xs text-muted-foreground">{t('museum.visitors')}</span>
+            <div className="text-xs text-muted-foreground mb-1">{t('museum.reputation_level')}</div>
+            <div className="text-xl" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>
+              {repLevel.level}
             </div>
-            <div className="text-2xl" style={{ fontFamily: "'Exo 2', sans-serif", color: '#00E5FF' }}>{museumVisitors}</div>
-          </Card>
-          <Card className="border-white/10 p-3">
-            <div className="flex items-center gap-2 mb-1">
-              <TrendingUp className="w-4 h-4" style={{ color: '#FFC72C' }} />
-              <span className="text-xs text-muted-foreground">{t('museum.income_per_hour')}</span>
-            </div>
-            <div className="text-xl" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>+{hourlyIncome}</div>
-          </Card>
-          <Card className="border-white/10 p-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Award className="w-4 h-4" style={{ color: '#FF2A5F' }} />
-              <span className="text-xs text-muted-foreground">{t('museum.prestige_bonus')}</span>
-            </div>
-            <div className="text-xl" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FF2A5F' }}>+{totalPrestige}</div>
           </Card>
         </div>
 
-        <Card className="border-white/10 p-3">
+        {/* Collection Progress */}
+        <Card className="border-white/10 p-3 mb-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm">{t('museum.museum_reputation')}</span>
-            <span className="text-sm" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>{Math.round(reputation)} / 2000</span>
+            <span className="text-sm">{t('museum.collections')}</span>
+            <span className="text-sm" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>
+              {museumState.completedCollections.length} / 5
+            </span>
           </div>
-          <Progress value={(reputation / 2000) * 100} className="h-2" />
-          <p className="text-xs text-muted-foreground mt-2">{t('museum.next_milestone')}</p>
+          <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div
+                key={i}
+                className="flex-1 h-2 rounded"
+                style={{
+                  backgroundColor: museumState.completedCollections.length >= i ? '#FFC72C' : 'rgba(255,255,255,0.1)',
+                }}
+              />
+            ))}
+          </div>
         </Card>
+
+        {/* Museum Value */}
+        <Card className="bg-gradient-to-br from-[#161B22] to-[#0D1117] border-white/10 p-4 mb-4">
+          <div className="text-center">
+            <div className="text-3xl mb-1" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>
+              {totalValue.toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground">{t('museum.total_collection_value')}</p>
+          </div>
+        </Card>
+
+        {/* Quick Actions */}
+        <button
+          onClick={() => setShowFullMuseum(true)}
+          className="w-full py-4 rounded-xl font-bold text-lg"
+          style={{ backgroundColor: '#9747FF', color: '#fff' }}
+        >
+          🏛️ {t('museum.open_museum_system')}
+        </button>
+
+        {/* Open Full Museum System Modal */}
+        <MuseumSystem isOpen={showFullMuseum} onClose={() => setShowFullMuseum(false)} />
       </div>
-
-      <div className="space-y-4">
-        <h2 className="text-lg" style={{ fontFamily: "'Exo 2', sans-serif" }}>{t('museum.exhibition_halls')}</h2>
-
-        {museumArtifacts.length === 0 && (
-          <Card className="border-white/10 p-8 text-center">
-            <Sparkles className="w-10 h-10 mx-auto mb-2 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">{t('museum.museum_empty')}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t('museum.send_to_museum_hint')}</p>
-          </Card>
-        )}
-
-        {eras.map((era, index) => {
-          const eraArtifacts = museumArtifacts.filter((a) => a.era === era);
-          const color = eraColors[index % eraColors.length];
-          return (
-            <motion.div key={era} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.08 }}>
-              <Card className="border-2 p-4" style={{ borderColor: `${color}40` }}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded" style={{ backgroundColor: color }} />
-                    <h3 className="text-sm" style={{ fontFamily: "'Exo 2', sans-serif" }}>{era}</h3>
-                  </div>
-                  <Badge variant="outline" style={{ borderColor: color, color }}>{eraArtifacts.length} {t('museum.exhibits_count')}</Badge>
-                </div>
-                <div className="space-y-2">
-                  {eraArtifacts.map((artifact, artifactIndex) => (
-                    <motion.div key={artifact.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: artifactIndex * 0.05 }} className="bg-[#0D1117] rounded-lg p-3">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Sparkles className="w-3 h-3" style={{ color: rarityConfig[artifact.rarity].color }} />
-                            <h4 className="text-sm" style={{ fontFamily: "'Exo 2', sans-serif" }}>{artifact.name}</h4>
-                          </div>
-                          <p className="text-xs text-muted-foreground line-clamp-2">{artifact.description}</p>
-                        </div>
-                        <Badge className="ml-2" style={{ backgroundColor: rarityConfig[artifact.rarity].color, color: '#0D1117', fontSize: '9px' }}>
-                          {t(rarityConfig[artifact.rarity].labelKey)}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                        <div className="flex items-center gap-3">
-                          <div className="text-xs">
-                            <span className="text-muted-foreground">{t('museum.value')}: </span>
-                            <span style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>{artifact.value.toLocaleString()}</span>
-                          </div>
-                          <div className="text-xs">
-                            <span className="text-muted-foreground">{t('expedition.historical_prestige')}: </span>
-                            <span style={{ fontFamily: "'Exo 2', sans-serif", color: '#FF2A5F' }}>+{artifact.prestigeBonus}</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Users className="w-3 h-3" style={{ color: '#00E5FF' }} />
-                          <span className="text-xs" style={{ color: '#00E5FF' }}>{visitorsFor(artifact)}</span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </Card>
-            </motion.div>
-          );
-        })}
-      </div>
-
-      <Card className="bg-gradient-to-br from-[#161B22] to-[#0D1117] border-white/10 p-4 mt-4">
-        <div className="text-center">
-          <div className="text-3xl mb-2" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>{totalValue.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground">{t('museum.total_collection_value')}</p>
-        </div>
-      </Card>
-    </div>
+    </>
   );
 }
