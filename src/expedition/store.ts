@@ -23,6 +23,7 @@ import {
 import {
   StoryProgress,
   initialStoryProgress,
+  storyQuests,
 } from './storyData';
 
 const rarityRank: Record<Rarity, number> = {
@@ -126,6 +127,8 @@ interface GameState {
   interactWithNpc: (npcId: string) => void;
   startQuest: (questId: string) => void;
   completeQuest: (questId: string) => void;
+  updateQuestObjective: (objectiveKey: string, increment: number) => void;
+  isQuestComplete: (questId: string) => boolean;
 
   // economy helpers
   addKarbovanets: (amount: number) => void;
@@ -216,15 +219,58 @@ export const useExpeditionStore = create<GameState>()(
             },
           };
         });
+        
+        // Track NPC interaction quest objective
+        get().updateQuestObjective(`speak_${npcId}`, 1);
+        
+        // Check for completed quests and grant rewards
+        const completedQuests = storyQuests.filter(q => 
+          get().isQuestComplete(q.id)
+        );
+        completedQuests.forEach(quest => {
+          get().completeQuest(quest.id);
+          // Grant rewards
+          quest.rewards.forEach(reward => {
+            switch (reward.type) {
+              case 'karbovanets':
+                get().addKarbovanets(reward.amount);
+                break;
+              case 'xp':
+              case 'academy_xp':
+                // Grant XP (not implemented yet)
+                break;
+              case 'reputation':
+                set(st => ({ reputation: st.reputation + reward.amount }));
+                break;
+              case 'artifact':
+                // Grant artifact by ID
+                break;
+              case 'hero_fragment':
+                // Grant hero fragment
+                break;
+            }
+          });
+          get().pushToast(`Квест "${quest.titleKey}" виконано!`, '#10B981');
+        });
       },
       
       startQuest: (questId) => {
         set((state) => {
-          if (state.storyState.activeQuests.includes(questId)) return state;
+          // Check if already active
+          if (state.storyState.activeQuests.some(qp => qp.questId === questId)) return state;
+          
+          // Create new quest progress
+          const questProgress = {
+            questId,
+            objectives: {} as Record<string, number>,
+            startedAt: Date.now(),
+            updatedAt: Date.now(),
+          };
+          
           return {
             storyState: {
               ...state.storyState,
-              activeQuests: [...state.storyState.activeQuests, questId],
+              activeQuests: [...state.storyState.activeQuests, questProgress],
             },
           };
         });
@@ -232,16 +278,52 @@ export const useExpeditionStore = create<GameState>()(
       
       completeQuest: (questId) => {
         set((state) => {
-          const quest = state.storyState.activeQuests.find(q => q === questId);
-          if (!quest) return state;
+          const questProgress = state.storyState.activeQuests.find(qp => qp.questId === questId);
+          if (!questProgress) return state;
           
           return {
             storyState: {
               ...state.storyState,
-              activeQuests: state.storyState.activeQuests.filter(q => q !== questId),
+              activeQuests: state.storyState.activeQuests.filter(qp => qp.questId !== questId),
               completedQuests: [...state.storyState.completedQuests, questId],
             },
           };
+        });
+      },
+
+      updateQuestObjective: (objectiveKey, increment) => {
+        set((state) => {
+          // Update objective progress in all active quests
+          const updatedActiveQuests = state.storyState.activeQuests.map(qp => ({
+            ...qp,
+            objectives: {
+              ...qp.objectives,
+              [objectiveKey]: (qp.objectives[objectiveKey] || 0) + increment,
+            },
+            updatedAt: Date.now(),
+          }));
+          
+          return {
+            storyState: {
+              ...state.storyState,
+              activeQuests: updatedActiveQuests,
+            },
+          };
+        });
+      },
+
+      isQuestComplete: (questId) => {
+        const state = get();
+        const quest = storyQuests.find((q) => q.id === questId);
+        if (!quest) return false;
+        
+        const questProgress = state.storyState.activeQuests.find(qp => qp.questId === questId);
+        if (!questProgress) return false;
+        
+        return quest.objectives.every((obj) => {
+          const key = `${obj.type}_${obj.target}`;
+          const current = questProgress.objectives[key] || 0;
+          return current >= obj.count;
         });
       },
 
@@ -549,6 +631,8 @@ export const useExpeditionStore = create<GameState>()(
             `Успіх! +${exp.rewardKarbovanets} карб., знайдено «${exp.artifactName}»`,
             '#FFC72C',
           );
+          // Track expedition quest objective
+          s.updateQuestObjective(`expedition_${exp.regionId}`, 1);
         } else {
           s.pushToast('Експедиція зазнала невдачі. Героїв повернуто.', '#FF2A5F');
         }

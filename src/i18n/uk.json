@@ -119,6 +119,12 @@
     "completed": "Завершено",
     "start": "Почати",
     "no_quests": "Немає доступних квестів",
+    "objective_expedition": "Експедиція",
+    "objective_speak": "Розмова",
+    "objective_visit": "Відвідування",
+    "objective_prestige": "Престиж",
+    "objective_build": "Будівництво",
+    "objective_collect": "Збір",
     "vladimir_1": {
       "title": "Слава Русі",
       "description": "Допоможи князю Володимиру дослідити Київські пагорби"

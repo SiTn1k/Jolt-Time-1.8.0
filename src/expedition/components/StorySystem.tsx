@@ -69,20 +69,72 @@ export function StorySystem({
 
   const availableQuests = storyQuests.filter(q => {
     const relationship = getRelationship(q.npcId);
+    const activeIds = storyState.activeQuests.map(qp => qp.questId);
     return relationship.relationshipLevel >= q.requiredRelationshipLevel && 
-           !storyState.activeQuests.includes(q.id) && 
+           !activeIds.includes(q.id) && 
            !storyState.completedQuests.includes(q.id);
   });
 
-  const activeQuestsList = storyQuests.filter(q => storyState.activeQuests.includes(q.id));
+  const activeQuestsList = storyQuests.filter(q => 
+    storyState.activeQuests.some(qp => qp.questId === q.id)
+  );
   const completedQuests = storyQuests.filter(q => 
     storyState.completedQuests.includes(q.id)
   );
 
   const getQuestProgress = (quest: StoryQuest) => {
+    const questProgress = storyState.activeQuests.find(qp => qp.questId === quest.id);
+    if (!questProgress) return 0;
+    
     const total = quest.objectives.reduce((sum, obj) => sum + obj.count, 0);
-    const current = quest.objectives.reduce((sum, obj) => sum + Math.min(obj.current, obj.count), 0);
+    const current = quest.objectives.reduce((sum, obj) => {
+      const progress = questProgress.objectives[`${obj.type}_${obj.target}`] || 0;
+      return sum + Math.min(progress, obj.count);
+    }, 0);
     return Math.round((current / total) * 100);
+  };
+
+  const getObjectiveProgress = (quest: StoryQuest) => {
+    const questProgress = storyState.activeQuests.find(qp => qp.questId === quest.id);
+    if (!questProgress) return [];
+    
+    return quest.objectives.map(obj => {
+      const key = `${obj.type}_${obj.target}`;
+      const current = questProgress.objectives[key] || 0;
+      const completed = current >= obj.count;
+      
+      // Translate objective type
+      let label = '';
+      switch (obj.type) {
+        case 'expedition':
+          label = t('quest.objective_expedition');
+          break;
+        case 'speak':
+          label = t('quest.objective_speak');
+          break;
+        case 'visit':
+          label = t('quest.objective_visit');
+          break;
+        case 'prestige':
+          label = t('quest.objective_prestige');
+          break;
+        case 'build':
+          label = t('quest.objective_build');
+          break;
+        case 'collect':
+          label = t('quest.objective_collect');
+          break;
+        default:
+          label = obj.type;
+      }
+      
+      return {
+        ...obj,
+        current,
+        completed,
+        label: `${label}: ${current}/${obj.count}`,
+      };
+    });
   };
 
   return (
@@ -224,32 +276,62 @@ export function StorySystem({
                         {storyQuests
                           .filter(q => q.npcId === selectedNpc.id)
                           .filter(q => getRelationship(selectedNpc.id).relationshipLevel >= q.requiredRelationshipLevel)
-                          .map(quest => (
-                            <Card key={quest.id} className="border-white/10 p-3">
-                              <div className="flex items-center justify-between">
-                                <div className="flex-1">
-                                  <h5 className="text-sm font-medium">{t(quest.titleKey)}</h5>
-                                  <p className="text-xs text-muted-foreground">{t(quest.descriptionKey)}</p>
+                          .map(quest => {
+                            const isActive = storyState.activeQuests.some(qp => qp.questId === quest.id);
+                            const objectives = getObjectiveProgress(quest);
+                            const allComplete = objectives.every(o => o.completed);
+                            
+                            return (
+                              <Card key={quest.id} className="border-white/10 p-3">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex-1">
+                                    <h5 className="text-sm font-medium">{t(quest.titleKey)}</h5>
+                                    <p className="text-xs text-muted-foreground">{t(quest.descriptionKey)}</p>
+                                    {/* Show objectives if active */}
+                                    {isActive && objectives.length > 0 && (
+                                      <div className="mt-2 space-y-1">
+                                        {objectives.map((obj, i) => (
+                                          <div key={i} className="flex items-center gap-2 text-xs">
+                                            <span style={{ color: obj.completed ? '#10B981' : '#8B949E' }}>
+                                              {obj.completed ? '✓' : '○'}
+                                            </span>
+                                            <span className={obj.completed ? 'text-green-400' : 'text-muted-foreground'}>
+                                              {obj.label}
+                                            </span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                  {isActive ? (
+                                    allComplete ? (
+                                      <Button
+                                        onClick={() => onStartQuest(quest.id)}
+                                        style={{ backgroundColor: '#10B981', color: '#0D1117', padding: '4px 12px', fontSize: '12px' }}
+                                      >
+                                        {t('quest.completed')}
+                                      </Button>
+                                    ) : (
+                                      <Badge style={{ backgroundColor: '#FFC72C', color: '#0D1117' }}>
+                                        {getQuestProgress(quest)}%
+                                      </Badge>
+                                    )
+                                  ) : getRelationship(selectedNpc.id).completedQuests.includes(quest.id) ? (
+                                    <Badge style={{ backgroundColor: '#10B981', color: '#0D1117' }}>
+                                      ✓
+                                    </Badge>
+                                  ) : (
+                                    <Button 
+                                      onClick={() => onStartQuest(quest.id)}
+                                      style={{ backgroundColor: '#00E5FF', color: '#0D1117', padding: '4px 12px', fontSize: '12px' }}
+                                    >
+                                      {t('quest.start')}
+                                    </Button>
+                                  )}
                                 </div>
-                                {storyState.activeQuests.includes(quest.id) ? (
-                                  <Badge style={{ backgroundColor: '#FFC72C', color: '#0D1117' }}>
-                                    {t('quest.in_progress')}
-                                  </Badge>
-                                ) : getRelationship(selectedNpc.id).completedQuests.includes(quest.id) ? (
-                                  <Badge style={{ backgroundColor: '#10B981', color: '#0D1117' }}>
-                                    {t('quest.completed')}
-                                  </Badge>
-                                ) : (
-                                  <Button 
-                                    onClick={() => onStartQuest(quest.id)}
-                                    style={{ backgroundColor: '#00E5FF', color: '#0D1117', padding: '4px 12px', fontSize: '12px' }}
-                                  >
-                                    {t('quest.start')}
-                                  </Button>
-                                )}
-                              </div>
-                            </Card>
-                          ))}
+                              </Card>
+                            );
+                          })}
                       </div>
                     </motion.div>
                   ) : (

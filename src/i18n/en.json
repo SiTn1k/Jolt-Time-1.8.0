@@ -30,7 +30,15 @@
   },
   "story": {
     "story_system": "Story System",
-    "npcs_quests": "NPCs & Quests"
+    "npcs_quests": "NPCs & Quests",
+    "quest": {
+      "objective_expedition": "Expedition",
+      "objective_speak": "Conversation",
+      "objective_visit": "Visit",
+      "objective_prestige": "Prestige",
+      "objective_build": "Build",
+      "objective_collect": "Collect"
+    }
   },
   "laboratory": {
     "damaged": "Damaged",
@@ -153,6 +161,12 @@
     "completed": "Completed",
     "start": "Start",
     "no_quests": "No quests available",
+    "objective_expedition": "Expedition",
+    "objective_speak": "Conversation",
+    "objective_visit": "Visit",
+    "objective_prestige": "Prestige",
+    "objective_build": "Build",
+    "objective_collect": "Collect",
     "vladimir_1": {
       "title": "Glory to Rus",
       "description": "Help Prince Vladimir explore Kyiv hills"

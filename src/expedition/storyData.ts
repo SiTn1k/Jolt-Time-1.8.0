@@ -71,11 +71,19 @@ export interface StoryNpc {
   unlocksAtRelationship: Record<RelationshipLevel, string | null>;
 }
 
+// Quest progress tracking
+export interface QuestProgress {
+  questId: string;
+  objectives: Record<string, number>; // objective type -> current progress
+  startedAt: number;
+  updatedAt: number;
+}
+
 // Story Progress
 export interface StoryProgress {
   currentChapter: number;
   completedChapters: number[];
-  activeQuests: string[];
+  activeQuests: QuestProgress[]; // Track progress for each active quest
   completedQuests: string[];
   npcRelationships: Record<string, NpcRelationship>;
 }
