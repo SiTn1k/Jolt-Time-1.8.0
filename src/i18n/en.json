@@ -35,7 +35,79 @@
     "instruction": "Click on NPC to talk, assign to work and collect income.",
     "dialogue": "Dialogue",
     "income": "Income",
-    "resting": "Resting"
+    "resting": "Resting",
+    "knyaz_vladimir": {
+      "name": "Prince Vladimir",
+      "role": "Prince",
+      "biography": "Grand Prince of Kyiv who Christianized Rus and united Slavic tribes."
+    },
+    "monk_pereyaslav": {
+      "name": "Pechersk Monk",
+      "role": "Historian",
+      "biography": "Monk of Kyiv-Pechersk Lavra, keeper of ancient chronicles."
+    },
+    "hetman_khmelnytsky": {
+      "name": "Bohdan Khmelnytsky",
+      "role": "Hetman",
+      "biography": "Leader of the Cossack uprising and founder of the Hetmanate."
+    },
+    "archaeologist_academy": {
+      "name": "Academy Archaeologist",
+      "role": "Archaeologist",
+      "biography": "Experienced researcher of antiquities at the Academy of Time."
+    },
+    "museum_curator": {
+      "name": "Museum Curator",
+      "role": "Curator",
+      "biography": "Chief curator of the National Museum of Ukrainian History."
+    },
+    "relationship": "Relationship",
+    "trust_points": "Trust Points",
+    "level": "Level"
+  },
+  "quest": {
+    "vladimir_1": {
+      "title": "Service to Rus",
+      "description": "Complete 3 expeditions to Kyiv Hills and speak with the Prince 5 times."
+    },
+    "vladimir_2": {
+      "title": "Great Glory",
+      "description": "Complete 5 expeditions to Kyiv Hills and collect 2 artifacts."
+    },
+    "monk_1": {
+      "title": "Path to Knowledge",
+      "description": "Visit the museum 5 times and speak with the monk 3 times."
+    },
+    "monk_2": {
+      "title": "Pechersk Secrets",
+      "description": "Complete 4 expeditions to Kyiv Hills and collect 3 artifacts."
+    },
+    "khmelnytsky_1": {
+      "title": "Cossack Honor",
+      "description": "Complete 3 expeditions to Wild Field and 2 to Zaporizhia Sich."
+    },
+    "khmelnytsky_2": {
+      "title": "Glory of Cossacks",
+      "description": "Complete 5 expeditions to Zaporizhia Sich and collect 4 artifacts."
+    },
+    "archaeologist_1": {
+      "title": "Trypillia Secrets",
+      "description": "Complete 5 expeditions to Trypillia culture and collect 3 artifacts."
+    },
+    "curator_1": {
+      "title": "Collection Expansion",
+      "description": "Visit the museum 10 times and collect 5 artifacts."
+    },
+    "curator_2": {
+      "title": "Great Exhibition",
+      "description": "Collect 10 artifacts and visit the museum 20 times."
+    },
+    "available": "Available",
+    "in_progress": "In Progress",
+    "completed": "Completed",
+    "start": "Start",
+    "collect_reward": "Claim Reward",
+    "progress": "Progress"
   },
   "common": {
     "app_name": "Jolt Time",
