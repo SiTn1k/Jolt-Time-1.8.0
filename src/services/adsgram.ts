@@ -2,7 +2,7 @@
  * AdsGram SDK Service for Virtual Museum Tapper Game
  *
  * Provides integration with AdsGram Reward Video Ads.
- * Block ID: 35432
+ * Block ID: 35644
  *
  * Reward: x3 XP multiplier for EXACTLY 30 minutes (does not extend)
  */
@@ -10,7 +10,7 @@
 import type { ShowPromiseResult } from '@adsgram/react';
 
 // AdsGram Block ID for reward ads
-export const ADSGRAM_BLOCK_ID = '35432';
+export const ADSGRAM_BLOCK_ID = '35644';
 
 // XP Boost configuration
 export const XP_BOOST_MULTIPLIER = 3;
