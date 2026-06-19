@@ -25,6 +25,7 @@ import {
   getUserRank,
   fetchActiveBoosters,
 } from '../lib/storage';
+import { hapticNotification, hapticImpact } from '../lib/telegram';
 import type { ActiveBoosters } from '../types/game';
 
 const LOCAL_SAVE_INTERVAL = 2000;

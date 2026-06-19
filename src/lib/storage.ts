@@ -414,7 +414,7 @@ function sanitizeLoadedState(parsed: GameState): GameState {
   };
 }
 
-async function applyReferralBonus(newUserId: number, referrerId: number): Promise<void> {
+async function applyReferralBonus(_newUserId: number, referrerId: number): Promise<void> {
   if (!supabase) return;
 
   const { error: e1 } = await supabase

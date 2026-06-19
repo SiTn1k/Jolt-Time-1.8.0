@@ -9,11 +9,11 @@ import {
   getXpBoostRemainingTime,
   formatRemainingTime,
   XP_BOOST_DURATION_MS,
-  type AdShowResult,
 } from '../services/adsgram';
+import type { ActiveBoosters } from '../types/game';
 
 interface AdsGramButtonProps {
-  activeBoosters: Record<string, unknown>;
+  activeBoosters: ActiveBoosters;
   onBoostActivated: () => void;
 }
 
@@ -65,7 +65,7 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
     hapticImpact('medium');
 
     try {
-      const result: AdShowResult = await showRewardAd(controller, telegramId);
+      const result = await showRewardAd(controller, telegramId);
 
       if (result.success && result.boostActivated) {
         hapticNotification('success');

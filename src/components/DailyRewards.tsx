@@ -28,7 +28,7 @@ export function getDailyReward(checkInStreak: number): DailyReward {
 
 export function shouldShowCheckIn(
   lastCheckIn: string | null,
-  checkInStreak: number,
+  _checkInStreak: number,
   lastLoginDate: string | null,
 ): boolean {
   const today = getTodayDateStr();

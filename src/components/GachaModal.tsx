@@ -43,7 +43,7 @@ const ROLL_ICONS = ['🎁', '✨', '💎', '🏺', '👑', '⚔️', '☦️', '
 export function GachaModal({
   epoch,
   currency,
-  unlockedEpochs,
+  unlockedEpochs: _unlockedEpochs,
   artifactParts,
   completedArtifacts,
   artifactDupes,
@@ -216,7 +216,7 @@ export function GachaModal({
           <p className="text-gray-400 text-sm">
             {phase === 'ready' && `Вартість: ${gachaCost} ${epoch.currencyIcon}`}
             {phase === 'rolling' && 'Відкриваємо скриню...'}
-            {phase === 'result' && (rewards.length > 1 ? `Знайдено ${rewards.length} артефактів!` : primaryReward?.parts_granted > 1 ? 'Знайдено фрагменти!' : 'Знайдено фрагмент!')}
+            {phase === 'result' && (rewards.length > 1 ? `Знайдено ${rewards.length} артефактів!` : (primaryReward?.parts_granted ?? 0) > 1 ? 'Знайдено фрагменти!' : 'Знайдено фрагмент!')}
             {phase === 'error' && errorMessage}
           </p>
         </div>

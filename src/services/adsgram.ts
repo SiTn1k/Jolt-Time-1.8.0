@@ -7,8 +7,6 @@
  * Reward: x3 XP multiplier for EXACTLY 30 minutes (does not extend)
  */
 
-import type { ShowPromiseResult } from '@adsgram/react';
-
 // AdsGram Block ID for reward ads
 export const ADSGRAM_BLOCK_ID = '35644';
 
@@ -33,16 +31,28 @@ export interface AdShowResult {
 }
 
 /**
+ * AdsGram ShowPromiseResult type (based on SDK usage)
+ */
+interface ShowPromiseResult {
+  done: boolean;
+  error?: string;
+  state?: string;
+  description?: string;
+}
+
+/**
  * Types for AdsGram SDK
  */
 interface AdsgramController {
   show: () => Promise<ShowPromiseResult>;
 }
 
+type BlockId = string;
+
 declare global {
   interface Window {
     Adsgram?: {
-      init: (config: { blockId: string; debug?: boolean }) => AdsgramController;
+      init: (config: { blockId: BlockId; debug?: boolean }) => AdsgramController;
     };
   }
 }
@@ -163,7 +173,7 @@ export async function showRewardAd(
 /**
  * Check if XP boost is currently active (x3 multiplier)
  */
-export function isXpBoostActive(activeBoosters: Record<string, unknown>): boolean {
+export function isXpBoostActive(activeBoosters: { xp_boost_end?: number | null; xp_boost_mult?: number } | null): boolean {
   const xpBoostEnd = activeBoosters?.xp_boost_end as number | undefined;
   const xpBoostMult = activeBoosters?.xp_boost_mult as number | undefined;
 
@@ -176,7 +186,7 @@ export function isXpBoostActive(activeBoosters: Record<string, unknown>): boolea
 /**
  * Get remaining time for XP boost in milliseconds
  */
-export function getXpBoostRemainingTime(activeBoosters: Record<string, unknown>): number {
+export function getXpBoostRemainingTime(activeBoosters: { xp_boost_end?: number | null } | null): number {
   const xpBoostEnd = activeBoosters?.xp_boost_end as number | undefined;
 
   if (!xpBoostEnd) return 0;

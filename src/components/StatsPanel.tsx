@@ -10,7 +10,7 @@ interface TapUpgradeProps {
   onUpgrade: () => boolean;
 }
 
-export function TapUpgrade({ tapPower, effectiveTapPower, passiveXpPerSecond, cost, currency, epochIndex, onUpgrade }: TapUpgradeProps) {
+export function TapUpgrade({ tapPower, effectiveTapPower, passiveXpPerSecond, cost, currency, onUpgrade }: TapUpgradeProps) {
   const canAfford = currency >= cost;
   const isMaxed = cost === Number.MAX_SAFE_INTEGER;
 

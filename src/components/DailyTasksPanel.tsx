@@ -24,7 +24,7 @@ export function DailyTasksPanel({
   dailyTasksState,
   currencyIcon,
   checkInStreak,
-  lastCheckIn,
+  lastCheckIn: _lastCheckIn,
   onClaimTask,
 }: DailyTasksPanelProps) {
   const [expanded, setExpanded] = useState(true);

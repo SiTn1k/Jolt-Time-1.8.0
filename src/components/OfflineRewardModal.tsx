@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Clock, Play, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Clock, Play, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { formatNumber } from '../lib/utils';
 import { initAdsgram } from '../services/adsgram';
 import { hapticImpact, hapticNotification } from '../lib/telegram';
@@ -26,7 +26,6 @@ export function OfflineRewardModal({
   canWatchAd,
   adsRemaining,
 }: OfflineRewardModalProps) {
-  const [isWatchingAd, setIsWatchingAd] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [adError, setAdError] = useState<string | null>(null);
   const [claimed, setClaimed] = useState(false);
@@ -52,7 +51,6 @@ export function OfflineRewardModal({
 
       if (result.done) {
         // Ad watched successfully - claim via server
-        setIsWatchingAd(true);
         await onClaim(true);
         setClaimed(true);
         hapticNotification('success');

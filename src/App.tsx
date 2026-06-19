@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { useGame, type SyncStatus } from './hooks/useGame';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useGame } from './hooks/useGame';
 import { TapArea } from './components/TapArea';
 import { GeneratorShop } from './components/GeneratorShop';
 import { TapUpgrade } from './components/StatsPanel';
@@ -18,7 +18,7 @@ import { EPOCHS, ARTIFACTS, getEpochById } from './data/epochs';
 import { initTelegramMiniApp, hapticImpact, hapticNotification, getTelegramWebApp, getTelegramUserId } from './lib/telegram';
 import { rpcTrackSession } from './lib/rpc';
 import { supabase } from './lib/supabase';
-import { Crown, ShoppingBag, Trophy, Gift, Loader2, Users, X, Clock, Shield, Zap, Star, ChevronRight, Wifi, RefreshCw, Timer, AlertTriangle, Sparkles, Battery, BatteryLow } from 'lucide-react';
+import { Crown, ShoppingBag, Trophy, Gift, Loader2, Users, X, Shield, Zap, Star, ChevronRight, Wifi, RefreshCw, Timer, AlertTriangle, Battery, BatteryLow } from 'lucide-react';
 import type { EpochId } from './types/game';
 import { formatNumber } from './lib/utils';
 import { getTodayDateStr } from './data/tasks';
@@ -35,7 +35,6 @@ function App() {
     upgradeTapPower,
     switchEpoch,
     tapPowerCost,
-    addArtifactPart,
     processServerRewards,
     upgradeArtifactLevel,
     deductGachaCost,
@@ -639,7 +638,6 @@ function App() {
                     artifact.epoch === state.epochId;
                   const parts = state.artifactParts?.[artifact.id] || 0;
                   const isComplete = state.completedArtifacts?.includes(artifact.id);
-                  const dupeCount = state.artifactDupes?.[artifact.id] || 0;
                   const artifactEpoch = EPOCHS.find(e => e.id === artifact.epoch);
                   const artifactLevel = state.artifactLevels?.[artifact.id] || 1;
 
@@ -647,7 +645,6 @@ function App() {
                   const partsForNextLevel = artifactLevel < 4
                     ? (artifactLevel === 1 ? 10 : artifactLevel === 2 ? 10 : artifactLevel === 3 ? 15 : 20)
                     : 0;
-                  const canUpgrade = isComplete && artifactLevel < 4 && parts >= partsForNextLevel;
 
                   return (
                     <div
@@ -756,7 +753,7 @@ function App() {
                     maxEnergy={state.maxEnergy || 100}
                     prestigeLevel={state.prestigeLevel || 0}
                     dailyEnergyAdsUsed={energyAdsUsed}
-                    onEnergyRestored={(amount) => {
+                    onEnergyRestored={() => {
                       hapticNotification('success');
                       // Energy is handled by state update
                     }}

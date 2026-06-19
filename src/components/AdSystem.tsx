@@ -4,9 +4,7 @@ import { hapticImpact, hapticNotification } from '../lib/telegram';
 import { getTelegramUserId } from '../lib/telegram';
 import {
   initAdsgram,
-  type AdShowResult,
 } from '../services/adsgram';
-import { supabase } from '../lib/supabase';
 
 // ═══════════════════════════════════════════════════════════════════════
 // SESSION ADS COMPONENT

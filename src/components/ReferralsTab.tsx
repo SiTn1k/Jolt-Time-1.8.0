@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { LeaderboardEntry } from '../types/game';
 import { getTelegramWebApp, hapticNotification, hapticImpact } from '../lib/telegram';
 import { formatNumber } from '../lib/utils';
-import { Users, Copy, Share2, Gift, Trophy, Medal, RefreshCw, Send, MessageCircle } from 'lucide-react';
+import { Users, Copy, Gift, Trophy, Medal, RefreshCw, Send, MessageCircle } from 'lucide-react';
 
 interface ReferralsTabProps {
   telegramId: number | null;
