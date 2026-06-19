@@ -258,6 +258,14 @@
     "got_it": "Got It!"
   },
   "expedition": {
+    "academy_unlock_title": "Academy Timeline Unlocked",
+    "academy_unlock_description": "Your research has changed the very fabric of time. Now you can manage the Academy of Time and explore the history of Ukraine.",
+    "second_prestige_reached": "Second Prestige Reached",
+    "start_research": "Start Research",
+    "feature_expeditions": "Expeditions",
+    "feature_museum": "Museum",
+    "feature_heroes": "Heroes",
+    "feature_story": "History",
     "academy_title": "Archaeological Academy",
     "academy_subtitle": "of Ukraine",
     "reputation": "Reputation",

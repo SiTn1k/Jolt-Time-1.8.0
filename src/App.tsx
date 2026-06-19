@@ -15,6 +15,7 @@ import { PrestigeButton, MuseumLaboratory } from './components/PrestigeSystem';
 import { SessionAdModal, ChestAdModal, EnergyRestoreAdButton, useSessionAdTrigger, useChestAdTrigger } from './components/AdSystem';
 import { OfflineRewardModal } from './components/OfflineRewardModal';
 import { ExpeditionApp } from './expedition/ExpeditionApp';
+import { AcademyUnlockModal } from './components/AcademyUnlockModal';
 import { EPOCHS, ARTIFACTS, getEpochById } from './data/epochs';
 import { initTelegramMiniApp, hapticImpact, hapticNotification, getTelegramWebApp, getTelegramUserId } from './lib/telegram';
 import { rpcTrackSession } from './lib/rpc';
@@ -75,6 +76,25 @@ function App() {
   const [showError, setShowError] = useState<string | null>(null);
   const [purchasingBooster, setPurchasingBooster] = useState<string | null>(null);
   const [showTutorial, setShowTutorial] = useState(false);
+
+  // Academy Unlock Modal - show once when prestigeLevel === 2
+  const isAcademyUnlocked = (state.prestigeLevel || 0) >= 2;
+  const hasSeenAcademyUnlock = localStorage.getItem('academy_unlock_seen') === 'true';
+  const [showAcademyUnlock, setShowAcademyUnlock] = useState(false);
+  const [academyModalShown, setAcademyModalShown] = useState(false);
+
+  // Show unlock modal on first visit after prestigeLevel >= 2
+  useEffect(() => {
+    if (isAcademyUnlocked && !academyModalShown && !hasSeenAcademyUnlock) {
+      setShowAcademyUnlock(true);
+      setAcademyModalShown(true);
+    }
+  }, [isAcademyUnlocked, academyModalShown, hasSeenAcademyUnlock]);
+
+  const handleAcademyUnlockClose = () => {
+    setShowAcademyUnlock(false);
+    localStorage.setItem('academy_unlock_seen', 'true');
+  };
 
   // i18n
   const { locale, toggleLocale, t } = useTranslation();
@@ -260,9 +280,18 @@ function App() {
     );
   }
 
-  // After the 2nd rebirth (prestige), the player advances into the new
-  // "Historical Expedition" management game (the Figma redesign).
+  // After the 2nd rebirth (prestige), show Academy Unlock modal first time
   if ((state.prestigeLevel || 0) >= 2) {
+    // Show unlock modal on first visit (modal overlays ExpeditionApp)
+    if (showAcademyUnlock) {
+      return (
+        <>
+          <ExpeditionApp />
+          <AcademyUnlockModal isOpen={showAcademyUnlock} onClose={handleAcademyUnlockClose} />
+        </>
+      );
+    }
+    // After modal dismissed, show ExpeditionApp
     return <ExpeditionApp />;
   }
 

@@ -258,6 +258,14 @@
     "got_it": "Зрозуміло!"
   },
   "expedition": {
+    "academy_unlock_title": "Академія Часу Відкрита",
+    "academy_unlock_description": "Ваші дослідження змінили саму тканину часу. Відтепер ви можете керувати Академією Часу та досліджувати історію України.",
+    "second_prestige_reached": "Досягнуто другого престижу",
+    "start_research": "Розпочати дослідження",
+    "feature_expeditions": "Експедиції",
+    "feature_museum": "Музей",
+    "feature_heroes": "Герої",
+    "feature_story": "Історія",
     "academy_title": "Археологічна Академія",
     "academy_subtitle": "України",
     "reputation": "Репутація",
