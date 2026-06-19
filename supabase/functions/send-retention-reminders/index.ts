@@ -7,14 +7,20 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
  * Backend-only retention push system for the Telegram Mini App.
  *
  * Behaviour:
- * 1. Reads players from game_progress whose updated_at is between
+ * 1. Reads players from game_progress whose last_active_at is between
  *    (NOW - 7h) and (NOW - 6h) — a 1-hour notification window.
+ *    last_active_at is ONLY updated when the player genuinely opens the
+ *    Mini App or pings a session (via the track-session edge function),
+ *    so it reflects true user activity, unlike updated_at which fires on
+ *    every background sync / passive income claim / cron job.
  * 2. Filters out players without a valid telegram_id.
  * 3. Checks retention_notifications for an existing send of the
  *    same notification_type in the last 24 hours, and skips if found.
  * 4. Sends a Telegram sendMessage to each candidate with an inline
  *    "🚀 Запустити гру" button that deep-links into the Mini App.
  * 5. Inserts a row into retention_notifications for every send.
+ * 6. Emits structured console.log lines at each stage so retention runs
+ *    can be verified in the Supabase Edge Function logs.
  *
  * Designed to be invoked hourly by pg_cron via the pg_net extension
  * (configured in a separate migration).
@@ -43,12 +49,31 @@ const TG_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 const NOTIFICATION_TYPE = "energy_full";
 const DUPLICATE_WINDOW_HOURS = 24;
 
-const RETENTION_MESSAGE =
-  "🔋 Твоя енергія повністю відновилася!\n\n" +
-  "Повертайся в гру, щоб забрати свої бонуси та продовжити прокачувати музей! 🎮";
+const RETENTION_MESSAGES = [
+  "⚡ Твоя енергія повністю відновилася!\n\nПовертайся в музей та продовжуй дослідження! 🏛️",
+
+  "🎁 На тебе чекає подарунок у музеї!\n\nЗаходь та забери свою нагороду просто зараз.",
+
+  "💰 Музей накопичив прибуток офлайн!\n\nПовертайся та забери зароблені монети.",
+
+  "🏛️ Експедиція завершилася!\n\nТвої археологи вже чекають на нові завдання.",
+
+  "🔍 Знайдено новий артефакт!\n\nНе пропусти можливість поповнити свою колекцію.",
+
+  "🚀 Твій музей сумує без тебе!\n\nЧас повернутися та продовжити розвиток імперії.",
+
+  "⭐ У тебе накопичилися бонуси!\n\nЗаходь у гру та використай їх з користю.",
+
+  "🎮 Настав час нових відкриттів!\n\nТвої відвідувачі вже чекають на повернення директора музею.",
+
+  "🏆 Ти вже близько до наступного рівня!\n\nЗалишився лише один крок до нових досягнень.",
+
+  "🔥 Повертайся в гру!\n\nПопереду нові артефакти, нагороди та досягнення."
+];
 
 interface CandidatePlayer {
   telegram_id: number;
+  last_active_at: string | null;
 }
 
 interface TelegramResponse {
@@ -114,26 +139,34 @@ Deno.serve(async (req: Request) => {
   const skippedDuplicate: number[] = [];
   const failed: Array<{ telegram_id: number; error: string }> = [];
 
+  console.log(`[retention] run started at ${new Date().toISOString()}`);
+  console.log(`[retention] deep_link=${inlineUrl}`);
+
   try {
-    // 1-hour retention notification window: players who left between 6h and 7h ago.
-    // "6 to 7 hours ago" = updated_at <= (now - 6h) AND updated_at > (now - 7h).
+    // 1-hour retention notification window: players whose last genuine app
+    // activity (last_active_at) is between 6h and 7h ago.
+    // "6 to 7 hours ago" = last_active_at <= (now - 6h) AND last_active_at > (now - 7h).
     const now = Date.now();
     const sixHoursAgoIso = new Date(now - 6 * 60 * 60 * 1000).toISOString();
     const sevenHoursAgoIso = new Date(now - 7 * 60 * 60 * 1000).toISOString();
 
+    console.log(`[retention] window: last_active_at in (${sevenHoursAgoIso}, ${sixHoursAgoIso}]`);
+
     const { data: candidates, error } = await supabase
       .from("game_progress")
-      .select("telegram_id")
+      .select("telegram_id, last_active_at")
       .not("telegram_id", "is", null)
-      .lte("updated_at", sixHoursAgoIso)
-      .gt("updated_at", sevenHoursAgoIso);
+      .not("last_active_at", "is", null)
+      .lte("last_active_at", sixHoursAgoIso)
+      .gt("last_active_at", sevenHoursAgoIso);
 
     if (error) {
-      console.error("query candidates error:", error);
+      console.error("[retention] query candidates error:", error);
       return json({ error: error.message }, 500);
     }
 
     if (!candidates || candidates.length === 0) {
+      console.log("[retention] no candidates in window, exiting");
       return json({
         ok: true,
         candidates: 0,
@@ -143,9 +176,14 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    console.log(`[retention] found ${candidates.length} candidate(s)`);
+
     for (const candidate of candidates as CandidatePlayer[]) {
       const telegramId = candidate.telegram_id;
+      const lastActive = candidate.last_active_at;
       if (!telegramId || !Number.isFinite(telegramId) || telegramId <= 0) continue;
+
+      console.log(`[retention] processing telegram_id=${telegramId} last_active_at=${lastActive}`);
 
       // Duplicate protection: check if same notification_type was sent in last 24h.
       const { data: existing, error: dedupErr } = await supabase
@@ -160,53 +198,73 @@ Deno.serve(async (req: Request) => {
         .limit(1);
 
       if (dedupErr) {
-        console.error("dedup query error for", telegramId, dedupErr);
+        console.error(`[retention] dedup query error for ${telegramId}:`, dedupErr);
         failed.push({ telegram_id: telegramId, error: "dedup check failed" });
         continue;
       }
 
       if (existing && existing.length > 0) {
+        console.log(`[retention] skipping telegram_id=${telegramId} (already sent in last 24h)`);
         skippedDuplicate.push(telegramId);
         continue;
       }
 
+      // Select random message from the array
+      const randomMessage =
+        RETENTION_MESSAGES[
+          Math.floor(Math.random() * RETENTION_MESSAGES.length)
+        ];
+
+      console.log(`[retention] sending Telegram message to ${telegramId}`);
       const tgResult = await tgCall("sendMessage", {
         chat_id: telegramId,
-        text: RETENTION_MESSAGE,
+        text: randomMessage,
         parse_mode: "HTML",
         reply_markup: {
           inline_keyboard: [
-            [{ text: "🚀 Запустити гру", url: inlineUrl }],
+            [
+              { text: "🚀 Запустити гру", url: inlineUrl }
+            ],
+            [
+              { text: "📢 Наш Telegram канал", url: "https://t.me/SITNIK_BLOG" }
+            ]
           ],
         },
       });
 
       if (!tgResult.ok) {
-        failed.push({
-          telegram_id: telegramId,
-          error: tgResult.description ?? `Telegram error ${tgResult.error_code ?? ""}`,
-        });
+        const errDesc = tgResult.description ?? `Telegram error ${tgResult.error_code ?? ""}`;
+        console.error(`[retention] sendMessage failed for ${telegramId}: ${errDesc}`);
+        failed.push({ telegram_id: telegramId, error: errDesc });
         continue;
       }
 
-      // Record the send so future runs skip it within the 24h window.
+      console.log(`[retention] sendMessage ok for ${telegramId}, logging to retention_notifications`);
       const { error: insertErr } = await supabase
         .from("retention_notifications")
         .insert({
           telegram_id: telegramId,
           notification_type: NOTIFICATION_TYPE,
-          payload: { message: RETENTION_MESSAGE, url: inlineUrl },
+          payload: {
+            message: randomMessage,
+            url: inlineUrl,
+            channel: "https://t.me/SITNIK_BLOG"
+          },
         });
 
       if (insertErr) {
-        console.error("insert notification log error for", telegramId, insertErr);
+        console.error(`[retention] insert notification log error for ${telegramId}:`, insertErr);
       }
 
       sent.push(telegramId);
     }
 
+    console.log(`[retention] run complete: sent=${sent.length} skipped=${skippedDuplicate.length} failed=${failed.length}`);
+
     return json({
       ok: true,
+      field_used: "last_active_at",
+      window: { after: sevenHoursAgoIso, before: sixHoursAgoIso },
       candidates: candidates.length,
       sent: sent.length,
       skipped_duplicate: skippedDuplicate.length,
@@ -215,7 +273,7 @@ Deno.serve(async (req: Request) => {
       failed_details: failed,
     });
   } catch (err) {
-    console.error("send-retention-reminders error:", err);
+    console.error("[retention] fatal error:", err);
     return json({ error: String(err) }, 500);
   }
 });
