@@ -5,6 +5,33 @@
     "close_tab": "Close this tab",
     "play_anyway": "Play here (may cause progress loss)"
   },
+  "quest": {
+    "quests": "Quests",
+    "available": "Available",
+    "in_progress": "In Progress",
+    "completed": "Completed",
+    "start": "Start",
+    "no_quests": "No quests available",
+    "vladimir_1": {"title": "Glory to Rus", "description": "Help Prince Vladimir explore Kyiv hills"},
+    "vladimir_2": {"title": "Great Campaigns", "description": "Collect 2 ancient artifacts"},
+    "monk_1": {"title": "Secrets of the Caves", "description": "Visit museum and talk to the monk"},
+    "monk_2": {"title": "Byzantine Gifts", "description": "Find Byzantine artifacts"},
+    "khmelnytsky_1": {"title": "Cossack Glory", "description": "Lead expeditions to Zaporizhzhia"},
+    "khmelnytsky_2": {"title": "Wild Field", "description": "Collect 4 Cossack artifacts"},
+    "archaeologist_1": {"title": "Trypillian Secrets", "description": "Explore Trypillian lands"},
+    "curator_1": {"title": "New Exhibits", "description": "Expand museum collection"},
+    "curator_2": {"title": "Great Exhibition", "description": "Collect 10 artifacts for exhibition"},
+    "reward_karbovanets": "karbovanets",
+    "reward_reputation": "reputation",
+    "reward_xp": "experience",
+    "reward_hero_fragment": "hero fragment",
+    "reward_artifact": "artifact",
+    "reward_academy_xp": "academy experience"
+  },
+  "story": {
+    "story_system": "Story System",
+    "npcs_quests": "NPCs & Quests"
+  },
   "laboratory": {
     "damaged": "Damaged",
     "in_progress": "In Progress",
@@ -116,51 +143,58 @@
     },
     "relationship": "Relationship",
     "trust_points": "Trust Points",
-    "level": "Level"
+    "level": "Level",
+    "story_npcs": "Storytellers"
   },
   "quest": {
-    "vladimir_1": {
-      "title": "Service to Rus",
-      "description": "Complete 3 expeditions to Kyiv Hills and speak with the Prince 5 times."
-    },
-    "vladimir_2": {
-      "title": "Great Glory",
-      "description": "Complete 5 expeditions to Kyiv Hills and collect 2 artifacts."
-    },
-    "monk_1": {
-      "title": "Path to Knowledge",
-      "description": "Visit the museum 5 times and speak with the monk 3 times."
-    },
-    "monk_2": {
-      "title": "Pechersk Secrets",
-      "description": "Complete 4 expeditions to Kyiv Hills and collect 3 artifacts."
-    },
-    "khmelnytsky_1": {
-      "title": "Cossack Honor",
-      "description": "Complete 3 expeditions to Wild Field and 2 to Zaporizhia Sich."
-    },
-    "khmelnytsky_2": {
-      "title": "Glory of Cossacks",
-      "description": "Complete 5 expeditions to Zaporizhia Sich and collect 4 artifacts."
-    },
-    "archaeologist_1": {
-      "title": "Trypillia Secrets",
-      "description": "Complete 5 expeditions to Trypillia culture and collect 3 artifacts."
-    },
-    "curator_1": {
-      "title": "Collection Expansion",
-      "description": "Visit the museum 10 times and collect 5 artifacts."
-    },
-    "curator_2": {
-      "title": "Great Exhibition",
-      "description": "Collect 10 artifacts and visit the museum 20 times."
-    },
+    "quests": "Quests",
     "available": "Available",
     "in_progress": "In Progress",
     "completed": "Completed",
     "start": "Start",
-    "collect_reward": "Claim Reward",
-    "progress": "Progress"
+    "no_quests": "No quests available",
+    "vladimir_1": {
+      "title": "Glory to Rus",
+      "description": "Help Prince Vladimir explore Kyiv hills"
+    },
+    "vladimir_2": {
+      "title": "Great Campaigns",
+      "description": "Collect 2 ancient artifacts"
+    },
+    "monk_1": {
+      "title": "Secrets of the Caves",
+      "description": "Visit museum and talk to the monk"
+    },
+    "monk_2": {
+      "title": "Byzantine Gifts",
+      "description": "Find Byzantine artifacts"
+    },
+    "khmelnytsky_1": {
+      "title": "Cossack Glory",
+      "description": "Lead expeditions to Zaporizhzhia"
+    },
+    "khmelnytsky_2": {
+      "title": "Wild Field",
+      "description": "Collect 4 Cossack artifacts"
+    },
+    "archaeologist_1": {
+      "title": "Trypillian Secrets",
+      "description": "Explore Trypillian lands"
+    },
+    "curator_1": {
+      "title": "New Exhibits",
+      "description": "Expand museum collection"
+    },
+    "curator_2": {
+      "title": "Great Exhibition",
+      "description": "Collect 10 artifacts for exhibition"
+    },
+    "reward_karbovanets": "karbovanets",
+    "reward_reputation": "reputation",
+    "reward_xp": "experience",
+    "reward_hero_fragment": "hero fragment",
+    "reward_artifact": "artifact",
+    "reward_academy_xp": "academy experience"
   },
   "common": {
     "app_name": "Jolt Time",
