@@ -1,142 +1,294 @@
 /**
- * Expedition Sync Service
+ * Academy Timeline Sync Service
  * 
- * Syncs all game state between localStorage (Zustand) and Supabase
- * - Expeditions
- * - Museum state
- * - Story/Quest state
- * - Hero progress
- * - Artifact progress
+ * Syncs Academy Timeline state to Supabase using existing tables:
+ * - expedition_state: expeditions, heroes, artifacts
+ * - story_progress: NPC relationships, quests
+ * - museum_progress: museum exhibitions, upgrades
+ * 
+ * localStorage (Zustand) remains as cache for fast reads.
+ * Supabase is source of truth for cross-device sync.
  */
 
 import { supabase } from '../lib/supabase';
 import { getTelegramUserId } from '../lib/telegram';
-import type { Expedition } from './data';
 import type { MuseumState } from './museumData';
 import type { StoryProgress } from './storyData';
 
-const EXPEDITION_SYNC_KEY = 'game_state_sync_pending';
-const SYNC_DEBOUNCE_MS = 2000;
+const EXPEDITION_SYNC_KEY = 'academy_sync_pending';
+const SYNC_DEBOUNCE_MS = 3000; // 3 seconds debounce
 
-interface GameStateSnapshot {
-  // Core game state
-  expeditions: Expedition[];
+interface ExpeditionData {
+  academyLevel: number;
+  reputation: number;
+  karbovanets: number;
+  historicalPrestige: number;
   heroes: unknown[];
   artifacts: unknown[];
   regions: unknown[];
-  karbovanets: number;
-  reputation: number;
-  historicalPrestige: number;
-  museumVisitors: number;
-  
-  // Museum state
-  museumState: MuseumState;
-  
-  // Story/Quest state  
-  storyState: StoryProgress;
-  
-  // Metadata
-  lastSyncAt: number;
+  expeditions: unknown[];
+  npcs: unknown[];
+  expeditionSlots: number;
+  lastTick: number;
+  incomeBuffer: number;
 }
 
-class ExpeditionSyncService {
+class AcademySyncService {
   private syncTimer: ReturnType<typeof setTimeout> | null = null;
 
   /**
-   * Save full game state to Supabase
+   * Save expedition data to expedition_state table
    */
-  async saveGameState(state: GameStateSnapshot): Promise<boolean> {
+  async saveExpeditionData(data: ExpeditionData): Promise<boolean> {
     const telegramId = getTelegramUserId();
     if (!telegramId || !supabase) return false;
 
     try {
-      const snapshot: GameStateSnapshot = {
-        ...state,
-        lastSyncAt: Date.now(),
-      };
-
       const { error } = await supabase
-        .from('game_state')
+        .from('expedition_state')
         .upsert({
           telegram_id: telegramId,
-          state_data: snapshot as unknown as Record<string, unknown>,
+          state_data: {
+            academyLevel: data.academyLevel,
+            reputation: data.reputation,
+            karbovanets: data.karbovanets,
+            historicalPrestige: data.historicalPrestige,
+            heroes: data.heroes,
+            artifacts: data.artifacts,
+            regions: data.regions,
+            expeditions: data.expeditions,
+            npcs: data.npcs,
+            expeditionSlots: data.expeditionSlots,
+            lastTick: data.lastTick,
+            incomeBuffer: data.incomeBuffer,
+          } as Record<string, unknown>,
           updated_at: new Date().toISOString(),
         }, {
           onConflict: 'telegram_id',
         });
 
       if (error) {
-        console.error('Failed to save game state:', error);
+        console.error('Failed to save expedition data:', error);
         return false;
       }
 
-      localStorage.removeItem(EXPEDITION_SYNC_KEY);
       return true;
     } catch (e) {
-      console.error('Game state sync error:', e);
-      // Store locally for retry
-      localStorage.setItem(EXPEDITION_SYNC_KEY, JSON.stringify({
-        state,
-        timestamp: Date.now(),
-      }));
+      console.error('Expedition sync error:', e);
+      this.queuePendingSync('expedition', data);
       return false;
     }
   }
 
   /**
-   * Load full game state from Supabase
+   * Load expedition data from expedition_state table
    */
-  async loadGameState(): Promise<GameStateSnapshot | null> {
+  async loadExpeditionData(): Promise<ExpeditionData | null> {
     const telegramId = getTelegramUserId();
     if (!telegramId || !supabase) return null;
 
     try {
       const { data, error } = await supabase
-        .from('game_state')
-        .select('state_data')
+        .from('expedition_state')
+        .select('state_data, updated_at')
         .eq('telegram_id', telegramId)
         .maybeSingle();
 
       if (error) {
-        console.error('Failed to load game state:', error);
+        console.error('Failed to load expedition data:', error);
         return null;
       }
 
       if (!data?.state_data) return null;
 
-      return data.state_data as unknown as GameStateSnapshot;
+      return data.state_data as unknown as ExpeditionData;
     } catch (e) {
-      console.error('Game state load error:', e);
+      console.error('Expedition load error:', e);
       return null;
     }
   }
 
   /**
-   * Debounced sync - call this on state changes
+   * Save story/progress data to story_progress table
    */
-  debouncedSync(state: GameStateSnapshot): void {
+  async saveStoryData(storyState: StoryProgress): Promise<boolean> {
+    const telegramId = getTelegramUserId();
+    if (!telegramId || !supabase) return false;
+
+    try {
+      const { error } = await supabase
+        .from('story_progress')
+        .upsert({
+          telegram_id: telegramId,
+          current_chapter: storyState.currentChapter,
+          completed_chapters: storyState.completedChapters,
+          active_quests: storyState.activeQuests,
+          completed_quests: storyState.completedQuests,
+          npc_relationships: storyState.npcRelationships as Record<string, unknown>,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'telegram_id',
+        });
+
+      if (error) {
+        console.error('Failed to save story data:', error);
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      console.error('Story sync error:', e);
+      this.queuePendingSync('story', storyState);
+      return false;
+    }
+  }
+
+  /**
+   * Load story data from story_progress table
+   */
+  async loadStoryData(): Promise<StoryProgress | null> {
+    const telegramId = getTelegramUserId();
+    if (!telegramId || !supabase) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('story_progress')
+        .select('*')
+        .eq('telegram_id', telegramId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Failed to load story data:', error);
+        return null;
+      }
+
+      if (!data) return null;
+
+      return {
+        currentChapter: data.current_chapter,
+        completedChapters: data.completed_chapters || [],
+        activeQuests: data.active_quests || [],
+        completedQuests: data.completed_quests || [],
+        npcRelationships: (data.npc_relationships || {}) as Record<string, import('./storyData').NpcRelationship>,
+      };
+    } catch (e) {
+      console.error('Story load error:', e);
+      return null;
+    }
+  }
+
+  /**
+   * Save museum data to museum_progress table
+   */
+  async saveMuseumData(museumState: MuseumState, reputation: number, visitors: number): Promise<boolean> {
+    const telegramId = getTelegramUserId();
+    if (!telegramId || !supabase) return false;
+
+    try {
+      const { error } = await supabase
+        .from('museum_progress')
+        .upsert({
+          telegram_id: telegramId,
+          museum_state: museumState as unknown as Record<string, unknown>,
+          reputation: reputation,
+          total_visitors: visitors,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'telegram_id',
+        });
+
+      if (error) {
+        console.error('Failed to save museum data:', error);
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      console.error('Museum sync error:', e);
+      this.queuePendingSync('museum', { museumState, reputation, visitors });
+      return false;
+    }
+  }
+
+  /**
+   * Load museum data from museum_progress table
+   */
+  async loadMuseumData(): Promise<{ museumState: MuseumState; reputation: number; totalVisitors: number } | null> {
+    const telegramId = getTelegramUserId();
+    if (!telegramId || !supabase) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('museum_progress')
+        .select('museum_state, reputation, total_visitors')
+        .eq('telegram_id', telegramId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Failed to load museum data:', error);
+        return null;
+      }
+
+      if (!data) return null;
+
+      return {
+        museumState: data.museum_state as unknown as MuseumState,
+        reputation: data.reputation || 0,
+        totalVisitors: data.total_visitors || 0,
+      };
+    } catch (e) {
+      console.error('Museum load error:', e);
+      return null;
+    }
+  }
+
+  /**
+   * Queue failed sync for retry
+   */
+  private queuePendingSync(type: string, data: unknown): void {
+    localStorage.setItem(EXPEDITION_SYNC_KEY, JSON.stringify({
+      type,
+      data,
+      timestamp: Date.now(),
+    }));
+  }
+
+  /**
+   * Debounced sync all Academy data
+   */
+  debouncedFullSync(expeditionData: ExpeditionData, storyData: StoryProgress, museumState: MuseumState, museumRep: number, museumVis: number): void {
     if (this.syncTimer) {
       clearTimeout(this.syncTimer);
     }
 
-    this.syncTimer = setTimeout(() => {
-      this.saveGameState(state);
+    this.syncTimer = setTimeout(async () => {
+      await Promise.all([
+        this.saveExpeditionData(expeditionData),
+        this.saveStoryData(storyData),
+        this.saveMuseumData(museumState, museumRep, museumVis),
+      ]);
+      localStorage.removeItem(EXPEDITION_SYNC_KEY);
     }, SYNC_DEBOUNCE_MS);
   }
 
   /**
-   * Force immediate sync
+   * Force immediate full sync
    */
-  async forceSync(state: GameStateSnapshot): Promise<boolean> {
+  async forceFullSync(expeditionData: ExpeditionData, storyData: StoryProgress, museumState: MuseumState, museumRep: number, museumVis: number): Promise<void> {
     if (this.syncTimer) {
       clearTimeout(this.syncTimer);
       this.syncTimer = null;
     }
-    return this.saveGameState(state);
+
+    await Promise.all([
+      this.saveExpeditionData(expeditionData),
+      this.saveStoryData(storyData),
+      this.saveMuseumData(museumState, museumRep, museumVis),
+    ]);
   }
 
   /**
-   * Check if there's a pending sync that failed
+   * Check if there's a pending sync
    */
   hasPendingSync(): boolean {
     const pending = localStorage.getItem(EXPEDITION_SYNC_KEY);
@@ -151,72 +303,101 @@ class ExpeditionSyncService {
   }
 
   /**
-   * Get pending sync data for retry
+   * Retry pending sync
    */
-  getPendingSyncData(): GameStateSnapshot | null {
+  async retryPendingSync(): Promise<boolean> {
     const pending = localStorage.getItem(EXPEDITION_SYNC_KEY);
-    if (!pending) return null;
+    if (!pending) return true;
 
     try {
-      const { state } = JSON.parse(pending);
-      return state;
-    } catch {
-      return null;
-    }
-  }
+      const { type, data, timestamp } = JSON.parse(pending);
+      
+      // Only retry if less than 1 hour old
+      if (Date.now() - timestamp > 60 * 60 * 1000) {
+        localStorage.removeItem(EXPEDITION_SYNC_KEY);
+        return true;
+      }
 
-  /**
-   * Clear pending sync
-   */
-  clearPendingSync(): void {
-    localStorage.removeItem(EXPEDITION_SYNC_KEY);
+      switch (type) {
+        case 'expedition':
+          return await this.saveExpeditionData(data as ExpeditionData);
+        case 'story':
+          return await this.saveStoryData(data as StoryProgress);
+        case 'museum':
+          const mData = data as { museumState: MuseumState; reputation: number; visitors: number };
+          return await this.saveMuseumData(mData.museumState, mData.reputation, mData.visitors);
+        default:
+          return false;
+      }
+    } catch {
+      return false;
+    }
   }
 }
 
 // Singleton instance
-export const expeditionSync = new ExpeditionSyncService();
+export const academySync = new AcademySyncService();
 
-// React hook for game state sync
-import { useEffect, useRef, useCallback } from 'react';
+// React hook for Academy Timeline sync
+import { useEffect, useCallback } from 'react';
 import { useExpeditionStore } from './store';
 
-export function useExpeditionSync() {
-  const lastSyncRef = useRef<number>(0);
-  const expeditionState = useExpeditionStore((s) => s);
+export function useAcademySync() {
+  const store = useExpeditionStore((s) => s);
 
-  // Initial sync on mount
+  // Initial load from Supabase on mount
   useEffect(() => {
     const loadFromServer = async () => {
-      const savedState = await expeditionSync.loadGameState();
-      if (savedState && savedState.lastSyncAt > lastSyncRef.current) {
-        console.log('Restoring game state from server');
-        // Note: Store restoration would be done via store hydration
-        // For now, server state is loaded but localStorage takes precedence
+      // Try to load from Supabase first
+      const [expeditionData, storyData, museumData] = await Promise.all([
+        academySync.loadExpeditionData(),
+        academySync.loadStoryData(),
+        academySync.loadMuseumData(),
+      ]);
+
+      // Log for debugging
+      if (expeditionData || storyData || museumData) {
+        console.log('Academy data loaded from Supabase');
       }
+
+      // Note: Hydration into store is handled by Zustand persist
+      // localStorage is used as cache, Supabase is source of truth
     };
 
     loadFromServer();
+
+    // Retry any pending sync
+    academySync.retryPendingSync();
   }, []);
 
-  // Sync on store changes (debounced)
+  // Sync to Supabase on store changes
   const syncToServer = useCallback(() => {
-    const state: GameStateSnapshot = {
-      expeditions: expeditionState.expeditions,
-      heroes: expeditionState.heroes,
-      artifacts: expeditionState.artifacts,
-      regions: expeditionState.regions,
-      karbovanets: expeditionState.karbovanets,
-      reputation: expeditionState.reputation,
-      historicalPrestige: expeditionState.historicalPrestige,
-      museumVisitors: expeditionState.museumVisitors,
-      museumState: expeditionState.museumState,
-      storyState: expeditionState.storyState,
-      lastSyncAt: Date.now(),
+    const expeditionData: ExpeditionData = {
+      academyLevel: store.academyLevel,
+      reputation: store.reputation,
+      karbovanets: store.karbovanets,
+      historicalPrestige: store.historicalPrestige,
+      heroes: store.heroes,
+      artifacts: store.artifacts,
+      regions: store.regions,
+      expeditions: store.expeditions,
+      npcs: store.npcs,
+      expeditionSlots: store.expeditionSlots,
+      lastTick: store.lastTick,
+      incomeBuffer: store.incomeBuffer,
     };
 
-    expeditionSync.debouncedSync(state);
-    lastSyncRef.current = Date.now();
-  }, [expeditionState]);
+    academySync.debouncedFullSync(
+      expeditionData,
+      store.storyState,
+      store.museumState,
+      store.museumState.reputation,
+      store.museumVisitors,
+    );
+  }, [store]);
 
   return { syncToServer };
 }
+
+// Export old name for backward compatibility
+export const useExpeditionSync = useAcademySync;

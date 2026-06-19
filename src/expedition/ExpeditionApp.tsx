@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Building2, Map, Users, FlaskConical, Landmark, Shield } from 'lucide-react';
 import { useExpeditionStore } from './store';
+import { useAcademySync } from './expeditionSync';
 import { Academy } from './screens/Academy';
 import { WorldMap } from './screens/WorldMap';
 import { Heroes } from './screens/Heroes';
@@ -53,6 +54,9 @@ function ToastStack() {
 export function ExpeditionApp() {
   const tick = useExpeditionStore((s) => s.tick);
   const [screen, setScreen] = useState<ScreenId>('academy');
+  
+  // Supabase sync - loads from server and syncs changes
+  const { syncToServer } = useAcademySync();
 
   useEffect(() => {
     // advance lastTick immediately so countdowns are correct after reload
@@ -60,6 +64,13 @@ export function ExpeditionApp() {
     const interval = setInterval(() => tick(), 1000);
     return () => clearInterval(interval);
   }, [tick]);
+
+  // Sync to Supabase periodically (every 30 seconds)
+  useEffect(() => {
+    syncToServer();
+    const syncInterval = setInterval(() => syncToServer(), 30000);
+    return () => clearInterval(syncInterval);
+  }, [syncToServer]);
 
   return (
     <div
