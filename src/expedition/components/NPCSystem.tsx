@@ -7,6 +7,7 @@ import {
   Hammer,
   User,
   Sword,
+  GraduationCap,
   X,
   MessageCircle,
   Coins,
@@ -19,7 +20,7 @@ import { Button } from '../ui';
 
 const roleIcons: Record<NpcRole, typeof Shield> = {
   researcher: FlaskConical,
-  guard: BookOpen,
+  guard: GraduationCap,
   archivist: BookOpen,
   restorer: Hammer,
   visitor: User,
@@ -36,7 +37,7 @@ function NpcMarker({ npc, onClick }: { npc: Npc; onClick: () => void }) {
       style={{ left: `${npc.x}%`, top: `${npc.y}%` }}
     >
       <motion.div
-        className="relative w-8 h-8 rounded-full flex items-center justify-center"
+        className="relative w-9 h-9 rounded-full flex items-center justify-center"
         style={{
           backgroundColor: `${color}22`,
           border: `1.5px solid ${color}`,
@@ -60,6 +61,51 @@ function NpcMarker({ npc, onClick }: { npc: Npc; onClick: () => void }) {
         style={{ color, backgroundColor: '#0D1117cc' }}
       >
         {npc.name}
+      </span>
+    </button>
+  );
+}
+
+function NpcCard({ npc, onClick }: { npc: Npc; onClick: () => void }) {
+  const Icon = roleIcons[npc.role];
+  const color = npcColors[npc.role];
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-2 p-2 rounded-xl border bg-[#0D1117]/70 text-left transition-colors hover:bg-[#0D1117]"
+      style={{ borderColor: `${color}55` }}
+    >
+      <span
+        className="relative w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+        style={{ backgroundColor: `${color}22`, border: `1px solid ${color}` }}
+      >
+        <Icon className="w-5 h-5" style={{ color }} />
+        {npc.working && (
+          <motion.span
+            className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full"
+            style={{ backgroundColor: '#10B981', boxShadow: '0 0 6px #10B981' }}
+            animate={{ opacity: [1, 0.3, 1] }}
+            transition={{ duration: 1.2, repeat: Infinity }}
+          />
+        )}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span
+          className="block text-xs truncate"
+          style={{ fontFamily: "'Exo 2', sans-serif", color: '#E6EDF3' }}
+        >
+          {npc.name}
+        </span>
+        <span className="block text-[10px] text-muted-foreground truncate">{npc.roleLabel}</span>
+      </span>
+      <span
+        className="text-[9px] px-1.5 py-0.5 rounded shrink-0"
+        style={{
+          color: npc.working ? '#10B981' : '#8B949E',
+          backgroundColor: npc.working ? '#10B98122' : '#30363D',
+        }}
+      >
+        {npc.working ? 'Працює' : 'Вільн.'}
       </span>
     </button>
   );
@@ -89,12 +135,41 @@ export function NPCSystem() {
   };
 
   return (
-    <>
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
+    <div className="relative z-10 mt-6">
+      <h2 className="text-lg mb-3" style={{ fontFamily: "'Exo 2', sans-serif" }}>
+        Мешканці академії
+      </h2>
+
+      {/* Animated courtyard scene */}
+      <div
+        className="relative h-40 rounded-2xl border border-white/10 overflow-hidden mb-3"
+        style={{
+          background:
+            'radial-gradient(120% 80% at 50% 0%, rgba(255,199,44,0.06), transparent 60%), linear-gradient(180deg, #161B22 0%, #0D1117 100%)',
+        }}
+      >
+        <div
+          className="absolute bottom-0 left-0 right-0 h-12"
+          style={{ background: 'linear-gradient(180deg, transparent, rgba(0,229,255,0.05))' }}
+        />
         {npcs.map((npc) => (
           <NpcMarker key={npc.id} npc={npc} onClick={() => open(npc)} />
         ))}
+        <span className="absolute top-1.5 right-2.5 text-[9px] text-muted-foreground">
+          Подвір'я
+        </span>
       </div>
+
+      {/* Reliable tappable roster */}
+      <div className="grid grid-cols-2 gap-2">
+        {npcs.map((npc) => (
+          <NpcCard key={npc.id} npc={npc} onClick={() => open(npc)} />
+        ))}
+      </div>
+
+      <p className="text-xs text-muted-foreground mt-3 text-center">
+        Натисніть на NPC, щоб поговорити, призначити на роботу та зібрати дохід.
+      </p>
 
       <AnimatePresence>
         {selected && (
@@ -106,7 +181,7 @@ export function NPCSystem() {
             onClick={() => setSelectedId(null)}
           >
             <motion.div
-              className="w-full max-w-sm bg-[#161B22] rounded-t-2xl border-t-2 p-4"
+              className="w-full max-w-sm bg-[#161B22] rounded-t-2xl border-t-2 p-4 mb-0"
               style={{ borderColor: color }}
               initial={{ y: 200 }}
               animate={{ y: 0 }}
@@ -193,6 +268,6 @@ export function NPCSystem() {
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 }

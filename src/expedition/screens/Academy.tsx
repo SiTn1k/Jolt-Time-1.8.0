@@ -133,10 +133,6 @@ export function Academy() {
             </motion.div>
           ))}
         </div>
-
-        <p className="text-xs text-muted-foreground mt-4 text-center">
-          Натисніть на NPC на території, щоб поговорити, призначити на роботу та зібрати дохід.
-        </p>
       </div>
 
       <NPCSystem />
