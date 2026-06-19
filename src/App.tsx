@@ -13,6 +13,7 @@ import { AdsGramButton } from './components/AdsGramButton';
 import { PrestigeButton, MuseumLaboratory } from './components/PrestigeSystem';
 import { SessionAdModal, ChestAdModal, EnergyRestoreAdButton, useSessionAdTrigger, useChestAdTrigger } from './components/AdSystem';
 import { OfflineRewardModal } from './components/OfflineRewardModal';
+import { ExpeditionApp } from './expedition/ExpeditionApp';
 import { EPOCHS, ARTIFACTS, getEpochById } from './data/epochs';
 import { initTelegramMiniApp, hapticImpact, hapticNotification, getTelegramWebApp, getTelegramUserId } from './lib/telegram';
 import { rpcTrackSession } from './lib/rpc';
@@ -254,6 +255,12 @@ function App() {
         )}
       </div>
     );
+  }
+
+  // After the 2nd rebirth (prestige), the player advances into the new
+  // "Historical Expedition" management game (the Figma redesign).
+  if ((state.prestigeLevel || 0) >= 2) {
+    return <ExpeditionApp />;
   }
 
   return (

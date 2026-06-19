@@ -1,6 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ── Expedition (Historical Academy) theme tokens ──────────────── */
+:root {
+  --exp-background: #0D1117;
+  --exp-foreground: #E6EDF3;
+  --exp-card: #161B22;
+  --exp-card-foreground: #E6EDF3;
+  --exp-primary: #FFC72C;
+  --exp-primary-foreground: #0D1117;
+  --exp-secondary: #1F2937;
+  --exp-secondary-foreground: #E6EDF3;
+  --exp-muted: #30363D;
+  --exp-muted-foreground: #8B949E;
+  --exp-accent: #00E5FF;
+  --exp-accent-foreground: #0D1117;
+  --exp-destructive: #FF2A5F;
+  --exp-destructive-foreground: #ffffff;
+  --exp-border: rgba(255, 255, 255, 0.1);
+  --exp-input: #161B22;
+  --exp-ring: #FFC72C;
+}
+
+.expedition-root {
+  font-family: 'Inter', sans-serif;
+}
+.expedition-root h1,
+.expedition-root h2,
+.expedition-root h3,
+.expedition-root h4 {
+  font-family: 'Exo 2', sans-serif;
+}
 
 @layer utilities {
   .animate-float-up {
