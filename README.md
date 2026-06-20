@@ -48,8 +48,8 @@ A Telegram Mini App game about Ukrainian history, where players collect artifact
 ### Prerequisites
 
 - Node.js 18+
-- Supabase CLI
 - Telegram Bot Token
+- (Optional) GitHub account for CI/CD
 
 ### Setup
 
@@ -61,7 +61,7 @@ npm install
 cp .env.example .env
 
 # Fill in your values:
-# VITE_SUPABASE_URL=https://your-project.supabase.co
+# VITE_SUPABASE_URL=https://iyxhzisfwcdfhuxuqxso.supabase.co
 # VITE_SUPABASE_ANON_KEY=your-anon-key
 # VITE_TELEGRAM_BOT_USERNAME=YourBotName
 
@@ -69,24 +69,25 @@ cp .env.example .env
 npm run dev
 ```
 
-### Database Setup
+### Database & Edge Functions Setup
 
+**Option 1: GitHub Actions (Recommended)**
+1. Follow [SETUP_GITHUB_SECRETS.md](./SETUP_GITHUB_SECRETS.md)
+2. Connect Supabase to GitHub
+3. Push to `fix/typescript-errors` → Automatic deploy!
+
+**Option 2: Manual via Supabase Dashboard**
+1. Open https://supabase.com/dashboard
+2. Go to SQL Editor → Run migrations in order
+3. Go to Edge Functions → Deploy each function
+
+**Option 3: Supabase CLI (requires local setup)**
 ```bash
-# Link Supabase project
-supabase link --project-ref your-project-ref
-
-# Push migrations
+npm install -g supabase
+supabase login
+supabase link --project-ref iyxhzisfwcdfhuxuqxso
 supabase db push
-```
-
-### Deploy Edge Functions
-
-```bash
-# Deploy all functions
 supabase functions deploy
-
-# Or deploy specific function
-supabase functions deploy expedition-sync
 ```
 
 ## 🔒 Security

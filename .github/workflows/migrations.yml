@@ -1,0 +1,35 @@
+name: Run Database Migrations
+
+on:
+  workflow_dispatch:
+    inputs:
+      migration_file:
+        description: 'Specific migration file to run (optional, empty = all)'
+        required: false
+        type: string
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        run: npm install -g supabase
+
+      - name: Link to Supabase project
+        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Run all migrations
+        if: github.event.inputs.migration_file == ''
+        run: supabase db push
+
+      - name: Run specific migration
+        if: github.event.inputs.migration_file != ''
+        run: |
+          echo "Running migration: ${{ github.event.inputs.migration_file }}"
+          psql "${{ secrets.SUPABASE_DB_URL }}" -f "supabase/migrations/${{ github.event.inputs.migration_file }}"
