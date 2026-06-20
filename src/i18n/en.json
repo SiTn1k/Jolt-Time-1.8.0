@@ -996,5 +996,20 @@
   "generator": {
     "production": "Production: {prod}/s",
     "next_production": "+{prod}/s"
+  },
+  "toast": {
+    "quest_completed": "Quest \"{{quest}}\" completed!",
+    "dialogue_unlocked": "New dialogue unlocked!",
+    "quest_available": "New quest available!",
+    "hero_unlocked": "Hero unlocked!",
+    "artifact_opened": "Artifact opened!",
+    "region_opened": "New region unlocked!",
+    "invalid_slot": "Invalid slot",
+    "slot_occupied": "Slot already occupied",
+    "artifact_not_found": "Artifact not found",
+    "artifact_not_in_museum": "Artifact must be in museum",
+    "artifact_exhibited": "Artifact exhibited!",
+    "npc_collect_nothing": "Nothing to collect yet",
+    "npc_collected": "{{name}}: +{{karb}} karb., +{{rep}} reputation"
   }
 }

@@ -1111,5 +1111,20 @@
   "generator": {
     "production": "Продукція: {prod}/с",
     "next_production": "+{prod}/с"
+  },
+  "toast": {
+    "quest_completed": "Квест \"{{quest}}\" виконано!",
+    "dialogue_unlocked": "Новий діалог відкрито!",
+    "quest_available": "Новий квест доступний!",
+    "hero_unlocked": "Герой розблоковано!",
+    "artifact_opened": "Артефакт відкрито!",
+    "region_opened": "Новий регіон відкрито!",
+    "invalid_slot": "Невірний слот",
+    "slot_occupied": "Слот вже зайнятий",
+    "artifact_not_found": "Артефакт не знайдено",
+    "artifact_not_in_museum": "Артефакт повинен бути в музеї",
+    "artifact_exhibited": "Артефакт виставлено!",
+    "npc_collect_nothing": "Поки нічого збирати",
+    "npc_collected": "{{name}}: +{{karb}} карб., +{{rep}} репутації"
   }
 }
