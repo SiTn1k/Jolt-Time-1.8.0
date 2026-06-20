@@ -80,7 +80,12 @@
     "achievements": "Досягнення",
     "exhibition_events": "Виставкові події",
     "exhibition_events_desc": "Беріть участь у подіях з обмеженим часом для отримання ексклюзивних нагород та бонусів.",
-    "your_rank": "Ваш ранг"
+    "your_rank": "Ваш ранг",
+    "unlocked": "Відкрито",
+    "locked": "Заблоковано",
+    "active": "Активна",
+    "secret_achievement": "Секретне досягнення",
+    "event_suffix": "Подія"
   },
   "npc": {
     "courtyard": "Подвір'я",
@@ -123,7 +128,8 @@
     "reward_artifact": "Новий артефакт",
     "reward_region": "Відкрито регіон",
     "claim": "Отримати",
-    "story_npcs": "Сюжетні NPC"
+    "story_npcs": "Сюжетні NPC",
+    "reputation": "Репутація"
   },
   "quest": {
     "quests": "Квести",
@@ -738,5 +744,10 @@
   "story": {
     "story_system": "Система історії",
     "npcs_quests": "NPC та квести"
+  },
+  "heroes": {
+    "artifact": "Артефакт",
+    "speed": "Швидкість",
+    "biography": "Біографія"
   }
 }

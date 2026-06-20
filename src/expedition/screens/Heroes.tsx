@@ -154,12 +154,12 @@ export function Heroes() {
               <div className="text-center p-2 rounded" style={{ backgroundColor: 'rgba(255, 199, 44, 0.1)' }}>
                 <Target className="w-4 h-4 mx-auto mb-1" style={{ color: '#FFC72C' }} />
                 <div className="text-lg font-bold" style={{ color: '#FFC72C' }}>+{selectedHero.artifactBonus}%</div>
-                <div className="text-[10px] text-muted-foreground">Artifact</div>
+                <div className="text-[10px] text-muted-foreground">{t('heroes.artifact')}</div>
               </div>
               <div className="text-center p-2 rounded" style={{ backgroundColor: 'rgba(0, 229, 255, 0.1)' }}>
                 <Clock className="w-4 h-4 mx-auto mb-1" style={{ color: '#00E5FF' }} />
                 <div className="text-lg font-bold" style={{ color: '#00E5FF' }}>+{selectedHero.speedBonus}%</div>
-                <div className="text-[10px] text-muted-foreground">Speed</div>
+                <div className="text-[10px] text-muted-foreground">{t('heroes.speed')}</div>
               </div>
               <div className="text-center p-2 rounded" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
                 <Zap className="w-4 h-4 mx-auto mb-1" style={{ color: '#10B981' }} />
@@ -189,7 +189,7 @@ export function Heroes() {
           </Card>
 
           <Card className="border-white/10 p-4 mb-4">
-            <h3 className="text-sm mb-2" style={{ fontFamily: "'Exo 2', sans-serif" }}>Biography</h3>
+            <h3 className="text-sm mb-2" style={{ fontFamily: "'Exo 2', sans-serif" }}>{t('heroes.biography')}</h3>
             <p className="text-sm leading-relaxed text-muted-foreground">{selectedHero.biography}</p>
           </Card>
 

@@ -705,7 +705,7 @@ function StatsTab({
 
 // Achievements Tab Component
 function AchievementsTab({ museumState, museumArtifacts }: { museumState: any; museumArtifacts: Artifact[] }) {
-  useTranslation();
+  const { t } = useTranslation();
   const unlockedIds = museumState.achievements || [];
   
   const getProgress = (achievement: any) => {
@@ -727,13 +727,13 @@ function AchievementsTab({ museumState, museumArtifacts }: { museumState: any; m
           <div className="text-2xl font-bold" style={{ color: '#FFC72C' }}>
             {unlockedIds.length}
           </div>
-          <div className="text-xs text-muted-foreground">Unlocked</div>
+          <div className="text-xs text-muted-foreground">{t('museum.unlocked')}</div>
         </Card>
         <Card className="border-white/10 p-3 text-center">
           <div className="text-2xl font-bold" style={{ color: '#9747FF' }}>
             {MUSEUM_ACHIEVEMENTS.length - unlockedIds.length}
           </div>
-          <div className="text-xs text-muted-foreground">Locked</div>
+          <div className="text-xs text-muted-foreground">{t('museum.locked')}</div>
         </Card>
       </div>
 
@@ -755,10 +755,10 @@ function AchievementsTab({ museumState, museumArtifacts }: { museumState: any; m
               </div>
               <div className="flex-1">
                 <h3 className={`text-sm font-medium ${!isUnlocked && achievement.secret ? 'text-gray-500' : ''}`}>
-                  {isUnlocked || !achievement.secret ? achievement.nameKey.split('.').pop() : '???'}
+                  {isUnlocked || !achievement.secret ? t(achievement.nameKey) : '???'}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {isUnlocked || !achievement.secret ? achievement.descriptionKey.split('.').pop() : 'Secret achievement'}
+                  {isUnlocked || !achievement.secret ? t(achievement.descriptionKey) : t('museum.secret_achievement')}
                 </p>
                 {!isUnlocked && !achievement.secret && (
                   <div className="mt-2">
@@ -831,16 +831,16 @@ function EventsTab({ museumState }: { museumState: any }) {
                   <span className="text-2xl">{event.theme === 'gold' ? '👑' : event.theme === 'warrior' ? '⚔️' : '🏺'}</span>
                   <div>
                     <h3 className="text-sm font-medium">
-                      {event.nameKey.split('.').pop()}
+                      {t(event.nameKey)}
                     </h3>
                     <p className="text-xs text-muted-foreground">
-                      {event.nameKey.split('.').pop()} Event
+                      {t(event.nameKey)} {t('museum.event_suffix')}
                     </p>
                   </div>
                 </div>
                 {isActive && (
                   <Badge style={{ backgroundColor: '#9747FF', color: '#fff' }}>
-                    Active
+                    {t('museum.active')}
                   </Badge>
                 )}
               </div>
@@ -903,10 +903,10 @@ function EventsTab({ museumState }: { museumState: any }) {
               </div>
               <div className="flex-1">
                 <h3 className="text-sm font-medium">
-                  {exhibition.nameKey.split('.').pop()}
+                  {t(exhibition.nameKey)}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {exhibition.descriptionKey.split('.').pop()}
+                  {t(exhibition.descriptionKey)}
                 </p>
                 
                 {/* Requirements */}

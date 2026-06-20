@@ -149,7 +149,12 @@
     "collection_scythia": "Scythian Collection",
     "collection_kyiv_rus": "Kyiv Rus Collection",
     "collection_cossack": "Cossack Collection",
-    "collection_independence": "Independence Collection"
+    "collection_independence": "Independence Collection",
+    "unlocked": "Unlocked",
+    "locked": "Locked",
+    "active": "Active",
+    "secret_achievement": "Secret achievement",
+    "event_suffix": "Event"
   },
   "npc": {
     "courtyard": "Courtyard",
@@ -611,5 +616,10 @@
     "watch_ad": "Watch Ad",
     "reward_ready": "Reward ready!",
     "boost_active": "Boost active"
+  },
+  "heroes": {
+    "artifact": "Artifact",
+    "speed": "Speed",
+    "biography": "Biography"
   }
 }
