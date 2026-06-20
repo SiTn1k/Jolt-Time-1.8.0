@@ -463,18 +463,23 @@
     "offline_ad_desc": "x2 bonus for watching ad"
   },
   "referrals": {
-    "title": "Referrals",
     "invite_friends": "Invite Friends",
-    "your_code": "Your Invite Code",
-    "copy_code": "Copy Code",
-    "code_copied": "Code copied!",
-    "share_link": "Share Link",
-    "referrals_count": "Referrals",
-    "referral_earnings": "Referral Earnings",
-    "how_it_works": "How It Works",
-    "step1": "Share your invite code",
-    "step2": "Friend uses code during registration",
-    "step3": "Get bonuses for each friend"
+    "reward_per_friend": "Get 100 {icon} for each friend",
+    "share_link": "Share link — get a reward!",
+    "friend_bonus": "Friend gets 50 {icon} bonus on registration",
+    "invited": "Invited",
+    "earned": "Earned {icon}",
+    "share_telegram": "Share in Telegram",
+    "share_threads": "Share in Threads",
+    "copy_link": "Copy link",
+    "copied": "Copied!",
+    "leaderboard": "Leaderboard",
+    "your_place": "Your place: {rank}",
+    "loading": "Loading...",
+    "no_players": "No players yet",
+    "be_first": "Be the first!",
+    "player": "Player",
+    "level": "Level {level}"
   },
   "daily_rewards": {
     "title": "Daily Rewards",
@@ -486,14 +491,12 @@
     "come_back_tomorrow": "Come back tomorrow!"
   },
   "daily_tasks": {
-    "title": "Daily Tasks",
-    "tasks_completed": "Tasks Completed",
-    "claim_task": "Claim",
-    "task_tap": "Tap {count} times",
-    "task_buy_generator": "Buy a Generator",
-    "task_open_gacha": "Open Chest",
-    "task_upgrade_tap": "Upgrade Tap Power",
-    "task_earn_xp": "Earn {count} XP"
+    "loading": "Loading tasks...",
+    "checkin": "📥 Check-in: {streak} {days} in a row",
+    "record": "Record: 🔥 {streak} {days}",
+    "day": "day",
+    "days": "days",
+    "days_many": "days"
   },
   "streak": {
     "daily_bonus_received": "Daily bonus received",
@@ -511,16 +514,24 @@
     "loading": "Loading leaderboard..."
   },
   "tutorial": {
-    "welcome": "Welcome to Jolt Time!",
-    "step1_title": "Tap and Earn XP",
-    "step1_desc": "Tap the screen to earn experience and level up",
-    "step2_title": "Buy Generators",
-    "step2_desc": "Generators automatically earn XP even when you're not tapping",
-    "step3_title": "Unlock New Epochs",
-    "step3_desc": "Complete levels to unlock new historical epochs of Ukraine",
-    "step4_title": "Collect Artifacts",
-    "step4_desc": "Artifacts give permanent bonuses to XP and currency",
-    "got_it": "Got It!"
+    "welcome_title": "Welcome!",
+    "welcome_content": "This is \"Ukraine Through Time\" — a journey through 12 epochs of Ukrainian history. Tap to earn XP!",
+    "generators_title": "Generators",
+    "generators_content": "Buy generators in the shop — they automatically earn XP every second. Higher level generators mean more income.",
+    "artifacts_title": "Artifacts",
+    "artifacts_content": "Open artifact chests. Collect parts and get bonuses to XP, currency, and passive income!",
+    "expeditions_title": "Expeditions",
+    "expeditions_content": "Send heroes on expeditions! Find ancient artifacts and increase your Prestige. This is the key to victory!",
+    "prestige_title": "Prestige",
+    "prestige_content": "Collect artifacts and increase Prestige! Every 500 Prestige — new reward. At 3000 — Historical Academy unlocks!",
+    "academy_title": "Historical Academy",
+    "academy_content": "The goal of the game is to reach the Historical Academy! Collect artifacts, go on expeditions, discover new opportunities.",
+    "boosters_title": "Boosters",
+    "boosters_content": "Watch ads for rewards! XP boost, currency, acceleration — all free and optional.",
+    "back": "Back",
+    "start_game": "Start Game",
+    "next": "Next",
+    "skip_tutorial": "Skip Tutorial"
   },
   "expedition": {
     "academy_unlock_title": "Academy Timeline Unlocked",
@@ -776,13 +787,11 @@
     "not_enough": "Not Enough"
   },
   "daily": {
-    "daily_tasks": "Daily Tasks",
-    "tasks_loading": "Loading tasks...",
-    "daily_reward": "Daily Reward",
-    "reward_received": "Reward received!",
-    "day_reward": "Day {day} — Your Reward",
-    "claim_reward": "Claim Reward!",
-    "skip_info": "Missing a day resets your streak. Day 7 guarantees a gacha ticket!"
+    "gacha_ticket": "Gacha ticket",
+    "super_boost": "Super boost",
+    "series": "Series: {streak} {days} in a row",
+    "coins": "Coins",
+    "close": "Close"
   },
   "referral": {
     "invite_friends": "Invite Friends",
@@ -803,10 +812,11 @@
     "cost": "cost"
   },
   "duplicate": {
-    "progress_loss": "• Loss of expedition progress",
-    "double_rewards": "• Double rewards",
-    "incorrect_save": "• Incorrect save",
-    "data_loss": "• Data loss"
+    "warning_title": "⚠️ Opening the game in multiple tabs may lead to:",
+    "expedition_loss": "Loss of expedition progress",
+    "double_rewards": "Double rewards",
+    "save_error": "Incorrect save",
+    "data_loss": "Data loss"
   },
   "error": {
     "telegram_stars_app_only": "Telegram Stars only available in Telegram app",
@@ -869,5 +879,74 @@
       "name": "Developer Support",
       "description": "Thank you! +5000 XP immediately"
     }
+  },
+  "expedition_toasts": {
+    "quest_completed": "Quest \"{title}\" completed!",
+    "new_dialog": "New dialog opened!",
+    "new_quest": "New quest available!",
+    "hero_unlocked": "Hero {heroId} unlocked!",
+    "artifact_opened": "Artifact {artifactId} opened!",
+    "region_opened": "New region {regionId} opened!",
+    "upgrade_updated": "{name} upgraded!",
+    "new_slot": "📍 New slot opened!",
+    "expedition_started": "Expedition to «{region}» started",
+    "expedition_failed": "Expedition failed. +{reward} carb.",
+    "restoration_started": "Restoration of «{name}» started",
+    "exhibit_added": "«{name}» displayed in museum (+{prestige} prestige)",
+    "npc_reward": "{npc}: +{karb} carb., +{rep} reputation"
+  },
+  "ad_system": {
+    "sdk_not_loaded": "AdsGram SDK not loaded",
+    "auth_error": "Authorization error",
+    "ad_not_completed": "Ad not completed",
+    "ad_load_error": "Failed to load ad",
+    "watch_ad": "Watch ad",
+    "later": "Later",
+    "chests_opened": "Great! Opened {count} chests",
+    "bonus_every_10": "Get bonus for opening every 10th chest!",
+    "energy": "+10 Energy",
+    "rare_chance": "+5% rare chance",
+    "next_tap": "Next tap",
+    "for_next_chest": "For next chest",
+    "get_bonus": "Get bonus",
+    "skip": "Skip",
+    "use_taps_x5": "Use taps for x5 boost",
+    "limit_exceeded": "Limit exceeded",
+    "limit_note": "{current}/{max} today",
+    "restore_energy": "Restore energy",
+    "energy_per_ad": "+{amount} energy per ad",
+    "energy_amount": "+{amount} Energy",
+    "remaining_today": "{remaining}/{max} today",
+    "limit_reached": "Limit reached"
+  },
+  "ads_limit": "Limit reached",
+  "gacha": {
+    "telegram_id_error": "Error: No Telegram ID",
+    "open_failed": "Failed to open chest",
+    "congrats": "Congratulations!",
+    "error": "Error",
+    "chest": "Chest: {name}",
+    "cost": "Cost: {cost} {icon}",
+    "opening": "Opening chest...",
+    "found_artifacts": "Found {count} artifacts!",
+    "server_reward": "Server determining reward...",
+    "duplicate": "Duplicate! +{parts} fragments",
+    "fragments": "{current}/{max} fragments",
+    "to_xp": "to XP",
+    "to_currency": "to currency",
+    "to_passive": "to passive",
+    "no_artifacts": "No available artifacts for this epoch",
+    "open_chest": "Open chest",
+    "need_more": "Need {cost} more {icon}",
+    "odds": "Odds: Common 60% | Rare 25% | Epic 10% | Legendary 4%",
+    "odds_secret": " | Secret 1%",
+    "wait": "Please wait...",
+    "try_again": "Try again",
+    "close": "Close",
+    "again": "Again"
+  },
+  "generator": {
+    "production": "Production: {prod}/s",
+    "next_production": "+{prod}/s"
   }
 }

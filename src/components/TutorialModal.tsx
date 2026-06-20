@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, ChevronLeft, ChevronRight, Target, ShoppingBag, Gift, Zap, BookOpen, Map, Award, Crown } from 'lucide-react';
 import { hapticImpact } from '../lib/telegram';
+import { useTranslation } from '../i18n';
 
 interface TutorialModalProps {
   onClose: () => void;
@@ -9,42 +10,43 @@ interface TutorialModalProps {
 const STEPS = [
   {
     icon: <Target className="w-16 h-16 text-yellow-400" />,
-    title: 'Ласкаво просимо!',
-    content: 'Це гра "Україна Крізь Час" — подорож 12 епохами української історії. Тапайте, щоб заробляти XP!',
+    titleKey: 'tutorial.welcome_title',
+    contentKey: 'tutorial.welcome_content',
   },
   {
     icon: <ShoppingBag className="w-16 h-16 text-green-400" />,
-    title: 'Генератори',
-    content: 'Купуйте генератори в магазині — вони автоматично приносять XP кожну секунду. Чим вище рівень генератора, тим більше дохід.',
+    titleKey: 'tutorial.generators_title',
+    contentKey: 'tutorial.generators_content',
   },
   {
     icon: <Gift className="w-16 h-16 text-purple-400" />,
-    title: 'Артефакти',
-    content: 'Відкривайте скрині з артефактами. Збирайте частини та отримуйте бонуси до XP, валюти та пасивного доходу!',
+    titleKey: 'tutorial.artifacts_title',
+    contentKey: 'tutorial.artifacts_content',
   },
   {
     icon: <Map className="w-16 h-16 text-cyan-400" />,
-    title: 'Експедиції',
-    content: 'Відправляйте героїв у експедиції! Знаходьте стародавні артефакти та збільшуйте свій Престиж. Це ключ до перемоги!',
+    titleKey: 'tutorial.expeditions_title',
+    contentKey: 'tutorial.expeditions_content',
   },
   {
     icon: <Award className="w-16 h-16 text-amber-400" />,
-    title: 'Престиж',
-    content: 'Збирайте артефакти та збільшуйте Престиж! Кожні 500 Престижу — нова нагорода. На 3000 — відкривається Історична Академія!',
+    titleKey: 'tutorial.prestige_title',
+    contentKey: 'tutorial.prestige_content',
   },
   {
     icon: <Crown className="w-16 h-16 text-red-400" />,
-    title: 'Історична Академія',
-    content: 'Мета гри — досягти Історичної Академії! Збирайте артефакти, проходьте експедиції, відкривайте нові можливості.',
+    titleKey: 'tutorial.academy_title',
+    contentKey: 'tutorial.academy_content',
   },
   {
     icon: <Zap className="w-16 h-16 text-yellow-400" />,
-    title: 'Бустери',
-    content: 'Дивіться рекламу за нагороди! XP буст, валюта, прискорення — все безкоштовно та добровільно.',
+    titleKey: 'tutorial.boosters_title',
+    contentKey: 'tutorial.boosters_content',
   },
 ];
 
 export function TutorialModal({ onClose }: TutorialModalProps) {
+  const { t } = useTranslation();
   const [step, setStep] = useState(0);
 
   const handleNext = () => {
@@ -88,12 +90,12 @@ export function TutorialModal({ onClose }: TutorialModalProps) {
 
           {/* Title */}
           <h2 className="text-xl font-bold text-white mb-3">
-            {currentStep.title}
+            {t(currentStep.titleKey)}
           </h2>
 
           {/* Content */}
           <p className="text-gray-400 text-sm leading-relaxed mb-6">
-            {currentStep.content}
+            {t(currentStep.contentKey)}
           </p>
 
           {/* Progress dots */}
@@ -116,7 +118,7 @@ export function TutorialModal({ onClose }: TutorialModalProps) {
                 className="flex-1 py-3 rounded-xl bg-gray-700 text-white font-medium hover:bg-gray-600 transition-all active:scale-95 flex items-center justify-center gap-2"
               >
                 <ChevronLeft size={18} />
-                Назад
+                {t('tutorial.back')}
               </button>
             )}
             <button
@@ -126,11 +128,11 @@ export function TutorialModal({ onClose }: TutorialModalProps) {
               {step === STEPS.length - 1 ? (
                 <>
                   <BookOpen size={18} />
-                  Почати гру
+                  {t('tutorial.start_game')}
                 </>
               ) : (
                 <>
-                  Далі
+                  {t('tutorial.next')}
                   <ChevronRight size={18} />
                 </>
               )}
@@ -142,7 +144,7 @@ export function TutorialModal({ onClose }: TutorialModalProps) {
             onClick={handleSkip}
             className="mt-4 text-xs text-gray-500 hover:text-gray-400 transition-colors"
           >
-            Пропустити туторіал
+            {t('tutorial.skip_tutorial')}
           </button>
         </div>
       </div>

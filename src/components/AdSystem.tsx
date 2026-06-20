@@ -31,13 +31,13 @@ export function SessionAdModal({ prestigeLevel, onReward, onClose }: SessionAdMo
   const handleWatchAd = useCallback(async () => {
     const controller = controllerRef.current;
     if (!controller) {
-      setError('AdsGram SDK не завантажено');
+      setError(t('ad_system.sdk_not_loaded'));
       return;
     }
 
     const telegramId = getTelegramUserId();
     if (!telegramId) {
-      setError('Помилка авторизації');
+      setError(t('ad_system.auth_error'));
       return;
     }
 
@@ -58,12 +58,12 @@ export function SessionAdModal({ prestigeLevel, onReward, onClose }: SessionAdMo
         }
         onClose();
       } else {
-        setError('Рекламу не завершено');
+        setError(t('ad_system.ad_not_completed'));
         hapticNotification('warning');
       }
     } catch (err) {
       console.error('Session ad error:', err);
-      setError('Не вдалося завантажити рекламу');
+      setError(t('ad_system.ad_load_error'));
       hapticNotification('error');
     } finally {
       setIsLoading(false);
@@ -121,7 +121,7 @@ export function SessionAdModal({ prestigeLevel, onReward, onClose }: SessionAdMo
             ) : (
               <>
                 <Gift className="w-5 h-5" />
-                <span>Дивитись рекламу</span>
+                <span>{t('ad_system.watch_ad')}</span>
               </>
             )}
           </button>
@@ -130,7 +130,7 @@ export function SessionAdModal({ prestigeLevel, onReward, onClose }: SessionAdMo
             onClick={onClose}
             className="w-full py-2 mt-2 text-gray-400 text-sm hover:text-white transition-colors"
           >
-            Пізніше
+            {t('ad_system.later')}
           </button>
         </div>
       </div>
@@ -163,7 +163,7 @@ export function ChestAdModal({ prestigeLevel, chestsOpened, onReward, onClose }:
   const handleWatchAd = useCallback(async () => {
     const controller = controllerRef.current;
     if (!controller) {
-      setError('AdsGram SDK не завантажено');
+      setError(t('ad_system.sdk_not_loaded'));
       return;
     }
 
@@ -183,12 +183,12 @@ export function ChestAdModal({ prestigeLevel, chestsOpened, onReward, onClose }:
         }
         onClose();
       } else {
-        setError('Рекламу не завершено');
+        setError(t('ad_system.ad_not_completed'));
         hapticNotification('warning');
       }
     } catch (err) {
       console.error('Chest ad error:', err);
-      setError('Не вдалося завантажити рекламу');
+      setError(t('ad_system.ad_load_error'));
       hapticNotification('error');
     } finally {
       setIsLoading(false);
@@ -242,13 +242,13 @@ export function ChestAdModal({ prestigeLevel, chestsOpened, onReward, onClose }:
             ) : (
               <>
                 <Gift className="w-5 h-5" />
-                <span>Отримати бонус</span>
+                <span>{t('ad_system.get_bonus')}</span>
               </>
             )}
           </button>
 
           <button onClick={onClose} className="w-full py-2 text-gray-400 text-sm hover:text-white transition-colors">
-            Пропустити
+            {t('ad_system.skip')}
           </button>
         </div>
       </div>
@@ -330,13 +330,13 @@ export function EnergyRestoreAdButton({
   const handleWatchAd = useCallback(async () => {
     const controller = controllerRef.current;
     if (!controller) {
-      setError('AdsGram SDK не завантажено');
+      setError(t('ad_system.sdk_not_loaded'));
       return;
     }
 
     const telegramId = getTelegramUserId();
     if (!telegramId) {
-      setError('Помилка авторизації');
+      setError(t('ad_system.auth_error'));
       return;
     }
 
@@ -365,16 +365,16 @@ export function EnergyRestoreAdButton({
           onEnergyRestored(data.new_value - currentEnergy); // Actual restored amount
           onAdUsed();
         } else {
-          setError(data.error || 'Ліміт вичерпано');
+          setError(data.error || t('ad_system.limit_reached'));
           hapticNotification('warning');
         }
       } else {
-        setError('Рекламу не завершено');
+        setError(t('ad_system.ad_not_completed'));
         hapticNotification('warning');
       }
     } catch (err) {
       console.error('Energy ad error:', err);
-      setError('Не вдалося завантажити рекламу');
+      setError(t('ad_system.ad_load_error'));
       hapticNotification('error');
     } finally {
       setIsLoading(false);
@@ -390,7 +390,7 @@ export function EnergyRestoreAdButton({
           <Battery className="w-5 h-5 text-blue-400" />
         </div>
         <div className="flex-1">
-          <div className="text-white font-medium text-sm">Відновити енергію</div>
+          <div className="text-white font-medium text-sm">{t('ad_system.restore_energy')}</div>
           <div className="text-xs text-blue-400/80">+{ENERGY_RESTORE_AMOUNT} енергії за рекламу</div>
         </div>
       </div>
