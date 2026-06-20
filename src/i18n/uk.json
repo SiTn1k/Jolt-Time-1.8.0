@@ -110,7 +110,14 @@
     },
     "relationship": "Відносини",
     "trust_points": "Точки довіри",
-    "level": "Рівень"
+    "level": "Рівень",
+    "reward_available": "Нагорода доступна!",
+    "reward_dialogue": "Новий діалог",
+    "reward_quest": "Новий квест",
+    "reward_hero": "Розблоковано героя",
+    "reward_artifact": "Новий артефакт",
+    "reward_region": "Відкрито регіон",
+    "claim": "Отримати"
   },
   "quest": {
     "quests": "Квести",
@@ -349,12 +356,11 @@
   },
   "daily_rewards": {
     "title": "Щоденні нагороди",
-    "check_in": "Щоденний вхід",
-    "claim_reward": "Забрати нагороду",
-    "day": "День {day}",
-    "streak": "Серія {count} днів",
-    "already_claimed": "Вже забрано сьогодні",
-    "come_back_tomorrow": "Повертайся завтра!"
+    "claim": "Забрати",
+    "claimed": "Забрано",
+    "streak": "Серія",
+    "day": "День",
+    "coming_back": "Повертайся завтра!"
   },
   "daily_tasks": {
     "title": "Щоденні завдання",
@@ -374,13 +380,18 @@
     "streak_reward": "Нагорода за серію!"
   },
   "leaderboard": {
-    "title": "Таблиця лідерів",
+    "title": "Рейтинг",
+    "global": "Глобальний",
+    "weekly": "Тижневий",
+    "friends": "Друзі",
     "rank": "Місце",
-    "your_rank": "Ваше місце",
     "player": "Гравець",
-    "level": "Рівень",
-    "total_xp": "Всього XP",
-    "loading": "Завантаження таблиці..."
+    "score": "Очки",
+    "prestige": "Престиж",
+    "reputation": "Репутація",
+    "artifacts": "Артефакти",
+    "hero_power": "Сила героїв",
+    "empty": "Немає даних"
   },
   "tutorial": {
     "welcome": "Ласкаво просимо до Jolt Time!",
@@ -461,7 +472,31 @@
     "exhibitions": "Виставки",
     "museum_income": "Пасивний дохід",
     "treasury_title": "Скарбниця",
-    "resources": "Ресурси"
+    "resources": "Ресурси",
+    "daily_rewards": "Щоденні Нагороди",
+    "daily_streak": "Поточна серія",
+    "daily_days": "днів",
+    "daily_best": "Рекорд",
+    "daily_day": "День",
+    "daily_claim": "Отримати нагороду",
+    "daily_next_reward": "Наступна нагорода через",
+    "daily_calendar": "Календар нагород",
+    "daily_total_claimed": "Всього отримано",
+    "daily_longest_streak": "Найдовша серія",
+    "daily_reward_start": "Почніть свою серію сьогодні!",
+    "daily_reward_first": "Перша нагорода отримана!",
+    "daily_reward_streak": "Серія: {count} днів!",
+    "leaderboard_global": "Глобальний",
+    "leaderboard_weekly": "Тижневий",
+    "leaderboard_metric_prestige": "Престиж",
+    "leaderboard_metric_reputation": "Репутація",
+    "leaderboard_metric_artifacts": "Артефакти",
+    "leaderboard_metric_hero_power": "Сила героїв",
+    "leaderboard_your_rank": "Ваше місце",
+    "leaderboard_top_players": "Топ гравці",
+    "leaderboard_play_more": "Грайте більше, щоб потрапити в рейтинг!",
+    "leaderboard_refresh": "Оновити",
+    "leaderboard_no_data": "Немає даних для цього рейтингу"
   },
   "academy_unlock": {
     "title": "Академія Часу Відкрита!",
@@ -496,20 +531,6 @@
     "upgrade": "Покращити",
     "not_enough": "Недостатньо"
   },
-  "leaderboard": {
-    "title": "Рейтинг",
-    "global": "Глобальний",
-    "weekly": "Тижневий",
-    "friends": "Друзі",
-    "rank": "Місце",
-    "player": "Гравець",
-    "score": "Очки",
-    "prestige": "Престиж",
-    "reputation": "Репутація",
-    "artifacts": "Артефакти",
-    "hero_power": "Сила героїв",
-    "empty": "Немає даних"
-  },
   "events": {
     "title": "Події",
     "active": "Активні",
@@ -519,14 +540,6 @@
     "progress": "Прогрес",
     "rewards": "Нагороди",
     "time_left": "Залишилось"
-  },
-  "daily_rewards": {
-    "title": "Щоденні нагороди",
-    "claim": "Забрати",
-    "claimed": "Забрано",
-    "streak": "Серія",
-    "day": "День",
-    "coming_back": "Повертайся завтра!"
   },
   "npc_rewards": {
     "title": "Нагороди NPC",

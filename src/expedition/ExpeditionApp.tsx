@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Building2, Map, Users, FlaskConical, Landmark, Shield, HardHat } from 'lucide-react';
+import { Building2, Map, Users, FlaskConical, Landmark, HardHat, Gift } from 'lucide-react';
 import { useExpeditionStore } from './store';
 import { useAcademySync } from './expeditionSync';
 import { Academy } from './screens/Academy';
@@ -10,8 +10,9 @@ import { Laboratory } from './screens/Laboratory';
 import { Museum } from './screens/Museum';
 import { Treasury } from './screens/Treasury';
 import { Buildings } from './screens/Buildings';
+import { DailyRewards } from './screens/DailyRewards';
 
-type ScreenId = 'academy' | 'map' | 'heroes' | 'laboratory' | 'museum' | 'treasury' | 'buildings';
+type ScreenId = 'academy' | 'map' | 'heroes' | 'laboratory' | 'museum' | 'treasury' | 'buildings' | 'daily';
 
 const navigation: { id: ScreenId; name: string; icon: typeof Map }[] = [
   { id: 'academy', name: 'Академія', icon: Building2 },
@@ -19,7 +20,7 @@ const navigation: { id: ScreenId; name: string; icon: typeof Map }[] = [
   { id: 'heroes', name: 'Герої', icon: Users },
   { id: 'laboratory', name: 'Лаб', icon: FlaskConical },
   { id: 'museum', name: 'Музей', icon: Landmark },
-  { id: 'treasury', name: 'Скарб', icon: Shield },
+  { id: 'daily', name: 'Нагороди', icon: Gift },
   { id: 'buildings', name: 'Будівлі', icon: HardHat },
 ];
 
@@ -94,6 +95,7 @@ export function ExpeditionApp() {
         {screen === 'heroes' && <Heroes />}
         {screen === 'laboratory' && <Laboratory />}
         {screen === 'museum' && <Museum />}
+        {screen === 'daily' && <DailyRewards />}
         {screen === 'treasury' && <Treasury />}
         {screen === 'buildings' && <Buildings />}
       </div>

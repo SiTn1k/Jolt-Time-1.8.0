@@ -13,6 +13,7 @@
 
 // ═══════════════════════════════════════════════════════════════════════
 // COLLECTIONS
+import { MUSEUM_INCOME_MULTIPLIER } from './balanceConfig';
 // ═══════════════════════════════════════════════════════════════════════
 
 export interface Collection {
@@ -568,7 +569,7 @@ export function calculateMuseumIncome(museumState: MuseumState, exhibitedArtifac
   const repLevel = getReputationLevel(museumState.reputation);
   const restorationBonus = 1 + (museumState.upgrades.restoration_wing * museumUpgrades[3].effects.find(e => e.type === 'income')!.value / 100);
   const collectionBonus = 1 + (museumState.completedCollections.length * 5 / 100);
-  const income = Math.floor(baseIncome * repLevel.incomeMultiplier * restorationBonus * collectionBonus);
+  const income = Math.floor(baseIncome * repLevel.incomeMultiplier * restorationBonus * collectionBonus * MUSEUM_INCOME_MULTIPLIER);
   return Math.max(10, income);
 }
 

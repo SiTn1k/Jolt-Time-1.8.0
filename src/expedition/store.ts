@@ -29,6 +29,11 @@ import {
   storyNpcs,
   RelationshipLevel,
 } from './storyData';
+import {
+  QUEST_REWARD_MULTIPLIER,
+  EXPEDITION_REWARD_MULTIPLIER,
+  BUILDING_COST_MULTIPLIER,
+} from './balanceConfig';
 
 const rarityRank: Record<Rarity, number> = {
   common: 0,
@@ -269,18 +274,19 @@ export const useExpeditionStore = create<GameState>()(
         const quest = storyQuests.find(q => q.id === questId);
         if (!quest) return;
 
-        // Grant rewards before removing from active
+        // Grant rewards with QUEST_REWARD_MULTIPLIER applied
         quest.rewards.forEach(reward => {
+          const amount = Math.floor(reward.amount * QUEST_REWARD_MULTIPLIER);
           switch (reward.type) {
             case 'karbovanets':
-              get().addKarbovanets(reward.amount);
+              get().addKarbovanets(amount);
               break;
             case 'xp':
             case 'academy_xp':
               // Grant XP (not implemented yet)
               break;
             case 'reputation':
-              set(st => ({ reputation: st.reputation + reward.amount }));
+              set(st => ({ reputation: st.reputation + amount }));
               break;
             case 'artifact':
               // Grant artifact by ID
@@ -561,7 +567,9 @@ export const useExpeditionStore = create<GameState>()(
         if (!building) return false;
         
         const currentLevel = s.buildingLevels[buildingId] || 1;
-        const cost = Math.round(building.upgradeCost * Math.pow(1.5, currentLevel));
+        // Apply BUILDING_COST_MULTIPLIER (0.8 = 20% discount)
+        const baseCost = Math.round(building.upgradeCost * Math.pow(1.5, currentLevel));
+        const cost = Math.round(baseCost * BUILDING_COST_MULTIPLIER);
         const upgradeTime = Math.round(building.upgradeTime * Math.pow(1.3, currentLevel) * 1000);
         
         if (!s.spendKarbovanets(cost)) {
@@ -685,6 +693,11 @@ export const useExpeditionStore = create<GameState>()(
         const success = Math.random() * 100 <= exp.successChance;
         const updates: Partial<GameState> = {};
 
+        // Apply EXPEDITION_REWARD_MULTIPLIER to rewards
+        const finalReward = Math.floor(exp.rewardKarbovanets * EXPEDITION_REWARD_MULTIPLIER);
+        const finalReputation = Math.floor(exp.rewardReputation * EXPEDITION_REWARD_MULTIPLIER);
+        const failureReward = Math.round(finalReward * 0.2);
+
         set((st) => {
           // free heroes + grant xp
           const heroes = st.heroes.map((h) => {
@@ -731,8 +744,8 @@ export const useExpeditionStore = create<GameState>()(
             heroes,
             regions,
             artifacts,
-            karbovanets: st.karbovanets + (success ? exp.rewardKarbovanets : Math.round(exp.rewardKarbovanets * 0.2)),
-            reputation: st.reputation + (success ? exp.rewardReputation : 0),
+            karbovanets: st.karbovanets + (success ? finalReward : failureReward),
+            reputation: st.reputation + (success ? finalReputation : 0),
             expeditions: st.expeditions.map((e) =>
               e.id === expeditionId ? { ...e, collected: true, status: 'completed' } : e,
             ),
@@ -742,13 +755,13 @@ export const useExpeditionStore = create<GameState>()(
 
         if (success) {
           s.pushToast(
-            `Успіх! +${exp.rewardKarbovanets} карб., знайдено «${exp.artifactName}»`,
+            `Успіх! +${finalReward} карб., знайдено «${exp.artifactName}»`,
             '#FFC72C',
           );
           // Track expedition quest objective
           s.updateQuestObjective(`expedition_${exp.regionId}`, 1);
         } else {
-          s.pushToast('Експедиція зазнала невдачі. Героїв повернуто.', '#FF2A5F');
+          s.pushToast(`Експедиція невдала. +${failureReward} карб.`, '#FF2A5F');
         }
       },
 

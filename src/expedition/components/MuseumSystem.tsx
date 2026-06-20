@@ -978,11 +978,17 @@ function RankingsTab({ museumState }: { museumState: any }) {
     }
   };
 
-  const metricLabels: Record<RankingMetric, string> = {
-    prestige: 'Prestige',
-    reputation: 'Reputation',
-    artifacts: 'Artifacts',
-    hero_power: 'Hero Power',
+  const { t } = useTranslation();
+
+  const getMetricLabelMap = (): Record<RankingMetric, string> => ({
+    prestige: t('expedition.leaderboard_metric_prestige'),
+    reputation: t('expedition.leaderboard_metric_reputation'),
+    artifacts: t('expedition.leaderboard_metric_artifacts'),
+    hero_power: t('expedition.leaderboard_metric_hero_power'),
+  });
+
+  const getMetricLabel = (metric: RankingMetric): string => {
+    return getMetricLabelMap()[metric] || metric;
   };
 
   return (
@@ -991,15 +997,15 @@ function RankingsTab({ museumState }: { museumState: any }) {
         {(['global', 'weekly'] as LeaderboardType[]).map((type) => (
           <button key={type} onClick={() => setLeaderboardType(type)}
             className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${leaderboardType === type ? 'bg-[#FFC72C] text-[#0D1117]' : 'bg-white/10 text-gray-300'}`}>
-            {type === 'global' ? 'Global' : 'Weekly'}
+            {type === 'global' ? t('expedition.leaderboard_global') : t('expedition.leaderboard_weekly')}
           </button>
         ))}
       </div>
       <div className="flex flex-wrap gap-2">
-        {(Object.keys(metricLabels) as RankingMetric[]).map((m) => (
+        {(Object.keys(getMetricLabelMap()) as RankingMetric[]).map((m) => (
           <button key={m} onClick={() => setMetric(m)}
             className={`py-1 px-2 rounded text-xs transition-all ${metric === m ? 'bg-[#9747FF] text-white' : 'bg-white/5 text-gray-400'}`}>
-            {metricLabels[m]}
+            {getMetricLabel(m)}
           </button>
         ))}
       </div>
@@ -1014,20 +1020,20 @@ function RankingsTab({ museumState }: { museumState: any }) {
               <div className="text-xl font-bold" style={{ color: currentTier.color }}>#{userRank.rank}</div>
             </div>
             <div className="ml-auto text-right">
-              <div className="text-xs text-muted-foreground">{metricLabels[metric]}</div>
+              <div className="text-xs text-muted-foreground">{getMetricLabel(metric)}</div>
               <div className="text-lg font-bold" style={{ fontFamily: "'Exo 2', sans-serif" }}>{getScore(userRank).toLocaleString()}</div>
             </div>
           </div>
         </Card>
       ) : (
         <Card className="border-white/10 p-4 text-center">
-          <p className="text-sm text-muted-foreground">Play more to enter rankings!</p>
+          <p className="text-sm text-muted-foreground">{t('expedition.leaderboard_play_more')}</p>
         </Card>
       )}
       <button onClick={loadLeaderboard} disabled={loading}
         className="w-full py-2 rounded-lg bg-white/10 text-sm flex items-center justify-center gap-2 disabled:opacity-50">
         <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-        Refresh
+        {t('expedition.leaderboard_refresh')}
       </button>
       {error && (
         <Card className="border-red-500/30 p-4 text-center">
@@ -1036,7 +1042,7 @@ function RankingsTab({ museumState }: { museumState: any }) {
       )}
       {!error && entries.length > 0 && (
         <Card className="border-white/10 p-4">
-          <h3 className="text-sm font-medium mb-3">Top Players</h3>
+          <h3 className="text-sm font-medium mb-3">{t('expedition.leaderboard_top_players')}</h3>
           <div className="space-y-2">
             {entries.map((entry) => {
               const playerTier = getRankingTier(getScore(entry));

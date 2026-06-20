@@ -32,6 +32,8 @@ interface ExpeditionData {
   expeditionSlots: number;
   lastTick: number;
   incomeBuffer: number;
+  buildingLevels: Record<string, number>;
+  buildingUpgradeEndTimes: Record<string, number>;
 }
 
 class AcademySyncService {
@@ -62,6 +64,8 @@ class AcademySyncService {
             expeditionSlots: data.expeditionSlots,
             lastTick: data.lastTick,
             incomeBuffer: data.incomeBuffer,
+            buildingLevels: data.buildingLevels,
+            buildingUpgradeEndTimes: data.buildingUpgradeEndTimes,
           } as Record<string, unknown>,
           updated_at: new Date().toISOString(),
         }, {
@@ -373,6 +377,8 @@ export function useAcademySync() {
         if (expeditionData.expeditionSlots !== undefined) updates.expeditionSlots = expeditionData.expeditionSlots;
         if (expeditionData.lastTick !== undefined) updates.lastTick = expeditionData.lastTick;
         if (expeditionData.incomeBuffer !== undefined) updates.incomeBuffer = expeditionData.incomeBuffer;
+        if (expeditionData.buildingLevels) updates.buildingLevels = expeditionData.buildingLevels;
+        if (expeditionData.buildingUpgradeEndTimes) updates.buildingUpgradeEndTimes = expeditionData.buildingUpgradeEndTimes;
         useExpeditionStore.setState(updates);
       }
 
@@ -400,6 +406,10 @@ export function useAcademySync() {
 
   // Sync to Supabase on store changes
   const syncToServer = useCallback(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[AcademySync] Syncing to server...');
+    }
+    
     const expeditionData: ExpeditionData = {
       academyLevel: store.academyLevel,
       reputation: store.reputation,
@@ -413,6 +423,8 @@ export function useAcademySync() {
       expeditionSlots: store.expeditionSlots,
       lastTick: store.lastTick,
       incomeBuffer: store.incomeBuffer,
+      buildingLevels: store.buildingLevels,
+      buildingUpgradeEndTimes: store.buildingUpgradeEndTimes,
     };
 
     academySync.debouncedFullSync(
@@ -423,6 +435,41 @@ export function useAcademySync() {
       store.museumVisitors,
     );
   }, [store]);
+
+  // Subscribe to store changes and trigger sync on significant actions
+  useEffect(() => {
+    const unsubscribe = useExpeditionStore.subscribe(
+      (state, prevState) => {
+        // Check for significant changes that warrant immediate sync
+        const significantChanges = [
+          // Quest completion
+          state.storyState.completedQuests.length !== prevState.storyState.completedQuests.length,
+          // NPC interaction
+          state.storyState.npcRelationships !== prevState.storyState.npcRelationships,
+          // Building upgrade
+          JSON.stringify(state.buildingLevels) !== JSON.stringify(prevState.buildingLevels),
+          JSON.stringify(state.buildingUpgradeEndTimes) !== JSON.stringify(prevState.buildingUpgradeEndTimes),
+          // Museum changes
+          JSON.stringify(state.museumState) !== JSON.stringify(prevState.museumState),
+          // Expedition completion
+          state.expeditions.length !== prevState.expeditions.length,
+          // Hero progression
+          state.heroes.length !== prevState.heroes.length,
+          // Currency changes (only sync on significant amounts)
+          Math.abs(state.karbovanets - prevState.karbovanets) > 100,
+        ];
+
+        if (significantChanges.some(Boolean)) {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[AcademySync] Significant change detected, triggering sync');
+          }
+          syncToServer();
+        }
+      }
+    );
+
+    return unsubscribe;
+  }, [syncToServer]);
 
   return { syncToServer };
 }

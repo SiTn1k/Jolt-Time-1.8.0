@@ -12,15 +12,48 @@
     "completed": "Completed",
     "start": "Start",
     "no_quests": "No quests available",
-    "vladimir_1": {"title": "Glory to Rus", "description": "Help Prince Vladimir explore Kyiv hills"},
-    "vladimir_2": {"title": "Great Campaigns", "description": "Collect 2 ancient artifacts"},
-    "monk_1": {"title": "Secrets of the Caves", "description": "Visit museum and talk to the monk"},
-    "monk_2": {"title": "Byzantine Gifts", "description": "Find Byzantine artifacts"},
-    "khmelnytsky_1": {"title": "Cossack Glory", "description": "Lead expeditions to Zaporizhzhia"},
-    "khmelnytsky_2": {"title": "Wild Field", "description": "Collect 4 Cossack artifacts"},
-    "archaeologist_1": {"title": "Trypillian Secrets", "description": "Explore Trypillian lands"},
-    "curator_1": {"title": "New Exhibits", "description": "Expand museum collection"},
-    "curator_2": {"title": "Great Exhibition", "description": "Collect 10 artifacts for exhibition"},
+    "objective_expedition": "Expedition",
+    "objective_speak": "Conversation",
+    "objective_visit": "Visit",
+    "objective_prestige": "Prestige",
+    "objective_build": "Build",
+    "objective_collect": "Collect",
+    "vladimir_1": {
+      "title": "Glory to Rus",
+      "description": "Help Prince Vladimir explore Kyiv hills"
+    },
+    "vladimir_2": {
+      "title": "Great Campaigns",
+      "description": "Collect 2 ancient artifacts"
+    },
+    "monk_1": {
+      "title": "Secrets of the Caves",
+      "description": "Visit museum and talk to the monk"
+    },
+    "monk_2": {
+      "title": "Byzantine Gifts",
+      "description": "Find Byzantine artifacts"
+    },
+    "khmelnytsky_1": {
+      "title": "Cossack Glory",
+      "description": "Lead expeditions to Zaporizhzhia"
+    },
+    "khmelnytsky_2": {
+      "title": "Wild Field",
+      "description": "Collect 4 Cossack artifacts"
+    },
+    "archaeologist_1": {
+      "title": "Trypillian Secrets",
+      "description": "Explore Trypillian lands"
+    },
+    "curator_1": {
+      "title": "New Exhibits",
+      "description": "Expand museum collection"
+    },
+    "curator_2": {
+      "title": "Great Exhibition",
+      "description": "Collect 10 artifacts for exhibition"
+    },
     "reward_karbovanets": "karbovanets",
     "reward_reputation": "reputation",
     "reward_xp": "experience",
@@ -152,63 +185,14 @@
     "relationship": "Relationship",
     "trust_points": "Trust Points",
     "level": "Level",
-    "story_npcs": "Storytellers"
-  },
-  "quest": {
-    "quests": "Quests",
-    "available": "Available",
-    "in_progress": "In Progress",
-    "completed": "Completed",
-    "start": "Start",
-    "no_quests": "No quests available",
-    "objective_expedition": "Expedition",
-    "objective_speak": "Conversation",
-    "objective_visit": "Visit",
-    "objective_prestige": "Prestige",
-    "objective_build": "Build",
-    "objective_collect": "Collect",
-    "vladimir_1": {
-      "title": "Glory to Rus",
-      "description": "Help Prince Vladimir explore Kyiv hills"
-    },
-    "vladimir_2": {
-      "title": "Great Campaigns",
-      "description": "Collect 2 ancient artifacts"
-    },
-    "monk_1": {
-      "title": "Secrets of the Caves",
-      "description": "Visit museum and talk to the monk"
-    },
-    "monk_2": {
-      "title": "Byzantine Gifts",
-      "description": "Find Byzantine artifacts"
-    },
-    "khmelnytsky_1": {
-      "title": "Cossack Glory",
-      "description": "Lead expeditions to Zaporizhzhia"
-    },
-    "khmelnytsky_2": {
-      "title": "Wild Field",
-      "description": "Collect 4 Cossack artifacts"
-    },
-    "archaeologist_1": {
-      "title": "Trypillian Secrets",
-      "description": "Explore Trypillian lands"
-    },
-    "curator_1": {
-      "title": "New Exhibits",
-      "description": "Expand museum collection"
-    },
-    "curator_2": {
-      "title": "Great Exhibition",
-      "description": "Collect 10 artifacts for exhibition"
-    },
-    "reward_karbovanets": "karbovanets",
-    "reward_reputation": "reputation",
-    "reward_xp": "experience",
-    "reward_hero_fragment": "hero fragment",
-    "reward_artifact": "artifact",
-    "reward_academy_xp": "academy experience"
+    "story_npcs": "Storytellers",
+    "reward_available": "Reward available!",
+    "reward_dialogue": "New dialogue",
+    "reward_quest": "New quest",
+    "reward_hero": "Hero unlocked",
+    "reward_artifact": "New artifact",
+    "reward_region": "Region unlocked",
+    "claim": "Claim"
   },
   "common": {
     "app_name": "Jolt Time",
@@ -497,7 +481,31 @@
     "exhibitions": "Exhibitions",
     "museum_income": "Passive Income",
     "treasury_title": "Treasury",
-    "resources": "Resources"
+    "resources": "Resources",
+    "daily_rewards": "Daily Rewards",
+    "daily_streak": "Current Streak",
+    "daily_days": "days",
+    "daily_best": "Best",
+    "daily_day": "Day",
+    "daily_claim": "Claim Reward",
+    "daily_next_reward": "Next reward in",
+    "daily_calendar": "Reward Calendar",
+    "daily_total_claimed": "Total Claimed",
+    "daily_longest_streak": "Longest Streak",
+    "daily_reward_start": "Start your streak today!",
+    "daily_reward_first": "First reward claimed!",
+    "daily_reward_streak": "Streak: {count} days!",
+    "leaderboard_global": "Global",
+    "leaderboard_weekly": "Weekly",
+    "leaderboard_metric_prestige": "Prestige",
+    "leaderboard_metric_reputation": "Reputation",
+    "leaderboard_metric_artifacts": "Artifacts",
+    "leaderboard_metric_hero_power": "Hero Power",
+    "leaderboard_your_rank": "Your Rank",
+    "leaderboard_top_players": "Top Players",
+    "leaderboard_play_more": "Play more to enter the rankings!",
+    "leaderboard_refresh": "Refresh",
+    "leaderboard_no_data": "No data for this leaderboard"
   },
   "academy_unlock": {
     "title": "Academy of Time Unlocked!",

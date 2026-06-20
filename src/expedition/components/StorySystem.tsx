@@ -19,6 +19,7 @@ interface StorySystemProps {
   storyState: StoryProgress;
   onInteractWithNpc: (npcId: string) => void;
   onStartQuest: (questId: string) => void;
+  onClaimReward?: (npcId: string, rewardKey: string) => void;
 }
 
 type Tab = 'npcs' | 'quests';
@@ -30,6 +31,7 @@ export function StorySystem({
   onInteractWithNpc,
   onStartQuest,
   onCompleteQuest,
+  onClaimReward,
 }: StorySystemProps & { onCompleteQuest?: (questId: string) => void }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('npcs');
@@ -334,6 +336,41 @@ export function StorySystem({
                             );
                           })}
                       </div>
+
+                      {/* NPC Relationship Rewards */}
+                      {selectedNpc && (() => {
+                        const relationship = getRelationship(selectedNpc.id);
+                        const currentLevel = relationship.relationshipLevel as RelationshipLevel;
+                        const nextReward = selectedNpc.unlocksAtRelationship[currentLevel];
+                        
+                        if (!nextReward) return null;
+                        
+                        return (
+                          <Card className="border-[#FFC72C]/30 p-4 mt-4">
+                            <div className="flex items-center gap-3">
+                              <Gift className="w-6 h-6 text-[#FFC72C]" />
+                              <div className="flex-1">
+                                <div className="text-sm font-medium text-[#FFC72C]">
+                                  {t('npc.reward_available')}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {nextReward.startsWith('dialogue_') && t('npc.reward_dialogue')}
+                                  {nextReward.startsWith('quest-') && t('npc.reward_quest')}
+                                  {nextReward.startsWith('hero-') && t('npc.reward_hero')}
+                                  {nextReward.startsWith('artifact-') && t('npc.reward_artifact')}
+                                  {nextReward.startsWith('region-') && t('npc.reward_region')}
+                                </div>
+                              </div>
+                              <Button
+                                onClick={() => onClaimReward?.(selectedNpc.id, nextReward)}
+                                style={{ backgroundColor: '#FFC72C', color: '#0D1117', padding: '4px 12px', fontSize: '12px' }}
+                              >
+                                {t('npc.claim')}
+                              </Button>
+                            </div>
+                          </Card>
+                        );
+                      })()}
                     </motion.div>
                   ) : (
                     // NPC List
