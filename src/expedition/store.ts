@@ -20,11 +20,14 @@ import {
   MuseumState,
   MuseumUpgradeState,
   museumUpgrades,
+  museumCollections,
   initialMuseumState,
   calculateMuseumIncome,
   calculateDailyVisitors,
   getUpgradeCost,
   MUSEUM_ACHIEVEMENTS,
+  calculateCollectionProgress,
+  isCollectionComplete,
 } from './museumData';
 import {
   StoryProgress,
@@ -168,6 +171,7 @@ interface GameState {
   getHeroFragmentCount: (heroId: string) => number;
   checkHeroUnlockable: (heroId: string) => boolean;
   assembleArtifact: (rarity: Rarity) => { success: boolean; message: string; artifactId?: string };
+  checkCollectionCompletion: () => { completed: string[]; updated: boolean };
   pushToast: (message: string, color?: string) => void;
   dismissToast: (id: number) => void;
 
@@ -418,6 +422,77 @@ export const useExpeditionStore = create<GameState>()(
           message: `Створено "${template.name}"!`,
           artifactId: artifactId
         };
+      },
+      
+      // Collection Completion Check
+      checkCollectionCompletion: () => {
+        const state = get();
+        const museumState = state.museumState;
+        const completed: string[] = [...(museumState.completedCollections || [])];
+        let updated = false;
+        
+        // Get all artifacts (both in museum and in inventory)
+        const allArtifacts = state.artifacts;
+        const museumArtifacts = allArtifacts.filter(a => a.status === 'museum');
+        
+        // Check each collection
+        for (const collection of museumCollections) {
+          // Skip if already completed
+          if (completed.includes(collection.id)) continue;
+          
+          // Calculate progress using era matching
+          const progress = calculateCollectionProgress(collection, museumArtifacts);
+          
+          if (isCollectionComplete(collection, progress)) {
+            // Mark as completed
+            completed.push(collection.id);
+            updated = true;
+            
+            // Grant collection rewards
+            if (collection.bonus.reputationBonus > 0) {
+              set((st) => ({
+                reputation: st.reputation + collection.bonus.reputationBonus,
+                museumState: {
+                  ...st.museumState,
+                  completedCollections: completed,
+                },
+              }));
+            }
+            
+            if (collection.bonus.karbovanetsBonus > 0) {
+              set((st) => ({
+                karbovanets: st.karbovanets + collection.bonus.karbovanetsBonus,
+              }));
+            }
+            
+            // Show toast for collection completion
+            setTimeout(() => {
+              get().pushToast(
+                `🏛️ Колекція "${collection.icon} ${collection.era}" завершена!`,
+                '#FFC72C'
+              );
+            }, 100);
+          }
+        }
+        
+        // Update museum state with new collection progress
+        if (updated) {
+          // Recalculate progress for all collections
+          const newProgress: Record<string, number> = {};
+          for (const collection of museumCollections) {
+            newProgress[collection.id] = calculateCollectionProgress(collection, museumArtifacts);
+          }
+          
+          set((st) => ({
+            museumState: {
+              ...st.museumState,
+              completedCollections: completed,
+              collectionProgress: newProgress,
+            },
+          }));
+        }
+        
+        return { completed, updated };
       },
       
       // Story/Quest actions
@@ -1229,6 +1304,9 @@ export const useExpeditionStore = create<GameState>()(
         // Check achievements for artifacts and reputation
         const museumArtifacts = s.artifacts.filter(a => a.status === 'museum');
         s.checkAndUnlockAchievements({ artifacts: museumArtifacts.length });
+        
+        // Check collection completion after sending to museum
+        s.checkCollectionCompletion();
       },
 
       toggleNpcWork: (npcId) => {

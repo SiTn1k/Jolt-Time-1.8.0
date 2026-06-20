@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useExpeditionStore } from '../store';
 import { Landmark, Settings } from 'lucide-react';
 import { Card } from '../ui';
 import { MuseumSystem } from '../components/MuseumSystem';
 import { useTranslation } from '../../i18n';
-import { getReputationLevel } from '../museumData';
+import { getReputationLevel, museumCollections, calculateCollectionProgress } from '../museumData';
 
 export function Museum() {
   const { t } = useTranslation();
@@ -12,11 +12,19 @@ export function Museum() {
 
   const artifacts = useExpeditionStore((s) => s.artifacts);
   const museumState = useExpeditionStore((s) => s.museumState);
+  const checkCollectionCompletion = useExpeditionStore((s) => s.checkCollectionCompletion);
 
   const museumArtifacts = artifacts.filter((a) => a.status === 'museum');
   const totalValue = museumArtifacts.reduce((sum, a) => sum + a.value, 0);
   const exhibitedCount = museumState.exhibitions.filter((ex) => ex.artifactId).length;
   const repLevel = getReputationLevel(museumState.reputation);
+  const completedCount = museumState.completedCollections?.length || 0;
+  const totalCollections = museumCollections.length;
+
+  // Check collection completion on mount
+  useEffect(() => {
+    checkCollectionCompletion();
+  }, []);
 
   return (
     <>
@@ -63,19 +71,23 @@ export function Museum() {
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm">{t('museum.collections')}</span>
             <span className="text-sm" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>
-              {museumState.completedCollections.length} / 5
+              {completedCount} / {totalCollections}
             </span>
           </div>
           <div className="flex gap-1">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div
-                key={i}
-                className="flex-1 h-2 rounded"
-                style={{
-                  backgroundColor: museumState.completedCollections.length >= i ? '#FFC72C' : 'rgba(255,255,255,0.1)',
-                }}
-              />
-            ))}
+            {museumCollections.slice(0, 8).map((col, i) => {
+              const isComplete = museumState.completedCollections?.includes(col.id);
+              return (
+                <div
+                  key={col.id}
+                  className="flex-1 h-2 rounded"
+                  style={{
+                    backgroundColor: isComplete ? '#FFC72C' : 'rgba(255,255,255,0.1)',
+                  }}
+                  title={`${col.icon} ${col.era}: ${isComplete ? 'Завершено' : 'Не завершено'}`}
+                />
+              );
+            })}
           </div>
         </Card>
 
