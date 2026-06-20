@@ -1123,6 +1123,13 @@ export function resetExpeditionOnPrestige() {
       legendaryExhibitions: [],
       eventParticipation: [],
     },
+    // Reset story state - start Academy from scratch on new prestige
+    // Keep completedQuests as reference but reset active quests and relationships
+    storyState: {
+      ...initialStoryProgress,
+      // Archive completed quests from previous prestige
+      completedQuests: [],
+    },
     // Reset expeditions
     expeditions: [],
     expeditionSlots: 1, // Start with 1 slot, can unlock more with prestige research
