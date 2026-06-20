@@ -1,17 +1,18 @@
 /**
  * Academy Timeline Sync Service
+ *
+ * Syncs Academy Timeline state to Supabase using edge functions.
+ * All writes go through secure edge functions with HMAC validation.
  * 
- * Syncs Academy Timeline state to Supabase using existing tables:
- * - expedition_state: expeditions, heroes, artifacts
- * - story_progress: NPC relationships, quests
- * - museum_progress: museum exhibitions, upgrades
- * 
- * localStorage (Zustand) remains as cache for fast reads.
- * Supabase is source of truth for cross-device sync.
+ * Security:
+ * - All writes use expedition-sync edge function
+ * - HMAC validation of telegram_id via init_data
+ * - SERVICE_ROLE used for database writes
+ * - Client cannot write directly to database
  */
 
 import { supabase } from '../lib/supabase';
-import { getTelegramUserId } from '../lib/telegram';
+import { getTelegramUserId, getRawInitData } from '../lib/telegram';
 import type { MuseumState } from './museumData';
 import type { StoryProgress } from './storyData';
 import type { Hero, Artifact, Region, Expedition, Npc } from './data';
@@ -36,57 +37,73 @@ interface ExpeditionData {
   buildingUpgradeEndTimes: Record<string, number>;
 }
 
+interface SyncResult {
+  ok: boolean;
+  error?: string;
+  data?: unknown;
+}
+
 class AcademySyncService {
   private syncTimer: ReturnType<typeof setTimeout> | null = null;
 
   /**
-   * Save expedition data to expedition_state table
+   * Call edge function with HMAC-validated request
    */
-  async saveExpeditionData(data: ExpeditionData): Promise<boolean> {
-    const telegramId = getTelegramUserId();
-    if (!telegramId || !supabase) return false;
+  private async callEdgeFunction(action: string, data?: Record<string, unknown>): Promise<SyncResult> {
+    const initData = getRawInitData();
+    if (!initData || !supabase) {
+      return { ok: false, error: 'Not in Telegram or no Supabase' };
+    }
 
     try {
-      const { error } = await supabase
-        .from('expedition_state')
-        .upsert({
-          telegram_id: telegramId,
-          state_data: {
-            academyLevel: data.academyLevel,
-            reputation: data.reputation,
-            karbovanets: data.karbovanets,
-            historicalPrestige: data.historicalPrestige,
-            heroes: data.heroes,
-            artifacts: data.artifacts,
-            regions: data.regions,
-            expeditions: data.expeditions,
-            npcs: data.npcs,
-            expeditionSlots: data.expeditionSlots,
-            lastTick: data.lastTick,
-            incomeBuffer: data.incomeBuffer,
-            buildingLevels: data.buildingLevels,
-            buildingUpgradeEndTimes: data.buildingUpgradeEndTimes,
-          } as Record<string, unknown>,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'telegram_id',
-        });
+      const { data: result, error } = await supabase.functions.invoke('expedition-sync', {
+        body: { action, init_data: initData, data },
+      });
 
       if (error) {
-        console.error('Failed to save expedition data:', error);
-        return false;
+        console.error(`Edge function error (${action}):`, error);
+        return { ok: false, error: error.message };
       }
 
-      return true;
+      return result as SyncResult;
     } catch (e) {
-      console.error('Expedition sync error:', e);
-      this.queuePendingSync('expedition', data);
-      return false;
+      console.error(`Edge function call error (${action}):`, e);
+      return { ok: false, error: String(e) };
     }
   }
 
   /**
-   * Load expedition data from expedition_state table
+   * Save expedition data via edge function
+   */
+  async saveExpeditionData(data: ExpeditionData): Promise<boolean> {
+    const result = await this.callEdgeFunction('save_expedition', {
+      academyLevel: data.academyLevel,
+      reputation: data.reputation,
+      karbovanets: data.karbovanets,
+      historicalPrestige: data.historicalPrestige,
+      heroes: data.heroes,
+      artifacts: data.artifacts,
+      regions: data.regions,
+      expeditions: data.expeditions,
+      npcs: data.npcs,
+      expeditionSlots: data.expeditionSlots,
+      lastTick: data.lastTick,
+      incomeBuffer: data.incomeBuffer,
+      buildingLevels: data.buildingLevels,
+      buildingUpgradeEndTimes: data.buildingUpgradeEndTimes,
+    });
+
+    if (!result.ok) {
+      console.error('Failed to save expedition data:', result.error);
+      this.queuePendingSync('expedition', data);
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Load expedition data from expedition_state table (reads allowed)
    */
   async loadExpeditionData(): Promise<ExpeditionData | null> {
     const telegramId = getTelegramUserId();
@@ -114,42 +131,28 @@ class AcademySyncService {
   }
 
   /**
-   * Save story/progress data to story_progress table
+   * Save story/progress data via edge function
    */
   async saveStoryData(storyState: StoryProgress): Promise<boolean> {
-    const telegramId = getTelegramUserId();
-    if (!telegramId || !supabase) return false;
+    const result = await this.callEdgeFunction('save_story', {
+      currentChapter: storyState.currentChapter,
+      completedChapters: storyState.completedChapters,
+      activeQuests: storyState.activeQuests,
+      completedQuests: storyState.completedQuests,
+      npcRelationships: storyState.npcRelationships,
+    });
 
-    try {
-      const { error } = await supabase
-        .from('story_progress')
-        .upsert({
-          telegram_id: telegramId,
-          current_chapter: storyState.currentChapter,
-          completed_chapters: storyState.completedChapters,
-          active_quests: storyState.activeQuests,
-          completed_quests: storyState.completedQuests,
-          npc_relationships: storyState.npcRelationships as Record<string, unknown>,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'telegram_id',
-        });
-
-      if (error) {
-        console.error('Failed to save story data:', error);
-        return false;
-      }
-
-      return true;
-    } catch (e) {
-      console.error('Story sync error:', e);
+    if (!result.ok) {
+      console.error('Failed to save story data:', result.error);
       this.queuePendingSync('story', storyState);
       return false;
     }
+
+    return true;
   }
 
   /**
-   * Load story data from story_progress table
+   * Load story data from story_progress table (reads allowed)
    */
   async loadStoryData(): Promise<StoryProgress | null> {
     const telegramId = getTelegramUserId();
@@ -183,40 +186,30 @@ class AcademySyncService {
   }
 
   /**
-   * Save museum data to museum_progress table
+   * Save museum data via edge function
    */
   async saveMuseumData(museumState: MuseumState, reputation: number, visitors: number): Promise<boolean> {
-    const telegramId = getTelegramUserId();
-    if (!telegramId || !supabase) return false;
+    const result = await this.callEdgeFunction('save_museum', {
+      museumState,
+      reputation,
+      totalVisitors: visitors,
+    });
 
-    try {
-      const { error } = await supabase
-        .from('museum_progress')
-        .upsert({
-          telegram_id: telegramId,
-          museum_state: museumState as unknown as Record<string, unknown>,
-          reputation: reputation,
-          total_visitors: visitors,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'telegram_id',
-        });
-
-      if (error) {
-        console.error('Failed to save museum data:', error);
-        return false;
+    if (!result.ok) {
+      if (result.error && result.error.includes('does not exist')) {
+        console.warn('Museum table not found, skipping sync');
+        return true;
       }
-
-      return true;
-    } catch (e) {
-      console.error('Museum sync error:', e);
+      console.error('Failed to save museum data:', result.error);
       this.queuePendingSync('museum', { museumState, reputation, visitors });
       return false;
     }
+
+    return true;
   }
 
   /**
-   * Load museum data from museum_progress table
+   * Load museum data from museum_progress table (reads allowed)
    */
   async loadMuseumData(): Promise<{ museumState: MuseumState; reputation: number; totalVisitors: number } | null> {
     const telegramId = getTelegramUserId();
@@ -230,7 +223,7 @@ class AcademySyncService {
         .maybeSingle();
 
       if (error) {
-        console.error('Failed to load museum data:', error);
+        console.warn('Museum load skipped:', error.message);
         return null;
       }
 
@@ -316,8 +309,7 @@ class AcademySyncService {
 
     try {
       const { type, data, timestamp } = JSON.parse(pending);
-      
-      // Only retry if less than 1 hour old
+
       if (Date.now() - timestamp > 60 * 60 * 1000) {
         localStorage.removeItem(EXPEDITION_SYNC_KEY);
         return true;
@@ -338,12 +330,23 @@ class AcademySyncService {
       return false;
     }
   }
+
+  /**
+   * Complete expedition with server-side validation (P0-2)
+   */
+  async completeExpeditionServerValidated(
+    expeditionId: string,
+    heroId: string
+  ): Promise<SyncResult & { success?: boolean; rewards?: Record<string, unknown> }> {
+    return await this.callEdgeFunction('complete_expedition', {
+      expedition_id: expeditionId,
+      hero_id: heroId,
+    });
+  }
 }
 
-// Singleton instance
 export const academySync = new AcademySyncService();
 
-// React hook for Academy Timeline sync
 import { useEffect, useCallback, useRef } from 'react';
 import { useExpeditionStore } from './store';
 
@@ -351,18 +354,16 @@ export function useAcademySync() {
   const store = useExpeditionStore((s) => s);
   const hasHydrated = useRef(false);
 
-  // Initial load from Supabase on mount
   useEffect(() => {
     const loadFromServer = async () => {
       if (hasHydrated.current) return;
-      
+
       const [expeditionData, storyData, museumData] = await Promise.all([
         academySync.loadExpeditionData(),
         academySync.loadStoryData(),
         academySync.loadMuseumData(),
       ]);
 
-      // Apply expedition data to store
       if (expeditionData) {
         const updates: Partial<ReturnType<typeof useExpeditionStore.getState>> = {};
         if (expeditionData.academyLevel !== undefined) updates.academyLevel = expeditionData.academyLevel;
@@ -382,12 +383,10 @@ export function useAcademySync() {
         useExpeditionStore.setState(updates);
       }
 
-      // Apply story data to store
       if (storyData) {
         useExpeditionStore.setState({ storyState: storyData });
       }
 
-      // Apply museum data to store
       if (museumData) {
         const updates: Partial<ReturnType<typeof useExpeditionStore.getState>> = {};
         if (museumData.museumState) updates.museumState = museumData.museumState;
@@ -404,12 +403,7 @@ export function useAcademySync() {
     academySync.retryPendingSync();
   }, []);
 
-  // Sync to Supabase on store changes
   const syncToServer = useCallback(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[AcademySync] Syncing to server...');
-    }
-    
     const expeditionData: ExpeditionData = {
       academyLevel: store.academyLevel,
       reputation: store.reputation,
@@ -436,33 +430,21 @@ export function useAcademySync() {
     );
   }, [store]);
 
-  // Subscribe to store changes and trigger sync on significant actions
   useEffect(() => {
     const unsubscribe = useExpeditionStore.subscribe(
       (state, prevState) => {
-        // Check for significant changes that warrant immediate sync
         const significantChanges = [
-          // Quest completion
           state.storyState.completedQuests.length !== prevState.storyState.completedQuests.length,
-          // NPC interaction
           state.storyState.npcRelationships !== prevState.storyState.npcRelationships,
-          // Building upgrade
           JSON.stringify(state.buildingLevels) !== JSON.stringify(prevState.buildingLevels),
           JSON.stringify(state.buildingUpgradeEndTimes) !== JSON.stringify(prevState.buildingUpgradeEndTimes),
-          // Museum changes
           JSON.stringify(state.museumState) !== JSON.stringify(prevState.museumState),
-          // Expedition completion
           state.expeditions.length !== prevState.expeditions.length,
-          // Hero progression
           state.heroes.length !== prevState.heroes.length,
-          // Currency changes (only sync on significant amounts)
           Math.abs(state.karbovanets - prevState.karbovanets) > 100,
         ];
 
         if (significantChanges.some(Boolean)) {
-          if (process.env.NODE_ENV === 'development') {
-            console.log('[AcademySync] Significant change detected, triggering sync');
-          }
           syncToServer();
         }
       }
@@ -474,5 +456,4 @@ export function useAcademySync() {
   return { syncToServer };
 }
 
-// Export old name for backward compatibility
 export const useExpeditionSync = useAcademySync;
