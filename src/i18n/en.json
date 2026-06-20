@@ -740,7 +740,18 @@
     "spec_warrior": "Warrior",
     "spec_scholar": "Scholar",
     "success": "Success",
-    "no_available": "No heroes available"
+    "no_available": "No available heroes",
+    "unlock_prestige_1": "Unlocks after Prestige 1",
+    "unlock_prestige_2": "Unlocks after Prestige 2",
+    "unlock_prestige_3": "Unlocks after Prestige 3",
+    "unlock_prestige_4": "Unlocks after Prestige 4",
+    "unlock_prestige_5": "Unlocks after Prestige 5",
+    "locked": "🔒 Locked",
+    "level_up": "Level Up",
+    "assign": "Assign",
+    "unassign": "Unassign",
+    "hire_cost": "Hire Cost",
+    "unlock_requirement": "Unlock Requirement"
   },
   "treasury": {
     "title": "Academy Treasury",

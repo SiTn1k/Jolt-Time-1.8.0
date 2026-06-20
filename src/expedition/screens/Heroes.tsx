@@ -1,10 +1,10 @@
 import { useExpeditionStore } from '../store';
 import { motion } from 'motion/react';
-import { Sword, BookOpen, Compass, MessageCircle, Star, Crown, Award, Sparkles, Zap, Clock, Target } from 'lucide-react';
+import { Sword, BookOpen, Compass, MessageCircle, Star, Crown, Award, Sparkles, Zap, Clock, Target, Lock } from 'lucide-react';
 import { Card, Badge, Progress, ScrollArea } from '../ui';
 import { useState } from 'react';
 import type { Rarity, HeroRank, HeroSpecialization, Hero } from '../data';
-import { HERO_RANK_THRESHOLDS } from '../data';
+import { HERO_RANK_THRESHOLDS, checkHeroUnlocked, getHeroUnlockProgress } from '../data';
 import { useTranslation } from '../../i18n';
 
 const rarityConfig: Record<Rarity, { color: string; icon: typeof Star; bg: string; labelKey: string }> = {
@@ -52,24 +52,38 @@ export function Heroes() {
   const { t } = useTranslation();
   const heroes = useExpeditionStore((s) => s.heroes);
   const [selectedId, setSelectedId] = useState(heroes[0]?.id || '');
-  const selectedHero = heroes.find((h) => h.id === selectedId) || heroes[0];
+  
+  // Get player's current prestige level from game state
+  // For now, we'll use a prop or context - for simplicity, assume 0 if not available
+  // In real usage, this would come from the game state
+  const currentPrestigeLevel = 0;
+  const currentEpochId = 'trypillia';
+  const currentPlayerLevel = 1;
 
-  if (!selectedHero) {
+  // Filter heroes by unlock status
+  const unlockedHeroes = heroes.filter(h => checkHeroUnlocked(h, currentPrestigeLevel, currentEpochId, currentPlayerLevel));
+  const lockedHeroes = heroes.filter(h => !checkHeroUnlocked(h, currentPrestigeLevel, currentEpochId, currentPlayerLevel));
+  
+  const selectedHero = heroes.find((h) => h.id === selectedId) || unlockedHeroes[0];
+  const isSelectedHeroLocked = selectedHero && !checkHeroUnlocked(selectedHero, currentPrestigeLevel, currentEpochId, currentPlayerLevel);
+
+  if (unlockedHeroes.length === 0) {
     return <div className="p-4 text-muted-foreground">{t('heroes.no_available')}</div>;
   }
 
-  const heroRank = getRank(selectedHero.experience);
-  const xpForNext = getXpForNextLevel(selectedHero.level);
-  const xpProgress = Math.min(100, (selectedHero.experience / xpForNext) * 100);
+  const heroRank = selectedHero ? getRank(selectedHero.experience) : 'novice';
+  const xpForNext = selectedHero ? getXpForNextLevel(selectedHero.level) : 100;
+  const xpProgress = selectedHero ? Math.min(100, (selectedHero.experience / xpForNext) * 100) : 0;
 
   return (
     <div className="min-h-full bg-[#0D1117] flex">
       <div className="w-28 bg-[#161B22] border-r border-white/10">
         <ScrollArea className="h-full pb-20">
           <div className="p-2 space-y-2">
-            {heroes.map((hero) => {
+            {/* Unlocked Heroes */}
+            {unlockedHeroes.map((hero) => {
               const RarityIcon = rarityConfig[hero.rarity].icon;
-              const isSelected = selectedHero.id === hero.id;
+              const isSelected = selectedHero?.id === hero.id;
               return (
                 <motion.div key={hero.id} className="relative cursor-pointer" onClick={() => setSelectedId(hero.id)} whileTap={{ scale: 0.98 }}>
                   <Card
@@ -91,7 +105,7 @@ export function Heroes() {
                         className="absolute -bottom-1 -right-1 text-[8px] px-1 rounded" 
                         style={{ backgroundColor: rankColors[getRank(hero.experience)], color: '#0D1117' }}
                       >
-                        {heroRank.charAt(0).toUpperCase()}
+                        {getRank(hero.experience).charAt(0).toUpperCase()}
                       </div>
                     </div>
                     <div className="text-[10px] line-clamp-2 mb-1" style={{ fontFamily: "'Exo 2', sans-serif" }}>{hero.name}</div>
@@ -105,12 +119,77 @@ export function Heroes() {
                 </motion.div>
               );
             })}
+            
+            {/* Locked Heroes */}
+            {lockedHeroes.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <div className="text-[10px] text-gray-500 uppercase mb-2 px-1">{t('heroes.locked')}</div>
+                {lockedHeroes.map((hero) => {
+                  const isSelected = selectedHero?.id === hero.id;
+                  const progress = getHeroUnlockProgress(hero, currentPrestigeLevel, currentEpochId, currentPlayerLevel);
+                  
+                  return (
+                    <motion.div 
+                      key={hero.id} 
+                      className={`relative cursor-pointer opacity-50 ${isSelected ? 'ring-2 ring-yellow-400' : ''}`} 
+                      onClick={() => setSelectedId(hero.id)}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Card
+                        className="p-2 border-2 transition-all"
+                        style={{
+                          backgroundColor: 'rgba(0,0,0,0.3)',
+                          borderColor: isSelected ? '#FFC72C' : 'rgba(255,255,255,0.1)',
+                        }}
+                      >
+                        <div
+                          className="w-full aspect-square rounded mb-1 flex items-center justify-center relative"
+                          style={{
+                            background: 'rgba(0,0,0,0.3)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                          }}
+                        >
+                          <Lock className="w-7 h-7 text-gray-500" />
+                        </div>
+                        <div className="text-[10px] line-clamp-2 mb-1 text-gray-500" style={{ fontFamily: "'Exo 2', sans-serif" }}>
+                          {hero.name}
+                        </div>
+                        <Progress 
+                          value={progress.percentage} 
+                          className="h-1"
+                        />
+                      </Card>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </ScrollArea>
       </div>
 
       <div className="flex-1 overflow-y-auto pb-20">
-        <motion.div key={selectedHero.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }} className="p-4">
+        {isSelectedHeroLocked ? (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4">
+            <Card className="p-6 text-center border-2 border-yellow-500/30 bg-yellow-500/10">
+              <Lock className="w-16 h-16 mx-auto mb-4 text-yellow-500" />
+              <h3 className="text-lg font-bold text-white mb-2">{selectedHero?.name}</h3>
+              <p className="text-sm text-gray-400 mb-4">
+                {selectedHero?.unlockCondition ? t(selectedHero.unlockCondition.descriptionKey) : t('heroes.locked')}
+              </p>
+              <div className="space-y-2">
+                <Progress 
+                  value={selectedHero ? getHeroUnlockProgress(selectedHero, currentPrestigeLevel, currentEpochId, currentPlayerLevel).percentage : 0} 
+                  className="h-2"
+                />
+                <p className="text-xs text-gray-500">
+                  {selectedHero ? `${getHeroUnlockProgress(selectedHero, currentPrestigeLevel, currentEpochId, currentPlayerLevel).current} / ${getHeroUnlockProgress(selectedHero, currentPrestigeLevel, currentEpochId, currentPlayerLevel).required}` : ''}
+                </p>
+              </div>
+            </Card>
+          </motion.div>
+        ) : (
+        <motion.div key={selectedHero?.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }} className="p-4">
           <div
             className="rounded-lg p-4 mb-4 relative overflow-hidden"
             style={{
@@ -196,7 +275,7 @@ export function Heroes() {
           <Card className="border-white/10 p-4">
             <div className="flex items-center justify-between">
               <span className="text-sm">{t('common.status') || 'Status'}</span>
-              {selectedHero.assigned ? (
+              {selectedHero?.assigned ? (
                 <Badge style={{ backgroundColor: '#00E5FF', color: '#0D1117' }}>{t('expedition.hero_assigned')}: {selectedHero.assignedTo}</Badge>
               ) : (
                 <Badge variant="outline" style={{ borderColor: '#FFC72C', color: '#FFC72C' }}>{t('expedition.hero_available')}</Badge>
@@ -204,6 +283,7 @@ export function Heroes() {
             </div>
           </Card>
         </motion.div>
+        )}
       </div>
     </div>
   );

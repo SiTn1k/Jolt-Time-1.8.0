@@ -2,6 +2,12 @@ export type Rarity = 'common' | 'rare' | 'epic' | 'legendary';
 export type HeroSpecialization = 'archaeologist' | 'diplomat' | 'warrior' | 'scholar';
 export type HeroRank = 'novice' | 'adept' | 'expert' | 'master' | 'legend';
 
+export interface HeroUnlockCondition {
+  type: 'prestige' | 'epoch' | 'level';
+  value: number | string; // number for prestige/level, string for epoch ID
+  descriptionKey: string; // Translation key for unlock description
+}
+
 export interface Hero {
   id: string;
   name: string;
@@ -22,6 +28,9 @@ export interface Hero {
   artifactBonus: number; // % chance to find better artifacts
   speedBonus: number; // % faster expeditions
   successBonus: number; // % better success chance
+  // Unlock conditions
+  unlocked: boolean;
+  unlockCondition?: HeroUnlockCondition; // If undefined, hero is always unlocked
 }
 
 export const HERO_SPECIALIZATION_BONUS: Record<HeroSpecialization, { primary: keyof Hero; secondary: keyof Hero; expeditionBonus: { type: 'artifact' | 'speed' | 'success'; value: number } }> = {
@@ -38,6 +47,51 @@ export const HERO_RANK_THRESHOLDS: Record<HeroRank, number> = {
   master: 4000,
   legend: 10000,
 };
+
+export function checkHeroUnlocked(hero: Hero, prestigeLevel: number, epochId: string, playerLevel: number): boolean {
+  if (hero.unlocked) return true;
+  if (!hero.unlockCondition) return true;
+  
+  switch (hero.unlockCondition.type) {
+    case 'prestige':
+      return prestigeLevel >= (hero.unlockCondition.value as number);
+    case 'epoch':
+      return epochId === (hero.unlockCondition.value as string);
+    case 'level':
+      return playerLevel >= (hero.unlockCondition.value as number);
+    default:
+      return false;
+  }
+}
+
+export function getHeroUnlockProgress(hero: Hero, prestigeLevel: number, _epochId: string, playerLevel: number): { current: number; required: number; percentage: number } {
+  if (hero.unlocked) return { current: 100, required: 100, percentage: 100 };
+  if (!hero.unlockCondition) return { current: 0, required: 1, percentage: 0 };
+  
+  let current = 0;
+  let required = 1;
+  
+  switch (hero.unlockCondition.type) {
+    case 'prestige':
+      current = prestigeLevel;
+      required = hero.unlockCondition.value as number;
+      break;
+    case 'level':
+      current = playerLevel;
+      required = hero.unlockCondition.value as number;
+      break;
+    default:
+      current = 0;
+      required = 1;
+  }
+  
+  return {
+    current,
+    required,
+    percentage: Math.min(100, (current / required) * 100)
+  };
+}
+
 
 export const STAT_GROWTH_PER_LEVEL: Record<Rarity, { base: number; perLevel: number }> = {
   common: { base: 5, perLevel: 2 },
@@ -147,6 +201,8 @@ export const initialHeroes: Hero[] = [
     artifactBonus: 12,
     speedBonus: 10,
     successBonus: 8,
+    // Unlocked by default - first hero is always available
+    unlocked: true,
   },
   {
     id: 'hero-2',
@@ -167,6 +223,9 @@ export const initialHeroes: Hero[] = [
     artifactBonus: 10,
     speedBonus: 8,
     successBonus: 12,
+    // Unlock conditions
+    unlocked: false,
+    unlockCondition: { type: 'prestige', value: 1, descriptionKey: 'heroes.unlock_prestige_1' },
   },
   {
     id: 'hero-3',
@@ -187,6 +246,9 @@ export const initialHeroes: Hero[] = [
     artifactBonus: 8,
     speedBonus: 5,
     successBonus: 6,
+    // Unlock conditions
+    unlocked: false,
+    unlockCondition: { type: 'prestige', value: 2, descriptionKey: 'heroes.unlock_prestige_2' },
   },
   {
     id: 'hero-4',
@@ -207,6 +269,9 @@ export const initialHeroes: Hero[] = [
     artifactBonus: 10,
     speedBonus: 12,
     successBonus: 10,
+    // Unlock conditions
+    unlocked: false,
+    unlockCondition: { type: 'prestige', value: 3, descriptionKey: 'heroes.unlock_prestige_3' },
   },
   {
     id: 'hero-5',
@@ -227,6 +292,9 @@ export const initialHeroes: Hero[] = [
     artifactBonus: 15,
     speedBonus: 5,
     successBonus: 4,
+    // Unlock conditions
+    unlocked: false,
+    unlockCondition: { type: 'prestige', value: 4, descriptionKey: 'heroes.unlock_prestige_4' },
   },
   {
     id: 'hero-6',
@@ -247,6 +315,9 @@ export const initialHeroes: Hero[] = [
     artifactBonus: 15,
     speedBonus: 8,
     successBonus: 5,
+    // Unlock conditions
+    unlocked: false,
+    unlockCondition: { type: 'prestige', value: 5, descriptionKey: 'heroes.unlock_prestige_5' },
   },
 ];
 
@@ -457,7 +528,7 @@ export const initialNpcs: Npc[] = [
     x: 20,
     y: 58,
     direction: 1,
-    ratePerMin: 40,
+    ratePerMin: 4,    // 4 karb/min = 240 karb/hour = ~5760/day
     repPerMin: 6,
     working: false,
     lastCollectedAt: 0,
@@ -475,7 +546,7 @@ export const initialNpcs: Npc[] = [
     x: 78,
     y: 42,
     direction: -1,
-    ratePerMin: 25,
+    ratePerMin: 2,    // 2 karb/min = 120 karb/hour
     repPerMin: 10,
     working: false,
     lastCollectedAt: 0,
@@ -493,7 +564,7 @@ export const initialNpcs: Npc[] = [
     x: 48,
     y: 68,
     direction: 1,
-    ratePerMin: 35,
+    ratePerMin: 3,    // 3 karb/min = 180 karb/hour
     repPerMin: 8,
     working: false,
     lastCollectedAt: 0,
@@ -511,7 +582,7 @@ export const initialNpcs: Npc[] = [
     x: 32,
     y: 50,
     direction: 1,
-    ratePerMin: 50,
+    ratePerMin: 5,    // 5 karb/min = 300 karb/hour
     repPerMin: 5,
     working: false,
     lastCollectedAt: 0,
@@ -529,7 +600,7 @@ export const initialNpcs: Npc[] = [
     x: 65,
     y: 62,
     direction: -1,
-    ratePerMin: 20,
+    ratePerMin: 2,    // 2 karb/min = 120 karb/hour
     repPerMin: 4,
     working: false,
     lastCollectedAt: 0,
@@ -547,7 +618,7 @@ export const initialNpcs: Npc[] = [
     x: 42,
     y: 46,
     direction: 1,
-    ratePerMin: 45,
+    ratePerMin: 4,    // 4 karb/min = 240 karb/hour
     repPerMin: 9,
     working: false,
     lastCollectedAt: 0,

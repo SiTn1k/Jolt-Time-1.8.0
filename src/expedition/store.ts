@@ -387,6 +387,36 @@ export const useExpeditionStore = create<GameState>()(
       },
 
       // Museum actions
+      // Reset museum state on prestige - keeps artifacts but resets all museum progress
+      resetMuseumState: () => {
+        set({
+          museumState: {
+            ...initialMuseumState,
+            // Reset all museum progress to starting state
+            exhibitions: Array.from({ length: 2 }, (_, i) => ({ slotIndex: i, artifactId: null, placedAt: 0 })),
+            maxExhibitionSlots: 2,
+            upgrades: { marketing: 0, security: 0, exhibition_hall: 0, restoration_wing: 0 },
+            completedCollections: [],
+            collectionProgress: {},
+            achievements: [],
+            legendaryExhibitions: [],
+            eventParticipation: [],
+          },
+          // Reset expeditions on prestige
+          expeditions: [],
+          expeditionSlots: 1,
+          // Keep heroes but reset their expedition assignment
+          heroes: get().heroes.map(h => ({ ...h, expeditionId: undefined, status: 'idle' as const })),
+          // Reset building progress
+          buildingLevels: buildings.reduce((acc, b) => ({ ...acc, [b.id]: 0 }), {}),
+          buildingUpgradeEndTimes: {},
+          // Reset income
+          incomeBuffer: 0,
+          // Reset museum visitors
+          museumVisitors: 0,
+        });
+      },
+
       placeArtifactInExhibition: (artifactId, slotIndex) => {
         const s = get();
         const museumState = s.museumState;
@@ -934,3 +964,44 @@ export const useExpeditionStore = create<GameState>()(
     },
   ),
 );
+
+// Separate reset function for prestige - call this after performPrestige
+export function resetExpeditionOnPrestige() {
+  const currentState = useExpeditionStore.getState();
+  
+  useExpeditionStore.setState({
+    // Reset museum state completely
+    museumState: {
+      ...initialMuseumState,
+      // Start with 2 exhibition slots
+      exhibitions: Array.from({ length: 2 }, (_, i) => ({ slotIndex: i, artifactId: null, placedAt: 0 })),
+      maxExhibitionSlots: 2,
+      upgrades: { marketing: 0, security: 0, exhibition_hall: 0, restoration_wing: 0 },
+      completedCollections: [],
+      collectionProgress: {},
+      achievements: [],
+      legendaryExhibitions: [],
+      eventParticipation: [],
+    },
+    // Reset expeditions
+    expeditions: [],
+    expeditionSlots: 1, // Start with 1 slot, can unlock more with prestige research
+    // Keep heroes but reset to idle
+    heroes: currentState.heroes.map(h => ({
+      ...h,
+      level: 1,
+      expeditionId: undefined,
+      status: 'idle' as const,
+    })),
+    // Reset buildings
+    buildingLevels: buildings.reduce((acc, b) => ({ ...acc, [b.id]: 0 }), {}),
+    buildingUpgradeEndTimes: {},
+    // Reset income
+    incomeBuffer: 0,
+    // Reset museum visitors
+    museumVisitors: 0,
+    // Keep karbovanets (they reset with the game)
+    // Keep reputation (may want to preserve or reset based on design)
+    // Keep academy level (prestige bonus)
+  });
+}

@@ -372,16 +372,16 @@ export function useGame() {
         // to prevent device clock manipulation exploits
         const serverNow = saved.lastOnlineAt || Date.now();
         const offlineMs = Math.max(0, serverNow - saved.lastSavedAt);
-        // Use prestige-based offline cap: 8h for prestige 0, 6h for prestige 1+
+        // Use prestige-based offline cap: 4h for prestige 0, 3h for prestige 1+
         const prestigeLevel = saved.prestigeLevel || 0;
-        const offlineCap = prestigeLevel > 0 ? 6 * 3600 : 8 * 3600;
+        const offlineCap = prestigeLevel > 0 ? 3 * 3600 : 4 * 3600;
         const offlineSec = Math.min(offlineMs / 1000, offlineCap);
-        // CRITICAL FIX: Offline rewards formula was too generous
-        // OLD: offlineCurrency = (saved.level * 50) * (offlineSec / 60)
-        // This meant level 100 player got 5000/sec = 300,000/hour!
-        // NEW: Capped at reasonable amount based on level, with diminishing returns
+        // CRITICAL FIX: Offline rewards formula balanced for game economy
+        // Currency based on level, prestige reduces it further to prevent snowballing
         let offlineXp = passiveXp * offlineSec;
-        const maxOfflineCurrencyPerHour = Math.min(saved.level * 10, 500); // Cap at 500/hr
+        // Prestige multiplier reduces currency gains slightly each prestige
+        const prestigeCurrencyMultiplier = Math.max(0.5, 1 - (prestigeLevel * 0.1));
+        const maxOfflineCurrencyPerHour = Math.min(saved.level * 5, 200) * prestigeCurrencyMultiplier;
         let offlineCurrency = (maxOfflineCurrencyPerHour * offlineSec) / 3600;
 
         // ── Daily streak check ────────────────────────────────────────
@@ -907,6 +907,8 @@ export function useGame() {
   const canPrestige = state.level >= 950 && state.epochId === 'independence';
 
   // Perform prestige (rebirth) - SERVER AUTHORITATIVE
+  // This resets: level, currency, generators, epochs, tap power, passive XP, artifacts
+  // But PRESERVES: completedArtifacts, artifactLevels, prestigeResearch, prestigePoints
   const performPrestige = useCallback(async () => {
     if (!canPrestige) return false;
 
@@ -930,7 +932,7 @@ export function useGame() {
       // Update local state with server response
       setState(prev => ({
         ...prev,
-        // RESET:
+        // RESET game progress:
         level: 1,
         xp: 0,
         xpToNextLevel: calculateXpToLevel(1),
@@ -945,7 +947,7 @@ export function useGame() {
         activeBoosters: {},
         artifactParts: {},
         artifactDupes: {},
-        // PRESERVE:
+        // PRESERVE prestige-related progress:
         completedArtifacts: prev.completedArtifacts,
         artifactLevels: prev.artifactLevels,
         dailyStreak: prev.dailyStreak,
@@ -954,16 +956,23 @@ export function useGame() {
         referralsCount: prev.referralsCount,
         referralEarnings: prev.referralEarnings,
         prestigeResearch: prev.prestigeResearch,
-        // INCREMENT:
+        // UPDATE prestige stats:
         prestigeLevel: data.prestige_level,
         prestigePoints: data.total_prestige_points,
-        // Energy reset to full
+        // Energy reset to full (starts at 100, grows with prestige)
         energy: 100,
-        maxEnergy: 100,
+        maxEnergy: 100 + (data.prestige_level * 50),
         lastSavedAt: Date.now(),
         lastOnlineAt: Date.now(),
         sessionStartAt: Date.now(),
+        // Reset daily ad views on prestige
+        dailyAdViews: {},
       }));
+
+      // Reset expedition store state (museum, expeditions, buildings)
+      // Import here to avoid circular dependency
+      const { resetExpeditionOnPrestige } = await import('../expedition/store');
+      resetExpeditionOnPrestige();
 
       hapticNotification('success');
       return true;
