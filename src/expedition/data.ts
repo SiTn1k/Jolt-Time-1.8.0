@@ -1,10 +1,14 @@
 export type Rarity = 'common' | 'rare' | 'epic' | 'legendary';
+export type HeroSpecialization = 'archaeologist' | 'diplomat' | 'warrior' | 'scholar';
+export type HeroRank = 'novice' | 'adept' | 'expert' | 'master' | 'legend';
 
 export interface Hero {
   id: string;
   name: string;
   title: string;
   rarity: Rarity;
+  specialization: HeroSpecialization;
+  rank: HeroRank;
   level: number;
   experience: number;
   leadership: number;
@@ -14,7 +18,33 @@ export interface Hero {
   biography: string;
   assigned: boolean;
   assignedTo?: string;
+  // Expedition bonuses
+  artifactBonus: number; // % chance to find better artifacts
+  speedBonus: number; // % faster expeditions
+  successBonus: number; // % better success chance
 }
+
+export const HERO_SPECIALIZATION_BONUS: Record<HeroSpecialization, { primary: keyof Hero; secondary: keyof Hero; expeditionBonus: { type: 'artifact' | 'speed' | 'success'; value: number } }> = {
+  archaeologist: { primary: 'exploration', secondary: 'knowledge', expeditionBonus: { type: 'artifact', value: 15 } },
+  diplomat: { primary: 'diplomacy', secondary: 'leadership', expeditionBonus: { type: 'success', value: 12 } },
+  warrior: { primary: 'leadership', secondary: 'exploration', expeditionBonus: { type: 'speed', value: 10 } },
+  scholar: { primary: 'knowledge', secondary: 'diplomacy', expeditionBonus: { type: 'artifact', value: 8 } },
+};
+
+export const HERO_RANK_THRESHOLDS: Record<HeroRank, number> = {
+  novice: 0,
+  adept: 500,
+  expert: 1500,
+  master: 4000,
+  legend: 10000,
+};
+
+export const STAT_GROWTH_PER_LEVEL: Record<Rarity, { base: number; perLevel: number }> = {
+  common: { base: 5, perLevel: 2 },
+  rare: { base: 7, perLevel: 3 },
+  epic: { base: 10, perLevel: 4 },
+  legendary: { base: 15, perLevel: 6 },
+};
 
 export interface Region {
   id: string;
@@ -103,6 +133,8 @@ export const initialHeroes: Hero[] = [
     name: 'Дмитро Вишневецький',
     title: 'Козацький гетьман',
     rarity: 'legendary',
+    specialization: 'warrior',
+    rank: 'expert',
     level: 15,
     experience: 2850,
     leadership: 95,
@@ -112,12 +144,17 @@ export const initialHeroes: Hero[] = [
     biography:
       'Засновник Запорозької Січі та легендарний воєначальник. Очолював походи проти османів та досліджував Дике Поле.',
     assigned: false,
+    artifactBonus: 12,
+    speedBonus: 10,
+    successBonus: 8,
   },
   {
     id: 'hero-2',
     name: 'Княгиня Ольга',
     title: 'Київська регентка',
     rarity: 'legendary',
+    specialization: 'diplomat',
+    rank: 'master',
     level: 18,
     experience: 3420,
     leadership: 92,
@@ -127,12 +164,17 @@ export const initialHeroes: Hero[] = [
     biography:
       'Перша християнська правителька Київської Русі. Відома дипломатичною мудрістю та стратегічним хистом.',
     assigned: false,
+    artifactBonus: 10,
+    speedBonus: 8,
+    successBonus: 12,
   },
   {
     id: 'hero-3',
     name: 'Нестор Літописець',
     title: 'Історик-науковець',
     rarity: 'epic',
+    specialization: 'scholar',
+    rank: 'adept',
     level: 12,
     experience: 1680,
     leadership: 58,
@@ -142,12 +184,17 @@ export const initialHeroes: Hero[] = [
     biography:
       'Автор «Повісті временних літ». Майстер історичного документування та збереження давніх рукописів.',
     assigned: false,
+    artifactBonus: 8,
+    speedBonus: 5,
+    successBonus: 6,
   },
   {
     id: 'hero-4',
     name: 'Богдан Хмельницький',
     title: 'Гетьман-командувач',
     rarity: 'legendary',
+    specialization: 'warrior',
+    rank: 'expert',
     level: 16,
     experience: 3100,
     leadership: 94,
@@ -157,12 +204,17 @@ export const initialHeroes: Hero[] = [
     biography:
       'Очільник козацького повстання. Експерт військової стратегії та територіальних експедицій Гетьманщини.',
     assigned: false,
+    artifactBonus: 10,
+    speedBonus: 12,
+    successBonus: 10,
   },
   {
     id: 'hero-5',
     name: 'Агатангел Кримський',
     title: 'Сходознавець',
     rarity: 'rare',
+    specialization: 'scholar',
+    rank: 'adept',
     level: 10,
     experience: 980,
     leadership: 64,
@@ -172,12 +224,17 @@ export const initialHeroes: Hero[] = [
     biography:
       'Видатний мовознавець та орієнталіст. Спеціалізувався на розшифруванні давніх текстів та культурних артефактів.',
     assigned: false,
+    artifactBonus: 15,
+    speedBonus: 5,
+    successBonus: 4,
   },
   {
     id: 'hero-6',
     name: 'Козак-розвідник',
     title: 'Польовий дослідник',
     rarity: 'common',
+    specialization: 'archaeologist',
+    rank: 'novice',
     level: 6,
     experience: 420,
     leadership: 55,
@@ -187,6 +244,9 @@ export const initialHeroes: Hero[] = [
     biography:
       'Досвідчений провідник Дикого Поля. Знавець навігації та пошуку артефактів.',
     assigned: false,
+    artifactBonus: 15,
+    speedBonus: 8,
+    successBonus: 5,
   },
 ];
 

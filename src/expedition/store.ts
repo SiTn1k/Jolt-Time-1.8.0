@@ -11,6 +11,8 @@ import {
   initialArtifacts,
   initialRegions,
   initialNpcs,
+  buildings,
+
 } from './data';
 import {
   MuseumState,
@@ -93,6 +95,10 @@ interface GameState {
   expeditions: Expedition[];
   npcs: Npc[];
 
+  // Building state
+  buildingLevels: Record<string, number>;
+  buildingUpgradeEndTimes: Record<string, number>;
+
   expeditionSlots: number;
   lastTick: number;
   incomeBuffer: number;
@@ -122,6 +128,11 @@ interface GameState {
   collectMuseumIncome: () => void;
   purchaseMuseumUpgrade: (upgradeId: string) => boolean;
   expandExhibitionSlots: () => boolean;
+
+  // buildings
+  upgradeBuilding: (buildingId: string) => boolean;
+  collectBuildingUpgrade: (buildingId: string) => void;
+  getBuildingBonus: (buildingId: string) => number;
 
   // story/quests
   interactWithNpc: (npcId: string) => void;
@@ -155,6 +166,10 @@ export const useExpeditionStore = create<GameState>()(
       regions: initialRegions,
       expeditions: [],
       npcs: initialNpcs,
+
+      // Building state
+      buildingLevels: buildings.reduce((acc, b) => ({ ...acc, [b.id]: b.level }), {}),
+      buildingUpgradeEndTimes: {},
 
       expeditionSlots: 3,
       lastTick: Date.now(),
@@ -504,6 +519,70 @@ export const useExpeditionStore = create<GameState>()(
         return true;
       },
 
+      // Building actions
+      upgradeBuilding: (buildingId) => {
+        const s = get();
+        const building = buildings.find(b => b.id === buildingId);
+        if (!building) return false;
+        
+        const currentLevel = s.buildingLevels[buildingId] || 1;
+        const cost = Math.round(building.upgradeCost * Math.pow(1.5, currentLevel));
+        const upgradeTime = Math.round(building.upgradeTime * Math.pow(1.3, currentLevel) * 1000);
+        
+        if (!s.spendKarbovanets(cost)) {
+          s.pushToast('Недостатньо карбованців', '#FF2A5F');
+          return false;
+        }
+        
+        set((state) => ({
+          buildingUpgradeEndTimes: {
+            ...state.buildingUpgradeEndTimes,
+            [buildingId]: Date.now() + upgradeTime,
+          },
+        }));
+        
+        s.pushToast(`Building ${building.name} upgrading...`, '#FFC72C');
+        return true;
+      },
+
+      collectBuildingUpgrade: (buildingId) => {
+        const s = get();
+        const building = buildings.find(b => b.id === buildingId);
+        if (!building) return;
+        
+        const endTime = s.buildingUpgradeEndTimes[buildingId];
+        if (!endTime || Date.now() < endTime) return;
+        
+        set((state) => {
+          const newLevels = { ...state.buildingLevels };
+          newLevels[buildingId] = (newLevels[buildingId] || 1) + 1;
+          
+          const newEndTimes = { ...state.buildingUpgradeEndTimes };
+          delete newEndTimes[buildingId];
+          
+          return {
+            buildingLevels: newLevels,
+            buildingUpgradeEndTimes: newEndTimes,
+          };
+        });
+        
+        s.pushToast(`Building ${building.name} upgraded!`, '#10B981');
+      },
+
+      getBuildingBonus: (buildingId) => {
+        const s = get();
+        const level = s.buildingLevels[buildingId] || 1;
+        switch (buildingId) {
+          case 'building-1': return 1 + (level - 1) * 0.1;
+          case 'building-2': return level;
+          case 'building-3': return 1 - (level - 1) * 0.1;
+          case 'building-4': return level * 50;
+          case 'building-5': return 1 + (level - 1) * 0.15;
+          case 'building-6': return level * 1000;
+          default: return 1;
+        }
+      },
+
       startExpedition: (regionId, heroIds) => {
         const s = get();
         const region = s.regions.find((r) => r.id === regionId);
@@ -793,6 +872,8 @@ export const useExpeditionStore = create<GameState>()(
         incomeBuffer: s.incomeBuffer,
         museumState: s.museumState,
         storyState: s.storyState,
+        buildingLevels: s.buildingLevels,
+        buildingUpgradeEndTimes: s.buildingUpgradeEndTimes,
       }),
     },
   ),

@@ -14,20 +14,21 @@ import { supabase } from '../lib/supabase';
 import { getTelegramUserId } from '../lib/telegram';
 import type { MuseumState } from './museumData';
 import type { StoryProgress } from './storyData';
+import type { Hero, Artifact, Region, Expedition, Npc } from './data';
 
 const EXPEDITION_SYNC_KEY = 'academy_sync_pending';
-const SYNC_DEBOUNCE_MS = 3000; // 3 seconds debounce
+const SYNC_DEBOUNCE_MS = 3000;
 
 interface ExpeditionData {
   academyLevel: number;
   reputation: number;
   karbovanets: number;
   historicalPrestige: number;
-  heroes: unknown[];
-  artifacts: unknown[];
-  regions: unknown[];
-  expeditions: unknown[];
-  npcs: unknown[];
+  heroes: Hero[];
+  artifacts: Artifact[];
+  regions: Region[];
+  expeditions: Expedition[];
+  npcs: Npc[];
   expeditionSlots: number;
   lastTick: number;
   incomeBuffer: number;
@@ -339,34 +340,61 @@ class AcademySyncService {
 export const academySync = new AcademySyncService();
 
 // React hook for Academy Timeline sync
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useExpeditionStore } from './store';
 
 export function useAcademySync() {
   const store = useExpeditionStore((s) => s);
+  const hasHydrated = useRef(false);
 
   // Initial load from Supabase on mount
   useEffect(() => {
     const loadFromServer = async () => {
-      // Try to load from Supabase first
+      if (hasHydrated.current) return;
+      
       const [expeditionData, storyData, museumData] = await Promise.all([
         academySync.loadExpeditionData(),
         academySync.loadStoryData(),
         academySync.loadMuseumData(),
       ]);
 
-      // Log for debugging
-      if (expeditionData || storyData || museumData) {
-        console.log('Academy data loaded from Supabase');
+      // Apply expedition data to store
+      if (expeditionData) {
+        const updates: Partial<ReturnType<typeof useExpeditionStore.getState>> = {};
+        if (expeditionData.academyLevel !== undefined) updates.academyLevel = expeditionData.academyLevel;
+        if (expeditionData.reputation !== undefined) updates.reputation = expeditionData.reputation;
+        if (expeditionData.karbovanets !== undefined) updates.karbovanets = expeditionData.karbovanets;
+        if (expeditionData.historicalPrestige !== undefined) updates.historicalPrestige = expeditionData.historicalPrestige;
+        if (expeditionData.heroes?.length) updates.heroes = expeditionData.heroes;
+        if (expeditionData.artifacts?.length) updates.artifacts = expeditionData.artifacts;
+        if (expeditionData.regions?.length) updates.regions = expeditionData.regions;
+        if (expeditionData.expeditions?.length) updates.expeditions = expeditionData.expeditions;
+        if (expeditionData.npcs?.length) updates.npcs = expeditionData.npcs;
+        if (expeditionData.expeditionSlots !== undefined) updates.expeditionSlots = expeditionData.expeditionSlots;
+        if (expeditionData.lastTick !== undefined) updates.lastTick = expeditionData.lastTick;
+        if (expeditionData.incomeBuffer !== undefined) updates.incomeBuffer = expeditionData.incomeBuffer;
+        useExpeditionStore.setState(updates);
       }
 
-      // Note: Hydration into store is handled by Zustand persist
-      // localStorage is used as cache, Supabase is source of truth
+      // Apply story data to store
+      if (storyData) {
+        useExpeditionStore.setState({ storyState: storyData });
+      }
+
+      // Apply museum data to store
+      if (museumData) {
+        const updates: Partial<ReturnType<typeof useExpeditionStore.getState>> = {};
+        if (museumData.museumState) updates.museumState = museumData.museumState;
+        if (museumData.reputation !== undefined) updates.reputation = museumData.reputation;
+        if (museumData.totalVisitors !== undefined) updates.museumVisitors = museumData.totalVisitors;
+        useExpeditionStore.setState(updates);
+      }
+
+      hasHydrated.current = true;
+      console.log('Academy data hydrated from Supabase');
     };
 
     loadFromServer();
-
-    // Retry any pending sync
     academySync.retryPendingSync();
   }, []);
 
@@ -391,7 +419,7 @@ export function useAcademySync() {
       expeditionData,
       store.storyState,
       store.museumState,
-      store.museumState.reputation,
+      store.reputation,
       store.museumVisitors,
     );
   }, [store]);

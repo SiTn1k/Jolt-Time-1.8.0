@@ -59,17 +59,24 @@ export function ExpeditionApp() {
   const { syncToServer } = useAcademySync();
 
   useEffect(() => {
-    // advance lastTick immediately so countdowns are correct after reload
     tick();
     const interval = setInterval(() => tick(), 1000);
     return () => clearInterval(interval);
   }, [tick]);
 
-  // Sync to Supabase periodically (every 30 seconds)
+  // Sync to Supabase periodically + on page unload
   useEffect(() => {
     syncToServer();
     const syncInterval = setInterval(() => syncToServer(), 30000);
-    return () => clearInterval(syncInterval);
+    
+    // Sync on page unload
+    const handleUnload = () => syncToServer();
+    window.addEventListener('beforeunload', handleUnload);
+    
+    return () => {
+      clearInterval(syncInterval);
+      window.removeEventListener('beforeunload', handleUnload);
+    };
   }, [syncToServer]);
 
   return (
