@@ -83,7 +83,7 @@
     "passive": "Пасивний",
     "currency_multiplier": "Валюта x{multiplier}",
     "passive_multiplier": "Пасивний x{multiplier}",
-    "level": "Рів.{level}",
+    "level": "Рівень",
     "about_game": "Про гру",
     "game_description": "Україна Крізь Час - історична тапалка про 12 епох України.",
     "game_full_desc": "Від Трипільської культури до Незалежної України.",
@@ -112,7 +112,13 @@
     "max_level": "⭐ Макс. рівень",
     "open_chest": "Відкрити скриню",
     "active": "Активна",
-    "active_boosters": "Активні бустери"
+    "active_boosters": "Активні бустери",
+    "shop": "Магазин",
+    "epochs": "Епохи",
+    "referrals": "Друзі",
+    "stats": "Стат",
+    "levels_remaining": "ще {{count}} рівнів",
+    "unlocks_at_level": "відкривається на рівні {{level}}"
   },
   "ad": {
     "support_game": "Підтримай гру!",

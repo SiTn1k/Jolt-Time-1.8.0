@@ -463,12 +463,12 @@ function App() {
       <div className="bg-gray-900 border-t border-gray-700 flex flex-col flex-1 min-h-0">
         {/* Tab Bar */}
         <div className="flex border-b border-gray-700 shrink-0 overflow-x-auto">
-          <TabButton active={activeTab === 'shop'} onClick={() => setActiveTab('shop')} icon={<ShoppingBag size={18} />} label="Магазин" />
-          <TabButton active={activeTab === 'epochs'} onClick={() => setActiveTab('epochs')} icon={<Crown size={18} />} label="Епохи" badge={state.unlockedEpochs.length} />
-          <TabButton active={activeTab === 'artifacts'} onClick={() => setActiveTab('artifacts')} icon={<Gift size={18} />} label="Артефакти" badge={completedArtifacts} />
-          <TabButton active={activeTab === 'boosters'} onClick={() => setActiveTab('boosters')} icon={<Zap size={18} />} label="Бустери" />
-          <TabButton active={activeTab === 'referrals'} onClick={() => setActiveTab('referrals')} icon={<Users size={18} />} label="Друзі" badge={state.referralsCount || undefined} />
-          <TabButton active={activeTab === 'stats'} onClick={() => setActiveTab('stats')} icon={<Trophy size={18} />} label="Стат" />
+          <TabButton active={activeTab === 'shop'} onClick={() => setActiveTab('shop')} icon={<ShoppingBag size={18} />} label={t('app.shop')} />
+          <TabButton active={activeTab === 'epochs'} onClick={() => setActiveTab('epochs')} icon={<Crown size={18} />} label={t('app.epochs')} badge={state.unlockedEpochs.length} />
+          <TabButton active={activeTab === 'artifacts'} onClick={() => setActiveTab('artifacts')} icon={<Gift size={18} />} label={t('app.artifacts')} badge={completedArtifacts} />
+          <TabButton active={activeTab === 'boosters'} onClick={() => setActiveTab('boosters')} icon={<Zap size={18} />} label={t('app.boosters')} />
+          <TabButton active={activeTab === 'referrals'} onClick={() => setActiveTab('referrals')} icon={<Users size={18} />} label={t('app.referrals')} badge={state.referralsCount || undefined} />
+          <TabButton active={activeTab === 'stats'} onClick={() => setActiveTab('stats')} icon={<Trophy size={18} />} label={t('app.stats')} />
         </div>
 
         {/* Tab Content */}
@@ -523,7 +523,7 @@ function App() {
                     <div className="font-bold text-lg">{epoch.name.ua}</div>
                     <div className="text-xs opacity-80">{epoch.period.ua}</div>
                     <div className="mt-1 text-sm">
-                      Рівень {state.level} / {epoch.levelRange.max}
+                      {tr('app.level')} {state.level} / {epoch.levelRange.max}
                     </div>
                   </div>
                   <div className="text-right">
@@ -589,8 +589,8 @@ function App() {
                         <div className="font-medium">{e.name.ua}</div>
                         <div className="text-xs text-gray-500">
                           {state.level >= e.unlockLevel - 10
-                            ? `ще ${e.unlockLevel - state.level} рівнів`
-                            : `відкривається на рівні ${e.unlockLevel}`
+                            ? tr('app.levels_remaining', { count: e.unlockLevel - state.level })
+                            : tr('app.unlocks_at_level', { level: e.unlockLevel })
                           }
                         </div>
                         {progress > 0 && (
@@ -814,7 +814,7 @@ function App() {
                 <div className="bg-green-500/10 border border-green-500/40 rounded-xl p-3 mb-4">
                   <div className="flex items-center gap-2 text-green-400 text-sm font-semibold mb-2">
                     <Zap className="w-4 h-4" />
-                    Активні бустери
+                    {tr('app.active_boosters')}
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {boosterMultipliers.xp > 1 && (

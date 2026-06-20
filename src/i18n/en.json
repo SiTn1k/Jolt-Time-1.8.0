@@ -83,7 +83,7 @@
     "passive": "Passive",
     "currency_multiplier": "Currency x{multiplier}",
     "passive_multiplier": "Passive x{multiplier}",
-    "level": "Lvl {level}",
+    "level": "Level",
     "about_game": "About game",
     "game_description": "Ukraine Through Time - historical tap game about 12 epochs of Ukraine.",
     "game_full_desc": "From Trypillia culture to Independent Ukraine.",
@@ -112,7 +112,13 @@
     "max_level": "⭐ Max level",
     "open_chest": "Open chest",
     "active": "Active",
-    "active_boosters": "Active boosters"
+    "active_boosters": "Active Boosters",
+    "shop": "Shop",
+    "epochs": "Epochs",
+    "referrals": "Friends",
+    "stats": "Stats",
+    "levels_remaining": "{{count}} levels remaining",
+    "unlocks_at_level": "unlocks at level {{level}}"
   },
   "ad": {
     "support_game": "Support the game!",
