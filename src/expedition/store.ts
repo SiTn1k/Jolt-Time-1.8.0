@@ -37,6 +37,7 @@ import {
   BUILDING_COST_MULTIPLIER,
   ARTIFACT_PRESTIGE_MULTIPLIER,
 } from './balanceConfig';
+import { academySync } from './expeditionSync';
 
 const rarityRank: Record<Rarity, number> = {
   common: 0,
@@ -55,10 +56,6 @@ export function expeditionSeconds(region: Region): number {
 export function restorationSeconds(artifact: Artifact): number {
   // Faster restoration: 8 + rarity * 6 (was 12 + rarity * 9)
   return 8 + rarityRank[artifact.rarity] * 6;
-}
-
-function nextArtifactId(): string {
-  return `artifact-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 }
 
 function pickArtifact(region: Region): { name: string; rarity: Rarity } {
@@ -197,6 +194,10 @@ export const useExpeditionStore = create<GameState>()(
       // Story/Quest state
       storyState: initialStoryProgress,
 
+      // Anti-spam tracking for quest actions
+      _lastQuestAction: 0,
+      _lastObjectiveKey: '',
+
       pushToast: (message, color = '#FFC72C') =>
         set((s) => ({
           toasts: [...s.toasts, { id: toastSeq++, message, color }].slice(-4),
@@ -277,6 +278,19 @@ export const useExpeditionStore = create<GameState>()(
       },
       
       completeQuest: (questId) => {
+        const state = get();
+        
+        // Anti-spam: prevent duplicate completion within 1 second
+        const now = Date.now();
+        if (now - state._lastQuestAction < 1000) {
+          console.warn('Quest completion spam detected, ignoring');
+          return;
+        }
+        if (state.storyState.completedQuests.includes(questId)) {
+          console.warn('Quest already completed:', questId);
+          return;
+        }
+
         // Find quest data to get rewards
         const quest = storyQuests.find(q => q.id === questId);
         if (!quest) return;
@@ -289,31 +303,43 @@ export const useExpeditionStore = create<GameState>()(
               get().addKarbovanets(amount);
               break;
             case 'xp':
+              // TODO: Implement XP reward - needs hero XP tracking system
+              // Requires: Hero interface has experience field but no XP grant logic
+              console.warn('XP reward not implemented:', amount);
+              break;
             case 'academy_xp':
-              // Grant XP (not implemented yet)
+              // TODO: Implement Academy XP - needs academyLevel progression system
+              // Requires: academy XP tracking, academy level-up logic beyond prestige
+              console.warn('Academy XP reward not implemented:', amount);
               break;
             case 'reputation':
               set(st => ({ reputation: st.reputation + amount }));
               break;
             case 'artifact':
-              // Grant artifact by ID
+              // TODO: Implement artifact reward - itemId field exists but no grant logic
+              // Requires: artifact inventory system, fragment collection system
+              console.warn('Artifact reward not implemented:', reward.itemId);
               break;
             case 'hero_fragment':
-              // Grant hero fragment
+              // TODO: Implement hero fragment reward - itemId field exists but no grant logic
+              // Requires: hero fragment inventory, hero unlock via fragments
+              console.warn('Hero fragment reward not implemented:', reward.itemId);
               break;
           }
         });
 
         // Remove from active and add to completed
-        set((state) => {
-          const questProgress = state.storyState.activeQuests.find(qp => qp.questId === questId);
-          if (!questProgress) return state;
+        set((st) => {
+          const questProgress = st.storyState.activeQuests.find(qp => qp.questId === questId);
+          if (!questProgress) return st;
           
           return {
+            ...st,
+            _lastQuestAction: now,
             storyState: {
-              ...state.storyState,
-              activeQuests: state.storyState.activeQuests.filter(qp => qp.questId !== questId),
-              completedQuests: [...state.storyState.completedQuests, questId],
+              ...st.storyState,
+              activeQuests: st.storyState.activeQuests.filter(qp => qp.questId !== questId),
+              completedQuests: [...st.storyState.completedQuests, questId],
             },
           };
         });
@@ -323,20 +349,31 @@ export const useExpeditionStore = create<GameState>()(
       },
 
       updateQuestObjective: (objectiveKey, increment) => {
-        set((state) => {
+        const state = get();
+        
+        // Anti-spam: prevent duplicate calls for same objective within 500ms
+        const now = Date.now();
+        if (now - state._lastQuestAction < 500 && state._lastObjectiveKey === objectiveKey) {
+          return;
+        }
+        
+        set((st) => {
           // Update objective progress in all active quests
-          const updatedActiveQuests = state.storyState.activeQuests.map(qp => ({
+          const updatedActiveQuests = st.storyState.activeQuests.map(qp => ({
             ...qp,
             objectives: {
               ...qp.objectives,
               [objectiveKey]: (qp.objectives[objectiveKey] || 0) + increment,
             },
-            updatedAt: Date.now(),
+            updatedAt: now,
           }));
           
           return {
+            ...st,
+            _lastQuestAction: now,
+            _lastObjectiveKey: objectiveKey,
             storyState: {
-              ...state.storyState,
+              ...st.storyState,
               activeQuests: updatedActiveQuests,
             },
           };
@@ -838,79 +875,107 @@ export const useExpeditionStore = create<GameState>()(
         const exp = s.expeditions.find((e) => e.id === expeditionId);
         if (!exp || exp.collected || Date.now() < exp.endsAt) return;
 
-        const success = Math.random() * 100 <= exp.successChance;
-        const updates: Partial<GameState> = {};
+        // Mark as collected immediately to prevent double-calling
+        set((st) => ({
+          expeditions: st.expeditions.map((e) =>
+            e.id === expeditionId ? { ...e, collected: true, status: 'completed' } : e,
+          ),
+        }));
 
-        // Apply EXPEDITION_REWARD_MULTIPLIER to rewards
-        const finalReward = Math.floor(exp.rewardKarbovanets * EXPEDITION_REWARD_MULTIPLIER);
-        const finalReputation = Math.floor(exp.rewardReputation * EXPEDITION_REWARD_MULTIPLIER);
-        const failureReward = Math.round(finalReward * 0.2);
+        // Use server-side validation for expedition completion
+        const heroId = exp.heroes[0]; // Primary hero assigned to expedition
 
-        set((st) => {
-          // free heroes + grant xp
-          const heroes = st.heroes.map((h) => {
-            if (!exp.heroes.includes(h.id)) return h;
-            const gainedXp = success ? 200 + exp.successChance : 80;
-            let level = h.level;
-            let experience = h.experience + gainedXp;
-            const need = (level + 1) * 200;
-            if (experience >= need) {
-              level += 1;
-              experience -= need;
-            }
-            return { ...h, assigned: false, assignedTo: undefined, level, experience };
-          });
-
-          // unlock next region on success
-          let regions = st.regions;
-          if (success) {
-            const idx = st.regions.findIndex((r) => r.id === exp.regionId);
-            if (idx >= 0 && idx + 1 < st.regions.length && !st.regions[idx + 1].unlocked) {
-              regions = st.regions.map((r, i) =>
-                i === idx + 1 ? { ...r, unlocked: true } : r,
-              );
-            }
+        academySync.completeExpeditionServerValidated(expeditionId, heroId).then((result) => {
+          if (!result.ok) {
+            // Revert collected state on error
+            set((st) => ({
+              expeditions: st.expeditions.map((e) =>
+                e.id === expeditionId ? { ...e, collected: false, status: 'returning' } : e,
+              ),
+            }));
+            s.pushToast('Помилка завершення експедиції', '#FF2A5F');
+            return;
           }
 
-          let artifacts = st.artifacts;
-          if (success) {
-            const newArtifact: Artifact = {
-              id: nextArtifactId(),
-              name: exp.artifactName,
-              era: exp.region,
-              rarity: exp.artifactRarity,
-              status: 'damaged',
-              description: `Знахідка з експедиції до регіону «${exp.region}». Потребує реставрації.`,
-              restoreTime: 60 + rarityRank[exp.artifactRarity] * 60,
-              value: rarityValue[exp.artifactRarity],
-              prestigeBonus: rarityPrestige[exp.artifactRarity],
-            };
-            artifacts = [...st.artifacts, newArtifact];
-          }
+          const { success, rewards } = result as { success?: boolean; rewards?: Record<string, unknown> };
 
-          return {
-            heroes,
-            regions,
-            artifacts,
-            karbovanets: st.karbovanets + (success ? finalReward : failureReward),
-            reputation: st.reputation + (success ? finalReputation : 0),
+          if (success && rewards) {
+            // Server-side success - apply rewards from server
+            const serverKarbovanets = (rewards.karbovanets as number) || 0;
+            const serverPrestige = (rewards.prestigeGained as number) || 0;
+            const artifactId = rewards.artifactId as string | null;
+
+            set((st) => {
+              const heroes = st.heroes.map((h) => {
+                if (!exp.heroes.includes(h.id)) return h;
+                const gainedXp = (rewards.xp as number) || 100;
+                let level = h.level;
+                let experience = h.experience + gainedXp;
+                const need = (level + 1) * 200;
+                if (experience >= need) {
+                  level += 1;
+                  experience -= need;
+                }
+                return { ...h, assigned: false, assignedTo: undefined, level, experience };
+              });
+
+              // Unlock next region on success
+              const idx = st.regions.findIndex((r) => r.id === exp.regionId);
+              const regions = idx >= 0 && idx + 1 < st.regions.length && !st.regions[idx + 1].unlocked
+                ? st.regions.map((r, i) => i === idx + 1 ? { ...r, unlocked: true } : r)
+                : st.regions;
+
+              // Add artifact if found
+              let artifacts = st.artifacts;
+              if (artifactId) {
+                const newArtifact: Artifact = {
+                  id: artifactId,
+                  name: exp.artifactName,
+                  era: exp.region,
+                  rarity: exp.artifactRarity,
+                  status: 'damaged',
+                  description: `Знахідка з експедиції до регіону «${exp.region}». Потребує реставрації.`,
+                  restoreTime: 60 + rarityRank[exp.artifactRarity] * 60,
+                  value: rarityValue[exp.artifactRarity],
+                  prestigeBonus: rarityPrestige[exp.artifactRarity],
+                };
+                artifacts = [...st.artifacts, newArtifact];
+              }
+
+              return {
+                heroes,
+                regions,
+                artifacts,
+                karbovanets: st.karbovanets + serverKarbovanets,
+                historicalPrestige: st.historicalPrestige + serverPrestige,
+                reputation: st.reputation + Math.floor(serverPrestige / 2), // 50% of prestige as reputation
+              };
+            });
+
+            s.pushToast(
+              artifactId
+                ? `Успіх! +${serverKarbovanets} карб., знайдено «${exp.artifactName}»`
+                : `Успіх! +${serverKarbovanets} карб.`,
+              '#FFC72C',
+            );
+            s.updateQuestObjective(`expedition_${exp.regionId}`, 1);
+          } else {
+            // Server-side failure - still give failure reward
+            const failureReward = Math.floor(exp.rewardKarbovanets * EXPEDITION_REWARD_MULTIPLIER * 0.2);
+            set((st) => ({
+              karbovanets: st.karbovanets + failureReward,
+            }));
+            s.pushToast(`Експедиція невдала. +${failureReward} карб.`, '#FF2A5F');
+          }
+        }).catch(() => {
+          // Network error - revert
+          set((st) => ({
             expeditions: st.expeditions.map((e) =>
-              e.id === expeditionId ? { ...e, collected: true, status: 'completed' } : e,
+              e.id === expeditionId ? { ...e, collected: false, status: 'returning' } : e,
             ),
-            ...updates,
-          };
+          }));
+          s.pushToast('Помилка мережі', '#FF2A5F');
         });
-
-        if (success) {
-          s.pushToast(
-            `Успіх! +${finalReward} карб., знайдено «${exp.artifactName}»`,
-            '#FFC72C',
-          );
-          // Track expedition quest objective
-          s.updateQuestObjective(`expedition_${exp.regionId}`, 1);
-        } else {
-          s.pushToast(`Експедиція невдала. +${failureReward} карб.`, '#FF2A5F');
-        }
       },
 
       beginRestoration: (artifactId) => {
