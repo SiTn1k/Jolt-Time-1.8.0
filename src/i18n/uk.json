@@ -75,7 +75,12 @@
     "collection_scythia": "Скіфська колекція",
     "collection_kyiv_rus": "Колекція Київської Русі",
     "collection_cossack": "Козацька колекція",
-    "collection_independence": "Колекція Незалежності"
+    "collection_independence": "Колекція Незалежності",
+    "total_value": "Загальна цінність",
+    "achievements": "Досягнення",
+    "exhibition_events": "Виставкові події",
+    "exhibition_events_desc": "Беріть участь у подіях з обмеженим часом для отримання ексклюзивних нагород та бонусів.",
+    "your_rank": "Ваш ранг"
   },
   "npc": {
     "courtyard": "Подвір'я",
@@ -312,7 +317,9 @@
     "per_minute": "/хв",
     "per_second": "/с",
     "value": "Значення",
-    "status": "Статус"
+    "status": "Статус",
+    "continue": "Продовжити",
+    "progress": "Прогрес"
   },
   "tabs": {
     "shop": "Магазин",

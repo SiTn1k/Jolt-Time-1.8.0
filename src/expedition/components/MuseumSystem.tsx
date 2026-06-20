@@ -785,7 +785,7 @@ function AchievementsTab({ museumState, museumArtifacts }: { museumState: any; m
 
 // Events Tab Component
 function EventsTab({ museumState }: { museumState: any }) {
-  useTranslation();
+  const { t } = useTranslation();
   const now = Date.now();
   const activeEvents = EXHIBITION_EVENTS.filter(e => 
     museumState.reputation >= e.requiredReputation &&
@@ -799,10 +799,10 @@ function EventsTab({ museumState }: { museumState: any }) {
       <Card className="border-[#FFC72C]/30 p-4">
         <div className="flex items-center gap-2 mb-2">
           <Calendar className="w-5 h-5" style={{ color: '#FFC72C' }} />
-          <span className="font-medium" style={{ fontFamily: "'Exo 2', sans-serif" }}>Exhibition Events</span>
+          <span className="font-medium" style={{ fontFamily: "'Exo 2', sans-serif" }}>{t('museum.exhibition_events')}</span>
         </div>
         <p className="text-xs text-muted-foreground">
-          Participate in time-limited events to earn exclusive rewards and bonuses.
+          {t('museum.exhibition_events_desc')}
         </p>
       </Card>
 
@@ -1016,7 +1016,7 @@ function RankingsTab({ museumState }: { museumState: any }) {
               {currentTier.icon}
             </div>
             <div>
-              <div className="text-xs text-muted-foreground">Your Rank</div>
+              <div className="text-xs text-muted-foreground">{t('museum.your_rank')}</div>
               <div className="text-xl font-bold" style={{ color: currentTier.color }}>#{userRank.rank}</div>
             </div>
             <div className="ml-auto text-right">
