@@ -136,7 +136,10 @@
     "x2_income": "x2 Дохід на 15 хв",
     "energy_boost": "+20 Енергії",
     "continue_with_boost": "Продовжуй грати з бустом",
-    "double_passive": "Подвійний пасивний дохід"
+    "double_passive": "Подвійний пасивний дохід",
+    "chest_milestone": "10 скринь відкрито!",
+    "chest_milestone_desc": "Ти відкрив {{count}} скринь! Подивись рекламу для бонусу 🎁",
+    "cannot_skip": "Рекламу неможливо пропустити"
   },
   "museum": {
     "title": "Національний музей",
@@ -829,7 +832,14 @@
     "collect_artifacts": "Збери 10 артефактів щоб відкрити",
     "locked_academy": "Академія заблокована",
     "progress": "Прогрес",
-    "unlock_at": "Відкриється на престижі"
+    "unlock_at": "Відкриється на престижі",
+    "milestones": {
+      "first_journey": "Перша подорож",
+      "treasure_seeker": "Шукач скарбів",
+      "collector": "Колекціонер",
+      "academy_master": "Володар Академії",
+      "remaining": "Залишилось"
+    }
   },
   "story_events": {
     "academy_first_discovery": "Перше відкриття",
@@ -1080,7 +1090,9 @@
     "energy_per_ad": "+{amount} енергії за рекламу",
     "energy_amount": "+{amount} Енергії",
     "remaining_today": "{remaining}/{max} сьогодні",
-    "limit_reached": "Ліміт вичерпано"
+    "limit_reached": "Ліміт вичерпано",
+    "mandatory_ad": "Обов'язкова реклама",
+    "watch_to_continue": "Дивитись щоб продовжити"
   },
   "ads_limit": "Ліміт вичерпано",
   "gacha": {

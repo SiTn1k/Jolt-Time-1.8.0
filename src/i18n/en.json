@@ -136,7 +136,10 @@
     "x2_income": "x2 Income for 15 min",
     "energy_boost": "+20 Energy",
     "continue_with_boost": "Continue playing with boost",
-    "double_passive": "Double passive income"
+    "double_passive": "Double passive income",
+    "chest_milestone": "10 Chests Opened!",
+    "chest_milestone_desc": "You've opened {{count}} chests! Watch ad for bonus 🎁",
+    "cannot_skip": "Ad cannot be skipped"
   },
   "duplicate_tab": {
     "title": "Game opened in another tab",
@@ -705,7 +708,14 @@
     "story": "Campaign",
     "story_desc": "Deep historical campaign",
     "progress": "Progress to unlock",
-    "collect_artifacts": "Collect artifacts to increase Prestige"
+    "collect_artifacts": "Collect artifacts to increase Prestige",
+    "milestones": {
+      "first_journey": "First Journey",
+      "treasure_seeker": "Treasure Seeker",
+      "collector": "Collector",
+      "academy_master": "Academy Master",
+      "remaining": "Remaining"
+    }
   },
   "story_events": {
     "academy_first_discovery": "First Discovery",
@@ -965,7 +975,9 @@
     "energy_per_ad": "+{amount} energy per ad",
     "energy_amount": "+{amount} Energy",
     "remaining_today": "{remaining}/{max} today",
-    "limit_reached": "Limit reached"
+    "limit_reached": "Limit reached",
+    "mandatory_ad": "Mandatory Ad",
+    "watch_to_continue": "Watch to Continue"
   },
   "ads_limit": "Limit reached",
   "gacha": {

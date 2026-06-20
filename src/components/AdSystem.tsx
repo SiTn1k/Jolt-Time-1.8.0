@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Battery, Gift, Zap, AlertCircle, Loader2, X } from 'lucide-react';
+import { Battery, Gift, Zap, AlertCircle, Loader2, X, Play } from 'lucide-react';
 import { hapticImpact, hapticNotification } from '../lib/telegram';
 import { useTranslation } from '../i18n';
 import { getTelegramUserId } from '../lib/telegram';
@@ -9,7 +9,8 @@ import {
 
 // ═══════════════════════════════════════════════════════════════════════
 // SESSION ADS COMPONENT
-// Shows after 20 minutes of active gameplay
+// Shows after 15 minutes of ACTIVE gameplay (tracking taps)
+// Grace period: 10 min for new players (level < 10)
 // ═══════════════════════════════════════════════════════════════════════
 
 interface SessionAdModalProps {
@@ -139,8 +140,9 @@ export function SessionAdModal({ prestigeLevel, onReward, onClose }: SessionAdMo
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// CHEST ADS COMPONENT
-// Shows after every 10th chest
+// CHEST ADS COMPONENT - MANDATORY
+// Shows after every 10th chest - CANNOT BE SKIPPED
+// User MUST watch ad to continue playing
 // ═══════════════════════════════════════════════════════════════════════
 
 interface ChestAdModalProps {
@@ -158,6 +160,12 @@ export function ChestAdModal({ prestigeLevel, chestsOpened, onReward, onClose }:
 
   useEffect(() => {
     controllerRef.current = initAdsgram();
+  }, []);
+
+  // Prevent closing by clicking outside
+  const handleBackdropClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
   }, []);
 
   const handleWatchAd = useCallback(async () => {
@@ -196,31 +204,51 @@ export function ChestAdModal({ prestigeLevel, chestsOpened, onReward, onClose }:
   }, [prestigeLevel, onReward, onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm">
-      <div className="w-full max-w-sm mx-4 bg-gray-900 rounded-3xl overflow-hidden shadow-2xl border border-purple-500/30">
-        <div className="p-6 text-center bg-gradient-to-b from-purple-900/50 to-gray-900">
-          <div className="w-16 h-16 mx-auto mb-4 bg-purple-500/20 rounded-full flex items-center justify-center">
-            <Gift className="w-8 h-8 text-purple-400" />
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md"
+      onClick={handleBackdropClick}
+    >
+      {/* Animated glow effect */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-radial from-purple-500/20 to-transparent animate-pulse" />
+      </div>
+      
+      <div className="w-full max-w-sm mx-4 bg-gray-900 rounded-3xl overflow-hidden shadow-2xl border-2 border-purple-500 relative">
+        {/* Non-skippable badge */}
+        <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-purple-600 to-pink-600 py-1 text-center">
+          <span className="text-xs font-bold text-white uppercase tracking-wider">
+            {t('ad_system.mandatory_ad')}
+          </span>
+        </div>
+        
+        <div className="p-6 pt-10 text-center bg-gradient-to-b from-purple-900/50 to-gray-900">
+          <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-full flex items-center justify-center border-2 border-purple-500 animate-bounce">
+            <Gift className="w-10 h-10 text-purple-400" />
           </div>
-          <h2 className="text-xl font-bold text-white mb-2">Чудово! Відкрито {chestsOpened} скринь</h2>
+          <h2 className="text-xl font-bold text-white mb-2">
+            🎉 {t('ad.chest_milestone')} 🎉
+          </h2>
           <p className="text-gray-400 text-sm">
-            Отримай бонус за відкриття кожної 10-ї скрині!
+            {t('ad.chest_milestone_desc', { count: chestsOpened })}
           </p>
         </div>
 
         <div className="p-4">
-          <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-3 mb-4">
-            <div className="text-purple-400 font-bold text-center">
-              {prestigeLevel >= 1 ? '+10 Енергії' : '+5% шанс рідкісного'}
+          <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/50 rounded-xl p-4 mb-4 text-center">
+            <div className="text-2xl mb-2">🎁</div>
+            <div className="text-purple-400 font-bold text-lg">
+              {prestigeLevel >= 1 ? '+10 Енергії ⚡' : '+5% рідкісний шанс ✨'}
             </div>
-            <div className="text-xs text-gray-400 text-center mt-1">
-              {prestigeLevel >= 1 ? 'Наступний тап' : 'Для наступної скрині'}
+            <div className="text-xs text-gray-400 mt-2">
+              {prestigeLevel >= 1 
+                ? 'Потрібно для наступного тапу' 
+                : 'Для наступної легендарної скрині'}
             </div>
           </div>
 
           {error && (
             <div className="flex items-center gap-2 text-red-400 text-sm mb-3 bg-red-500/10 rounded-lg p-2.5">
-              <AlertCircle className="w-4 h-4" />
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>{error}</span>
             </div>
           )}
@@ -228,28 +256,29 @@ export function ChestAdModal({ prestigeLevel, chestsOpened, onReward, onClose }:
           <button
             onClick={handleWatchAd}
             disabled={isLoading}
-            className={`w-full py-3 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 mb-2 ${
+            className={`w-full py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 ${
               isLoading
                 ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white shadow-lg'
+                : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-lg shadow-purple-500/30 active:scale-95'
             }`}
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-6 h-6 animate-spin" />
                 <span>{t('ad.loading')}</span>
               </>
             ) : (
               <>
-                <Gift className="w-5 h-5" />
-                <span>{t('ad_system.get_bonus')}</span>
+                <Play className="w-6 h-6" />
+                <span>{t('ad_system.watch_to_continue')}</span>
               </>
             )}
           </button>
 
-          <button onClick={onClose} className="w-full py-2 text-gray-400 text-sm hover:text-white transition-colors">
-            {t('ad_system.skip')}
-          </button>
+          {/* No skip button - this ad is MANDATORY */}
+          <p className="text-center text-xs text-gray-500 mt-3">
+            {t('ad.cannot_skip')}
+          </p>
         </div>
       </div>
     </div>
@@ -433,19 +462,25 @@ export function EnergyRestoreAdButton({
 
 // ═══════════════════════════════════════════════════════════════════════
 // SESSION AD TRIGGER HOOK
-// Tracks session time and triggers ad modal
+// Tracks ACTIVE gameplay time and triggers ad modal
+// Only counts time when user is actively playing (tapping)
 // ═══════════════════════════════════════════════════════════════════════
 
-const SESSION_AD_INTERVAL_MS = 20 * 60 * 1000; // 20 minutes
-const NEW_PLAYER_GRACE_MS = 5 * 60 * 1000; // 5 minutes for new players
+const SESSION_AD_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes of ACTIVE gameplay
+const NEW_PLAYER_GRACE_MS = 10 * 60 * 1000; // 10 minutes for new players
 const NEW_PLAYER_LEVEL_THRESHOLD = 10;
+const ACTIVITY_TIMEOUT_MS = 30 * 1000; // 30 seconds - if no tap, consider inactive
 
 export function useSessionAdTrigger(
   level: number,
   sessionStartAt: number,
-  lastSessionAdAt?: number
+  lastSessionAdAt?: number,
+  isActive?: boolean // Whether user is currently active (tapping)
 ) {
   const [shouldShowSessionAd, setShouldShowSessionAd] = useState(false);
+  const activeTimeRef = useRef(0);
+  const lastActivityRef = useRef(Date.now());
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     // New player grace period
@@ -456,23 +491,41 @@ export function useSessionAdTrigger(
       }
     }
 
-    // Check if 20 minutes have passed since last session ad (or session start)
-    const lastAd = lastSessionAdAt || sessionStartAt;
-    const timeSinceLastAd = Date.now() - lastAd;
-
-    if (timeSinceLastAd >= SESSION_AD_INTERVAL_MS) {
-      setShouldShowSessionAd(true);
-    }
-
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - (lastSessionAdAt || sessionStartAt);
-      if (elapsed >= SESSION_AD_INTERVAL_MS) {
-        setShouldShowSessionAd(true);
+    // Start tracking active time
+    intervalRef.current = setInterval(() => {
+      const now = Date.now();
+      const timeSinceLastActivity = now - lastActivityRef.current;
+      
+      // Only count as active if user tapped within last 30 seconds
+      if (isActive || timeSinceLastActivity < ACTIVITY_TIMEOUT_MS) {
+        activeTimeRef.current += 1000; // Add 1 second of active time
+        lastActivityRef.current = now;
       }
-    }, 60000); // Check every minute
+      
+      // Check if 15 minutes of active time accumulated
+      if (activeTimeRef.current >= SESSION_AD_INTERVAL_MS) {
+        const lastAd = lastSessionAdAt || sessionStartAt;
+        // Only show if more than 15 min since last ad was shown
+        if (now - lastAd >= SESSION_AD_INTERVAL_MS) {
+          setShouldShowSessionAd(true);
+          activeTimeRef.current = 0; // Reset active time counter
+        }
+      }
+    }, 1000); // Check every second
 
-    return () => clearInterval(interval);
-  }, [level, sessionStartAt, lastSessionAdAt]);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [level, sessionStartAt, lastSessionAdAt, isActive]);
+
+  // Track when user becomes active (taps)
+  useEffect(() => {
+    if (isActive) {
+      lastActivityRef.current = Date.now();
+    }
+  }, [isActive]);
 
   const dismissSessionAd = useCallback(() => {
     setShouldShowSessionAd(false);
