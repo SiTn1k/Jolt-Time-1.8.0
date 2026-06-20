@@ -365,6 +365,7 @@
     "per_hour": "/hr",
     "per_minute": "/min",
     "per_second": "/sec",
+    "seconds": "sec",
     "coins": "Coins",
     "pending": "Pending",
     "complete": "Complete",

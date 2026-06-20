@@ -128,9 +128,9 @@ export function MuseumSystem({ isOpen, onClose }: MuseumSystemProps) {
             { id: 'collections' as TabType, icon: Gift, label: t('museum.tab_collections') },
             { id: 'upgrades' as TabType, icon: Settings, label: t('museum.tab_upgrades') },
             { id: 'stats' as TabType, icon: TrendingUp, label: t('museum.tab_stats') },
-            { id: 'achievements' as TabType, icon: Trophy, label: '🏆' },
-            { id: 'events' as TabType, icon: Calendar, label: '📅' },
-            { id: 'rankings' as TabType, icon: Crown, label: '👑' },
+            { id: 'achievements' as TabType, icon: Trophy, label: t('museum.tab_achievements') },
+            { id: 'events' as TabType, icon: Calendar, label: t('museum.tab_events') },
+            { id: 'rankings' as TabType, icon: Crown, label: t('museum.tab_rankings') },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -944,6 +944,7 @@ function EventsTab({ museumState }: { museumState: MuseumState }) {
 
 // Rankings Tab Component
 function RankingsTab({ museumState }: { museumState: MuseumState }) {
+  const { t } = useTranslation();
   const [leaderboardType, setLeaderboardType] = useState<LeaderboardType>('global');
   const [metric, setMetric] = useState<RankingMetric>('reputation');
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
@@ -977,8 +978,6 @@ function RankingsTab({ museumState }: { museumState: MuseumState }) {
       default: return entry.reputation;
     }
   };
-
-  const { t } = useTranslation();
 
   const getMetricLabelMap = (): Record<RankingMetric, string> => ({
     prestige: t('expedition.leaderboard_metric_prestige'),

@@ -19,6 +19,7 @@ interface StorySystemProps {
   storyState: StoryProgress;
   onInteractWithNpc: (npcId: string) => void;
   onStartQuest: (questId: string) => void;
+  onCompleteQuest?: (questId: string) => void;
   onClaimReward?: (npcId: string, rewardKey: string) => void;
 }
 
@@ -32,7 +33,7 @@ export function StorySystem({
   onStartQuest,
   onCompleteQuest,
   onClaimReward,
-}: StorySystemProps & { onCompleteQuest?: (questId: string) => void }) {
+}: StorySystemProps) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('npcs');
   const [selectedNpc, setSelectedNpc] = useState<StoryNpc | null>(null);
