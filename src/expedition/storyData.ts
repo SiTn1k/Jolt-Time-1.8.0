@@ -43,6 +43,214 @@ export const RELATIONSHIP_REWARDS: Record<RelationshipLevel, RelationshipReward>
   6: { karbovanets: 1000, reputation: 100, artifactFragment: { rarity: 'epic', amount: 2 }, heroFragment: { heroId: 'any', amount: 5 } },
 };
 
+// ═══════════════════════════════════════════════════════════════════════
+// STORY ARC SYSTEM - For long-term content (up to 20 arcs)
+// ═══════════════════════════════════════════════════════════════════════
+
+export interface ArcRequirements {
+  reputation?: number;
+  prestige?: number;
+  completedQuests?: string[];      // Quest IDs that must be completed
+  completedArcs?: number[];         // Arc numbers that must be completed
+  relationshipLevel?: Record<string, RelationshipLevel>; // NPC ID -> required level
+  museumCollections?: number;      // Number of completed museum collections
+  artifacts?: number;              // Total artifacts collected
+}
+
+// Helper to check if arc requirements are met
+export function checkArcRequirements(
+  arc: ArcMetadata,
+  state: {
+    reputation: number;
+    historicalPrestige: number;
+    completedQuests: string[];
+    completedArcs: number[];
+    npcRelationships: Record<string, { relationshipLevel: RelationshipLevel }>;
+    museumCompletedCollections: number;
+    totalArtifacts: number;
+  }
+): { met: boolean; missing: string[] } {
+  const missing: string[] = [];
+  const req = arc.requirements;
+  
+  if (req.reputation && state.reputation < req.reputation) {
+    missing.push(`Репутація: потрібно ${req.reputation}`);
+  }
+  
+  if (req.prestige && state.historicalPrestige < req.prestige) {
+    missing.push(`Престиж: потрібно ${req.prestige}`);
+  }
+  
+  if (req.completedQuests) {
+    for (const questId of req.completedQuests) {
+      if (!state.completedQuests.includes(questId)) {
+        missing.push(`Квест: ${questId}`);
+      }
+    }
+  }
+  
+  if (req.completedArcs) {
+    for (const arcNum of req.completedArcs) {
+      if (!state.completedArcs.includes(arcNum)) {
+        missing.push(`Арк ${arcNum} завершено`);
+      }
+    }
+  }
+  
+  if (req.relationshipLevel) {
+    for (const [npcId, requiredLevel] of Object.entries(req.relationshipLevel)) {
+      const npcRel = state.npcRelationships[npcId];
+      if (!npcRel || npcRel.relationshipLevel < (requiredLevel as RelationshipLevel)) {
+        missing.push(`NPC довіра: рівень ${requiredLevel}`);
+      }
+    }
+  }
+  
+  if (req.museumCollections && state.museumCompletedCollections < req.museumCollections) {
+    missing.push(`Колекції: ${req.museumCollections}`);
+  }
+  
+  if (req.artifacts && state.totalArtifacts < req.artifacts) {
+    missing.push(`Артефакти: ${req.artifacts}`);
+  }
+  
+  return { met: missing.length === 0, missing };
+}
+
+export interface ArcMetadata {
+  arcNumber: number;
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  requirements: ArcRequirements;
+  npcIds: string[];                // NPCs involved in this arc
+  regionIds: string[];             // Regions involved
+  estimatedDuration: string;        // e.g., "1-2 weeks"
+}
+
+export const STORY_ARCS: ArcMetadata[] = [
+  {
+    arcNumber: 1,
+    name: 'Трипільська культура',
+    description: 'Початок археологічної подорожі',
+    icon: '🏺',
+    color: '#FFC72C',
+    requirements: {},
+    npcIds: ['story-archaeologist-academy'],
+    regionIds: ['region-1'],
+    estimatedDuration: '1-2 days',
+  },
+  {
+    arcNumber: 2,
+    name: 'Скіфія',
+    description: 'Воїни степів',
+    icon: '⚔️',
+    color: '#3B82F6',
+    requirements: {
+      completedArcs: [1],
+      reputation: 100,
+    },
+    npcIds: ['story-archaeologist-academy'],
+    regionIds: ['region-2'],
+    estimatedDuration: '3-5 days',
+  },
+  {
+    arcNumber: 3,
+    name: 'Київська Русь',
+    description: 'Епоха князів',
+    icon: '⛪',
+    color: '#A855F7',
+    requirements: {
+      completedArcs: [2],
+      reputation: 500,
+      relationshipLevel: { 'story-knyaz-vladimir': 2 },
+    },
+    npcIds: ['story-knyaz-vladimir'],
+    regionIds: ['region-3'],
+    estimatedDuration: '1 week',
+  },
+  {
+    arcNumber: 4,
+    name: 'Козаччина',
+    description: 'Лицарі вольності',
+    icon: '🗡️',
+    color: '#F59E0B',
+    requirements: {
+      completedArcs: [3],
+      reputation: 1000,
+      relationshipLevel: { 'story-hetman-khmelnytsky': 3 },
+    },
+    npcIds: ['story-hetman-khmelnytsky'],
+    regionIds: ['region-4'],
+    estimatedDuration: '1-2 weeks',
+  },
+  {
+    arcNumber: 5,
+    name: 'Незалежність',
+    description: 'Сучасна історія',
+    icon: '🏴',
+    color: '#00E5FF',
+    requirements: {
+      completedArcs: [4],
+      reputation: 2000,
+      museumCollections: 3,
+    },
+    npcIds: ['story-knyaz-vladimir', 'story-monk-pereyaslav'],
+    regionIds: ['region-5'],
+    estimatedDuration: '1-2 weeks',
+  },
+  // Future arcs - prepared for expansion
+  {
+    arcNumber: 6,
+    name: 'Галицько-Волинське князівство',
+    description: 'Західні землі',
+    icon: '🦁',
+    color: '#EF4444',
+    requirements: {
+      completedArcs: [5],
+      reputation: 5000,
+      prestige: 1000,
+      museumCollections: 5,
+    },
+    npcIds: [],
+    regionIds: [],
+    estimatedDuration: '2-3 weeks',
+  },
+  {
+    arcNumber: 7,
+    name: 'Українське відродження',
+    description: 'Культурний розквіт',
+    icon: '🎨',
+    color: '#EC4899',
+    requirements: {
+      completedArcs: [6],
+      reputation: 10000,
+      prestige: 5000,
+      artifacts: 50,
+    },
+    npcIds: [],
+    regionIds: [],
+    estimatedDuration: '2-4 weeks',
+  },
+  {
+    arcNumber: 8,
+    name: 'Легенди української історії',
+    description: 'Фінальний арк',
+    icon: '⭐',
+    color: '#FFD700',
+    requirements: {
+      completedArcs: [7],
+      reputation: 20000,
+      prestige: 10000,
+      museumCollections: 8,
+    },
+    npcIds: [],
+    regionIds: [],
+    estimatedDuration: '1 month+',
+  },
+];
+
 // NPC Relationship Interface
 export interface NpcRelationship {
   npcId: string;
