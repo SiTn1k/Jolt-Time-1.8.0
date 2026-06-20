@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { useExpeditionStore } from '../store';
-import { museumCollections, museumUpgrades, getReputationLevel } from '../museumData';
+import { museumCollections, museumUpgrades, getReputationLevel, MUSEUM_ACHIEVEMENTS, LEGENDARY_EXHIBITIONS, RANKING_TIERS, getRankingTier, EXHIBITION_EVENTS } from '../museumData';
 import { motion } from 'motion/react';
 import { 
   Landmark, TrendingUp, Award, Sparkles, Eye, 
   Plus, Minus, Star, Gift, 
-  X, Settings
+  X, Settings, Trophy, Calendar, Crown
 } from 'lucide-react';
 import { Card, Badge, Progress } from '../ui';
 import type { Artifact, Rarity } from '../data';
 import { useTranslation } from '../../i18n';
 
-type TabType = 'exhibitions' | 'collections' | 'upgrades' | 'stats';
+type TabType = 'exhibitions' | 'collections' | 'upgrades' | 'stats' | 'achievements' | 'events' | 'rankings';
 
 const rarityConfig: Record<Rarity, { color: string; labelKey: string }> = {
   common: { color: '#8B949E', labelKey: 'artifacts.rarity_common' },
@@ -127,18 +127,20 @@ export function MuseumSystem({ isOpen, onClose }: MuseumSystemProps) {
             { id: 'collections' as TabType, icon: Gift, label: t('museum.tab_collections') },
             { id: 'upgrades' as TabType, icon: Settings, label: t('museum.tab_upgrades') },
             { id: 'stats' as TabType, icon: TrendingUp, label: t('museum.tab_stats') },
+            { id: 'achievements' as TabType, icon: Trophy, label: '🏆' },
+            { id: 'events' as TabType, icon: Calendar, label: '📅' },
+            { id: 'rankings' as TabType, icon: Crown, label: '👑' },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl whitespace-nowrap transition-all ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl whitespace-nowrap transition-all text-sm ${
                 activeTab === tab.id
                   ? 'bg-[#9747FF] text-white'
                   : 'bg-white/10 text-gray-300 hover:bg-white/20'
               }`}
             >
-              <tab.icon className="w-4 h-4" />
-              {tab.label}
+              <span>{tab.label}</span>
             </button>
           ))}
         </div>
@@ -176,6 +178,25 @@ export function MuseumSystem({ isOpen, onClose }: MuseumSystemProps) {
             museumState={museumState}
             hourlyIncome={hourlyIncome}
             exhibitedArtifacts={exhibitedArtifacts}
+          />
+        )}
+
+        {activeTab === 'achievements' && (
+          <AchievementsTab
+            museumState={museumState}
+            museumArtifacts={museumArtifacts}
+          />
+        )}
+
+        {activeTab === 'events' && (
+          <EventsTab
+            museumState={museumState}
+          />
+        )}
+
+        {activeTab === 'rankings' && (
+          <RankingsTab
+            museumState={museumState}
           />
         )}
 
@@ -661,6 +682,378 @@ function StatsTab({
                 <span>{upgrade.icon}</span>
                 <span className="text-muted-foreground">{t(upgrade.nameKey)}:</span>
                 <span style={{ color: '#FFC72C' }}>{level}</span>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      {/* Achievements Section */}
+      <Card className="border-white/10 p-4">
+        <h3 className="text-sm font-medium mb-3" style={{ fontFamily: "'Exo 2', sans-serif" }}>
+          🏆 {t('museum.achievements') || 'Achievements'}
+        </h3>
+        <div className="text-sm text-muted-foreground">
+          {museumState.achievements?.length || 0} / {MUSEUM_ACHIEVEMENTS.length} unlocked
+        </div>
+        <Progress value={(museumState.achievements?.length || 0) / MUSEUM_ACHIEVEMENTS.length * 100} className="h-2 mt-2" />
+      </Card>
+    </div>
+  );
+}
+
+// Achievements Tab Component
+function AchievementsTab({ museumState, museumArtifacts }: { museumState: any; museumArtifacts: Artifact[] }) {
+  useTranslation();
+  const unlockedIds = museumState.achievements || [];
+  
+  const getProgress = (achievement: any) => {
+    switch (achievement.requirement.type) {
+      case 'visitors': return museumState.totalVisitorsAllTime || 0;
+      case 'artifacts': return museumArtifacts.length;
+      case 'collections': return museumState.completedCollections?.length || 0;
+      case 'reputation': return museumState.reputation;
+      case 'exhibitions': return museumState.exhibitions?.filter((e: any) => e.artifactId).length || 0;
+      case 'events': return museumState.eventParticipation?.length || 0;
+      default: return 0;
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <Card className="border-white/10 p-3 text-center">
+          <div className="text-2xl font-bold" style={{ color: '#FFC72C' }}>
+            {unlockedIds.length}
+          </div>
+          <div className="text-xs text-muted-foreground">Unlocked</div>
+        </Card>
+        <Card className="border-white/10 p-3 text-center">
+          <div className="text-2xl font-bold" style={{ color: '#9747FF' }}>
+            {MUSEUM_ACHIEVEMENTS.length - unlockedIds.length}
+          </div>
+          <div className="text-xs text-muted-foreground">Locked</div>
+        </Card>
+      </div>
+
+      {MUSEUM_ACHIEVEMENTS.map((achievement) => {
+        const isUnlocked = unlockedIds.includes(achievement.id);
+        const current = getProgress(achievement);
+        const progress = Math.min(100, (current / achievement.requirement.value) * 100);
+        
+        return (
+          <Card
+            key={achievement.id}
+            className={`border-white/10 p-4 ${isUnlocked ? 'border-[#FFC72C]/30 bg-[#FFC72C]/5' : ''}`}
+          >
+            <div className="flex items-start gap-3">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${
+                isUnlocked ? 'bg-[#FFC72C]/20' : 'bg-white/10 opacity-50'
+              }`}>
+                {achievement.icon}
+              </div>
+              <div className="flex-1">
+                <h3 className={`text-sm font-medium ${!isUnlocked && achievement.secret ? 'text-gray-500' : ''}`}>
+                  {isUnlocked || !achievement.secret ? achievement.nameKey.split('.').pop() : '???'}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {isUnlocked || !achievement.secret ? achievement.descriptionKey.split('.').pop() : 'Secret achievement'}
+                </p>
+                {!isUnlocked && !achievement.secret && (
+                  <div className="mt-2">
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-muted-foreground">{current} / {achievement.requirement.value}</span>
+                      <span style={{ color: '#FFC72C' }}>{Math.round(progress)}%</span>
+                    </div>
+                    <Progress value={progress} className="h-1.5" />
+                  </div>
+                )}
+                {isUnlocked && (
+                  <div className="mt-2 text-xs" style={{ color: '#10B981' }}>
+                    ✓ Completed • +{achievement.reward.amount} {achievement.reward.type}
+                  </div>
+                )}
+              </div>
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
+// Events Tab Component
+function EventsTab({ museumState }: { museumState: any }) {
+  useTranslation();
+  const now = Date.now();
+  const activeEvents = EXHIBITION_EVENTS.filter(e => 
+    museumState.reputation >= e.requiredReputation &&
+    (e.endDate === 0 || e.endDate > now)
+  );
+  const participated = museumState.eventParticipation || [];
+
+  return (
+    <div className="space-y-4">
+      {/* Event Info */}
+      <Card className="border-[#FFC72C]/30 p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Calendar className="w-5 h-5" style={{ color: '#FFC72C' }} />
+          <span className="font-medium" style={{ fontFamily: "'Exo 2', sans-serif" }}>Exhibition Events</span>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Participate in time-limited events to earn exclusive rewards and bonuses.
+        </p>
+      </Card>
+
+      {/* Active Events */}
+      {activeEvents.length === 0 ? (
+        <Card className="border-white/10 p-6 text-center">
+          <div className="text-4xl mb-2">🎭</div>
+          <p className="text-sm text-muted-foreground">
+            Increase your reputation to unlock events
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Next event unlocks at 500 reputation
+          </p>
+        </Card>
+      ) : (
+        activeEvents.map((event) => {
+          const isActive = participated.includes(event.id);
+          
+          return (
+            <Card
+              key={event.id}
+              className={`border-white/10 p-4 ${isActive ? 'border-[#9747FF]/30 bg-[#9747FF]/5' : ''}`}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{event.theme === 'gold' ? '👑' : event.theme === 'warrior' ? '⚔️' : '🏺'}</span>
+                  <div>
+                    <h3 className="text-sm font-medium">
+                      {event.nameKey.split('.').pop()}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {event.nameKey.split('.').pop()} Event
+                    </p>
+                  </div>
+                </div>
+                {isActive && (
+                  <Badge style={{ backgroundColor: '#9747FF', color: '#fff' }}>
+                    Active
+                  </Badge>
+                )}
+              </div>
+              
+              <p className="text-xs text-muted-foreground mb-3">
+                {event.descriptionKey.split('.').pop()}
+              </p>
+
+              {/* Bonuses */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                {event.bonuses.map((bonus, i) => (
+                  <span key={i} className="text-xs px-2 py-1 rounded-full bg-[#FFC72C]/20" style={{ color: '#FFC72C' }}>
+                    +{bonus.value}% {bonus.type}
+                  </span>
+                ))}
+              </div>
+
+              {/* Rewards */}
+              <div className="text-xs text-muted-foreground mb-3">
+                Rewards: {event.rewards.map(r => `+${r.amount} ${r.type}`).join(', ')}
+              </div>
+
+              <button
+                className={`w-full py-2 rounded-lg text-sm font-medium transition-all ${
+                  isActive
+                    ? 'bg-white/10 text-gray-500 cursor-not-allowed'
+                    : 'bg-[#9747FF] text-white hover:bg-[#9747FF]/90'
+                }`}
+                disabled={isActive}
+              >
+                {isActive ? 'Participating' : 'Join Event'}
+              </button>
+            </Card>
+          );
+        })
+      )}
+
+      {/* Legendary Exhibitions */}
+      <h3 className="text-sm font-medium mt-6 mb-3" style={{ fontFamily: "'Exo 2', sans-serif" }}>
+        🌟 Legendary Exhibitions
+      </h3>
+      {LEGENDARY_EXHIBITIONS.map((exhibition) => {
+        const isUnlocked = museumState.reputation >= exhibition.requiredReputation &&
+          (museumState.completedCollections?.length || 0) >= exhibition.requiredCollections;
+        const isCompleted = museumState.legendaryExhibitions?.includes(exhibition.id);
+
+        return (
+          <Card
+            key={exhibition.id}
+            className={`border-white/10 p-4 ${isCompleted ? 'border-[#FFC72C]/30' : !isUnlocked ? 'opacity-50' : 'border-[#FF2A5F]/30'}`}
+          >
+            <div className="flex items-start gap-3">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${
+                isCompleted ? 'bg-[#FFC72C]/20' : 'bg-[#FF2A5F]/20'
+              }`}>
+                {exhibition.id.includes('trypillia') ? '🏺' : 
+                 exhibition.id.includes('scythia') ? '⚔️' :
+                 exhibition.id.includes('rus') ? '⛪' :
+                 exhibition.id.includes('cossack') ? '🗡️' : '🌟'}
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-medium">
+                  {exhibition.nameKey.split('.').pop()}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {exhibition.descriptionKey.split('.').pop()}
+                </p>
+                
+                {/* Requirements */}
+                <div className="flex gap-3 mt-2 text-xs">
+                  <span style={{ color: museumState.reputation >= exhibition.requiredReputation ? '#10B981' : '#FF2A5F' }}>
+                    Rep: {museumState.reputation >= exhibition.requiredReputation ? '✓' : ''}{exhibition.requiredReputation}
+                  </span>
+                  <span style={{ color: (museumState.completedCollections?.length || 0) >= exhibition.requiredCollections ? '#10B981' : '#FF2A5F' }}>
+                    Collections: {(museumState.completedCollections?.length || 0) >= exhibition.requiredCollections ? '✓' : ''}{exhibition.requiredCollections}
+                  </span>
+                </div>
+
+                {/* Bonuses */}
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {exhibition.bonuses.map((bonus, i) => (
+                    <span key={i} className="text-xs px-2 py-1 rounded-full bg-white/10" style={{ color: '#00E5FF' }}>
+                      +{bonus.value}% {bonus.type}
+                    </span>
+                  ))}
+                </div>
+
+                {isCompleted && (
+                  <div className="mt-2 text-xs" style={{ color: '#FFC72C' }}>
+                    ✓ Completed • One-time reward: +{exhibition.oneTimeReward.amount}
+                  </div>
+                )}
+              </div>
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
+// Rankings Tab Component
+function RankingsTab({ museumState }: { museumState: any }) {
+  useTranslation();
+  const currentTier = getRankingTier(museumState.reputation);
+  
+  // Simulated rankings - in production this would come from Supabase
+  const mockRankings = [
+    { rank: 1, username: 'MuseumMaster', score: 98500, visitors: 850000, collections: 8 },
+    { rank: 2, username: 'HistoryHunter', score: 72000, visitors: 620000, collections: 7 },
+    { rank: 3, username: 'ArtifactKing', score: 55000, visitors: 480000, collections: 6 },
+    { rank: 4, username: 'CuratorPro', score: 42000, visitors: 380000, collections: 6 },
+    { rank: 5, username: 'Archaeologist', score: 35000, visitors: 310000, collections: 5 },
+    { rank: 6, username: 'Collector99', score: 28000, visitors: 250000, collections: 5 },
+    { rank: 7, username: 'TimeKeeper', score: 22000, visitors: 195000, collections: 4 },
+    { rank: 8, username: 'ExplorerUA', score: 18000, visitors: 160000, collections: 4 },
+    { rank: 9, username: 'HeritageGurd', score: 14500, visitors: 130000, collections: 4 },
+    { rank: 10, username: 'MuseumFan', score: 12000, visitors: 105000, collections: 3 },
+  ];
+
+  return (
+    <div className="space-y-4">
+      {/* Current Player */}
+      <Card className="border-[#FFC72C]/30 p-4">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl" style={{ backgroundColor: `${currentTier.color}30` }}>
+            {currentTier.icon}
+          </div>
+          <div>
+            <div className="text-xs text-muted-foreground">Your Rank</div>
+            <div className="text-2xl font-bold" style={{ color: currentTier.color }}>
+              #{mockRankings.length + 1}
+            </div>
+            <div className="text-sm" style={{ color: currentTier.color }}>
+              {currentTier.icon} {currentTier.name}
+            </div>
+          </div>
+          <div className="ml-auto text-right">
+            <div className="text-xs text-muted-foreground">Score</div>
+            <div className="text-lg font-bold" style={{ fontFamily: "'Exo 2', sans-serif" }}>
+              {museumState.reputation.toLocaleString()}
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Tier Progress */}
+      <Card className="border-white/10 p-4">
+        <h3 className="text-sm font-medium mb-3">🏆 Ranking Tiers</h3>
+        <div className="space-y-2">
+          {RANKING_TIERS.map((tier, i) => {
+            const isCurrent = tier.name === currentTier.name;
+            const isAchieved = museumState.reputation >= tier.minScore;
+            
+            return (
+              <div
+                key={i}
+                className={`flex items-center gap-3 p-2 rounded-lg ${
+                  isCurrent ? 'bg-[#FFC72C]/10 border border-[#FFC72C]/30' : ''
+                }`}
+              >
+                <span className="text-xl">{tier.icon}</span>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className={`text-sm ${isAchieved ? '' : 'text-gray-500'}`}>
+                      {tier.name}
+                    </span>
+                    {isCurrent && <span className="text-xs" style={{ color: '#FFC72C' }}>You</span>}
+                  </div>
+                  <div className="text-xs text-muted-foreground">{tier.minScore.toLocaleString()} rep</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      {/* Leaderboard */}
+      <Card className="border-white/10 p-4">
+        <h3 className="text-sm font-medium mb-3">📊 Top Players</h3>
+        <div className="space-y-2">
+          {mockRankings.map((player) => {
+            const playerTier = getRankingTier(player.score);
+            
+            return (
+              <div
+                key={player.rank}
+                className={`flex items-center gap-3 p-2 rounded-lg ${
+                  player.rank <= 3 ? `bg-${player.rank === 1 ? '[#FFD700]' : player.rank === 2 ? '[#C0C0C0]' : '[#CD7F32]'}/10` : ''
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                  player.rank === 1 ? 'bg-[#FFD700]/20 text-[#FFD700]' :
+                  player.rank === 2 ? 'bg-[#C0C0C0]/20 text-[#C0C0C0]' :
+                  player.rank === 3 ? 'bg-[#CD7F32]/20 text-[#CD7F32]' :
+                  'bg-white/10'
+                }`}>
+                  {player.rank}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">{player.username}</span>
+                    <span className="text-xs">{playerTier.icon}</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {player.visitors.toLocaleString()} visitors • {player.collections} collections
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-medium" style={{ color: playerTier.color }}>
+                    {player.score.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-muted-foreground">rep</div>
+                </div>
               </div>
             );
           })}
