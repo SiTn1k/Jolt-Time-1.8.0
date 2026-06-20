@@ -20,7 +20,9 @@ import {
   museumUpgrades,
   initialMuseumState,
   calculateMuseumIncome,
+  calculateDailyVisitors,
   getUpgradeCost,
+  MUSEUM_ACHIEVEMENTS,
 } from './museumData';
 import {
   StoryProgress,
@@ -138,6 +140,8 @@ interface GameState {
   collectMuseumIncome: () => void;
   purchaseMuseumUpgrade: (upgradeId: string) => boolean;
   expandExhibitionSlots: () => boolean;
+  checkAndUnlockAchievements: (context: { visitors?: number; artifacts?: number; collections?: number; exhibitions?: number; events?: number }) => void;
+  joinEvent: (eventId: string) => void;
 
   // buildings
   upgradeBuilding: (buildingId: string) => boolean;
@@ -593,6 +597,117 @@ export const useExpeditionStore = create<GameState>()(
         return true;
       },
 
+      // ─── Achievement System ───────────────────────────────────────────────
+      checkAndUnlockAchievements: (
+        context: {
+          visitors?: number;
+          artifacts?: number;
+          collections?: number;
+          exhibitions?: number;
+          events?: number;
+        }
+      ) => {
+        const s = get();
+        const museumState = s.museumState;
+        const unlocked = museumState.achievements || [];
+        const newlyUnlocked: string[] = [];
+
+        for (const achievement of MUSEUM_ACHIEVEMENTS) {
+          if (unlocked.includes(achievement.id)) continue;
+          if (achievement.secret && !context.visitors && !context.artifacts) continue;
+
+          let current = 0;
+          switch (achievement.requirement.type) {
+            case 'visitors':
+              current = context.visitors ?? museumState.totalVisitorsAllTime;
+              break;
+            case 'artifacts':
+              current = context.artifacts ?? 0;
+              break;
+            case 'collections':
+              current = context.collections ?? (museumState.completedCollections?.length ?? 0);
+              break;
+            case 'reputation':
+              current = museumState.reputation;
+              break;
+            case 'exhibitions':
+              current = context.exhibitions ?? museumState.exhibitions.filter(e => e.artifactId).length;
+              break;
+            case 'events':
+              current = context.events ?? (museumState.eventParticipation?.length ?? 0);
+              break;
+            default:
+              continue;
+          }
+
+          const req = achievement.requirement;
+          let unlockedNow = false;
+          if (req.comparison === '>=') unlockedNow = current >= req.value;
+          else if (req.comparison === '==') unlockedNow = current === req.value;
+
+          if (unlockedNow) {
+            newlyUnlocked.push(achievement.id);
+          }
+        }
+
+        if (newlyUnlocked.length > 0) {
+          set((state) => {
+            const reward = newlyUnlocked.reduce((acc, id) => {
+              const ach = MUSEUM_ACHIEVEMENTS.find(a => a.id === id);
+              return ach ? acc + ach.reward.amount : acc;
+            }, 0);
+
+            if (reward > 0) {
+              return {
+                karbovanets: state.karbovanets + reward,
+                museumState: {
+                  ...state.museumState,
+                  achievements: [...(state.museumState.achievements || []), ...newlyUnlocked],
+                },
+              };
+            }
+            return {
+              museumState: {
+                ...state.museumState,
+                achievements: [...(state.museumState.achievements || []), ...newlyUnlocked],
+              },
+            };
+          });
+
+          if (reward > 0) {
+            s.pushToast(`🏆 +${reward} карбованців за досягнення!`, '#FFC72C');
+          } else {
+            s.pushToast(`🏆 Нові досягнення відкрито!`, '#FFC72C');
+          }
+        }
+      },
+
+      // ─── Event System ────────────────────────────────────────────────────
+      joinEvent: (eventId: string) => {
+        const s = get();
+        const museumState = s.museumState;
+        const participated = museumState.eventParticipation || [];
+
+        if (participated.includes(eventId)) {
+          s.pushToast('Ви вже берете участь у цій події', '#FF2A5F');
+          return;
+        }
+
+        set((state) => ({
+          museumState: {
+            ...state.museumState,
+            eventParticipation: [...participated, eventId],
+          },
+        }));
+
+        s.pushToast('🎉 Ви приєдналися до події!', '#9747FF');
+
+        // Check achievements after joining event
+        s.checkAndUnlockAchievements({
+          events: (museumState.eventParticipation?.length ?? 0) + 1,
+        });
+      },
+
       // Building actions
       upgradeBuilding: (buildingId) => {
         const s = get();
@@ -837,6 +952,10 @@ export const useExpeditionStore = create<GameState>()(
           reputation: st.reputation + reputationGain,
         }));
         s.pushToast(`«${art.name}» виставлено в музеї (+${prestigeGain} престижу)`, '#9747FF');
+        
+        // Check achievements for artifacts and reputation
+        const museumArtifacts = s.artifacts.filter(a => a.status === 'museum');
+        s.checkAndUnlockAchievements({ artifacts: museumArtifacts.length });
       },
 
       toggleNpcWork: (npcId) => {
@@ -928,6 +1047,16 @@ export const useExpeditionStore = create<GameState>()(
             return { ...n, x, direction };
           });
 
+          // Track museum visitors (daily accumulation into totalVisitorsAllTime)
+          const exhibitedCount = museumArtifacts.length;
+          const dailyVisitors = calculateDailyVisitors(st.museumState, exhibitedCount, 0);
+          const visitorsPerSecond = dailyVisitors / 86400;
+          const newVisitors = Math.floor(visitorsPerSecond * dt);
+          const updatedMuseumState = newVisitors > 0 ? {
+            ...st.museumState,
+            totalVisitorsAllTime: st.museumState.totalVisitorsAllTime + newVisitors,
+          } : st.museumState;
+
           return {
             lastTick: now,
             incomeBuffer,
@@ -935,8 +1064,19 @@ export const useExpeditionStore = create<GameState>()(
             artifacts,
             expeditions,
             npcs,
+            museumState: updatedMuseumState,
           };
         });
+
+        // Check visitor achievements after tick (every ~10 ticks to avoid performance issues)
+        const state = get();
+        if (Math.random() < 0.1) {
+          const museumArtifacts = state.artifacts.filter((a) => a.status === 'museum');
+          state.checkAndUnlockAchievements({
+            visitors: state.museumState.totalVisitorsAllTime,
+            artifacts: museumArtifacts.length,
+          });
+        }
       },
     }),
     {
