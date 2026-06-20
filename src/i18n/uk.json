@@ -117,7 +117,8 @@
     "reward_hero": "Розблоковано героя",
     "reward_artifact": "Новий артефакт",
     "reward_region": "Відкрито регіон",
-    "claim": "Отримати"
+    "claim": "Отримати",
+    "story_npcs": "Сюжетні NPC"
   },
   "quest": {
     "quests": "Квести",
@@ -173,7 +174,103 @@
     "reward_xp": "досвіду",
     "reward_hero_fragment": "фрагмент героя",
     "reward_artifact": "артефакт",
-    "reward_academy_xp": "академічного досвіду"
+    "reward_academy_xp": "академічного досвіду",
+    "daily_museum": {
+      "title": "Музейний візит",
+      "description": "Відвідай музей"
+    },
+    "daily_artifact": {
+      "title": "Артефакт дня",
+      "description": "Знайди стародавній артефакт"
+    },
+    "arc1_1": {
+      "title": "Початок шляху",
+      "description": "Знайди перший артефакт трипільської культури"
+    },
+    "arc1_2": {
+      "title": "Скарби предків",
+      "description": "Збери 3 стародавні артефакти"
+    },
+    "arc1_3": {
+      "title": "Таємниці землі",
+      "description": "Проведи експедицію в степ"
+    },
+    "arc1_4": {
+      "title": "Князівський дар",
+      "description": "Відвідай князя Володимира"
+    },
+    "arc2_1": {
+      "title": "Печерські таємниці",
+      "description": "Знайди стародавній літопис"
+    },
+    "arc2_2": {
+      "title": "Скарби Києва",
+      "description": "Збери 5 київських артефактів"
+    },
+    "arc2_3": {
+      "title": "Візантійська спадщина",
+      "description": "Проведи експедицію на південь"
+    },
+    "arc2_4": {
+      "title": "Мудрість століть",
+      "description": "Збери 500 репутації"
+    },
+    "arc3_1": {
+      "title": "Козацький заклик",
+      "description": "Знайди козацьку зброю"
+    },
+    "arc3_2": {
+      "title": "Запорозька слава",
+      "description": "Збери 8 козацьких артефактів"
+    },
+    "arc3_3": {
+      "title": "Дике поле",
+      "description": "Проведи 3 експедиції"
+    },
+    "arc3_4": {
+      "title": "Хмельницький",
+      "description": "Збери 1000 репутації"
+    },
+    "arc3_5": {
+      "title": "Нова ера",
+      "description": "Досягни престижу 100"
+    },
+    "arc4_1": {
+      "title": "Археологічний прорив",
+      "description": "Знайди унікальний артефакт"
+    },
+    "arc4_2": {
+      "title": "Нові відкриття",
+      "description": "Збери 15 артефактів"
+    },
+    "arc4_3": {
+      "title": "Наукове відкриття",
+      "description": "Відвідай академію"
+    },
+    "arc4_4": {
+      "title": "Колекціонер",
+      "description": "Збери 2000 репутації"
+    },
+    "arc4_5": {
+      "title": "Музейна гордість",
+      "description": "Заповни 10 слотів музею"
+    },
+    "arc5_1": {
+      "title": "Мастер-колекція",
+      "description": "Збери 25 артефактів"
+    },
+    "arc5_2": {
+      "title": "Легендарні знахідки",
+      "description": "Знайди 3 легендарні артефакти"
+    },
+    "arc5_3": {
+      "title": "Міжнародне визнання",
+      "description": "Збери 5000 репутації"
+    },
+    "arc5_finale": {
+      "title": "Вершина дослідника",
+      "description": "Досягни престижу 500"
+    }
   },
   "duplicate_tab": {
     "title": "Гру відкрито в іншій вкладці",
@@ -213,7 +310,9 @@
     "remaining": "Залишилось",
     "per_hour": "/год",
     "per_minute": "/хв",
-    "per_second": "/с"
+    "per_second": "/с",
+    "value": "Значення",
+    "status": "Статус"
   },
   "tabs": {
     "shop": "Магазин",
@@ -408,64 +507,64 @@
   "expedition": {
     "academy_unlock_title": "Академія Часу Відкрита",
     "academy_unlock_description": "Ваші дослідження змінили саму тканину часу. Відтепер ви можете керувати Академією Часу та досліджувати історію України.",
-    "second_prestige_reached": "Досягнуто другого престижу",
-    "start_research": "Розпочати дослідження",
+    "second_prestige_reached": "Досягнуто другого переродження!",
+    "start_research": "Почати дослідження",
     "feature_expeditions": "Експедиції",
     "feature_museum": "Музей",
     "feature_heroes": "Герої",
     "feature_story": "Історія",
-    "academy_title": "Археологічна Академія",
-    "academy_subtitle": "України",
+    "academy_title": "Академія",
+    "academy_subtitle": "Академія дослідників",
     "reputation": "Репутація",
     "karbovanets": "Карбованці",
     "visitors": "Відвідувачі",
     "expeditions": "Експедиції",
     "historical_prestige": "Історичний престиж",
-    "buildings_title": "Будівлі кампусу",
-    "npc_title": "Мешканці академії",
+    "buildings_title": "Будівлі",
+    "npc_title": "NPC",
     "npc_work": "Працює",
-    "npc_free": "Вільн.",
-    "npc_assign": "До роботи",
-    "npc_stop": "Зупинити",
-    "npc_collect": "Зібрати",
+    "npc_free": "Вільний",
+    "npc_assign": "Призначити NPC",
+    "npc_stop": "Зупинити NPC",
+    "npc_collect": "Зібрати дохід",
     "npc_talk": "Поговорити",
     "npc_income": "Дохід",
     "npc_reputation": "Репутація",
-    "world_map_title": "Карта експедицій України",
-    "select_region": "Оберіть регіон та команду героїв",
+    "world_map_title": "Карта світу",
+    "select_region": "Оберіть регіон",
     "difficulty": "Складність",
     "success_chance": "Шанс успіху",
-    "base_chance": "Базовий шанс",
+    "base_chance": "Башанс",
     "possible_artifacts": "Можливі артефакти",
     "team": "Команда",
     "team_selected": "обрано",
-    "start_expedition": "Розпочати експедицію",
-    "no_heroes_available": "Усі герої зайняті в експедиціях.",
+    "start_expedition": "Почати експедицію",
+    "no_heroes_available": "Немає доступних героїв",
     "select_at_least_one": "Оберіть хоча б одного героя",
     "no_free_slots": "Немає вільних слотів для експедиції",
     "expedition_started": "Експедицію до «{region}» розпочато",
-    "expedition_active": "Активні експедиції",
+    "expedition_active": "Активна експедиція",
     "expedition_completed": "Експедиція завершена",
-    "collect_result": "Забрати результат",
+    "collect_result": "Зібрати результат",
     "expedition_success": "Успіх!",
     "expedition_failed": "Експедиція зазнала невдачі",
     "heroes_returned": "Героїв повернуто.",
     "found_artifact": "Знайдено «{artifact}»",
     "expedition_slots": "Слотів",
-    "status_traveling": "У дорозі",
+    "status_traveling": "Подорож",
     "status_excavating": "Розкопки",
-    "status_returning": "Повернення",
-    "status_completed": "Готово",
+    "status_returning": "Повертається",
+    "status_completed": "Завершено",
     "heroes_title": "Герої",
     "hero_leadership": "Лідерство",
     "hero_knowledge": "Знання",
     "hero_exploration": "Дослідження",
     "hero_diplomacy": "Дипломатія",
-    "hero_assigned": "Призначено",
-    "hero_available": "Доступний",
-    "laboratory_title": "Реставраційна лабораторія",
+    "hero_assigned": "Герой призначений",
+    "hero_available": "Герой доступний",
+    "laboratory_title": "Лабораторія",
     "restoration_queue": "Черга реставрації",
-    "start_restoration": "Розпочати реставрацію",
+    "start_restoration": "Почати реставрацію",
     "restoration_complete": "Реставрацію завершено",
     "send_to_museum": "Відправити в музей",
     "museum_title": "Національний музей",
@@ -473,18 +572,18 @@
     "museum_income": "Пасивний дохід",
     "treasury_title": "Скарбниця",
     "resources": "Ресурси",
-    "daily_rewards": "Щоденні Нагороди",
+    "daily_rewards": "Щоденні нагороди",
     "daily_streak": "Поточна серія",
     "daily_days": "днів",
-    "daily_best": "Рекорд",
+    "daily_best": "Найкраща серія",
     "daily_day": "День",
-    "daily_claim": "Отримати нагороду",
-    "daily_next_reward": "Наступна нагорода через",
+    "daily_claim": "Отримати",
+    "daily_next_reward": "Наступна нагорода",
     "daily_calendar": "Календар нагород",
     "daily_total_claimed": "Всього отримано",
     "daily_longest_streak": "Найдовша серія",
-    "daily_reward_start": "Почніть свою серію сьогодні!",
-    "daily_reward_first": "Перша нагорода отримана!",
+    "daily_reward_start": "Почати серію",
+    "daily_reward_first": "Перший день!",
     "daily_reward_streak": "Серія: {count} днів!",
     "leaderboard_global": "Глобальний",
     "leaderboard_weekly": "Тижневий",
@@ -496,7 +595,8 @@
     "leaderboard_top_players": "Топ гравці",
     "leaderboard_play_more": "Грайте більше, щоб потрапити в рейтинг!",
     "leaderboard_refresh": "Оновити",
-    "leaderboard_no_data": "Немає даних для цього рейтингу"
+    "leaderboard_no_data": "Немає даних для цього рейтингу",
+    "story_system": "Система історії"
   },
   "academy_unlock": {
     "title": "Академія Часу Відкрита!",
@@ -587,23 +687,16 @@
     "p1_prestige_milestone": "Відкриття",
     "p2_prestige_milestone": "Дослідник",
     "p3_prestige_milestone": "Майстер",
-    "p4_prestige_milestone": "Експерт"
+    "p4_prestige_milestone": "Експерт",
+    "prestige": "Престиж"
   },
   "teaser": {
-    "locked_academy": "ЗАБЛОКОВАНО",
-    "unlock_at": "Відкривається при",
-    "academy_title": "Історична Академія",
-    "academy_subtitle": "Наступний розділ твоєї подорожі",
-    "heroes": "Герої",
-    "heroes_desc": "Нові герої з унікальними навичками",
-    "expeditions": "Експедиції",
-    "expeditions_desc": "Складніші та захоплюючі експедиції",
-    "buildings": "Будівлі",
-    "buildings_desc": "Розширюйте та покращуйте Академію",
-    "story": "Кампанія",
-    "story_desc": "Глибока історична кампанія",
-    "progress": "Прогрес до відкриття",
-    "collect_artifacts": "Збирай артефакти щоб збільшити Престиж"
+    "academy_subtitle": "Академія відкриється на престижі 50",
+    "academy_title": "Академія",
+    "collect_artifacts": "Збери 10 артефактів щоб відкрити",
+    "locked_academy": "Академія заблокована",
+    "progress": "Прогрес",
+    "unlock_at": "Відкриється на престижі"
   },
   "story_events": {
     "academy_first_discovery": "Перше відкриття",
@@ -634,5 +727,9 @@
     "watch_ad": "Переглянути рекламу",
     "reward_ready": "Нагорода готова!",
     "boost_active": "Активний буст"
+  },
+  "story": {
+    "story_system": "Система історії",
+    "npcs_quests": "NPC та квести"
   }
 }

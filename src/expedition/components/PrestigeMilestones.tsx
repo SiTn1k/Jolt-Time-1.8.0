@@ -182,7 +182,7 @@ export function PrestigeMilestones() {
               </h2>
               
               <p className="text-white/70 mb-4">
-                {t('milestone.prestige')} {celebratingMilestone} {t('milestone.achieved')}
+                {t(`milestone.${PRESTIGE_MILESTONES.find(m => m.prestige === celebratingMilestone)?.title}`)} - {celebratingMilestone} {t('milestone.achieved')}
               </p>
               
               <div className="bg-white/5 rounded-lg p-3 mb-4">
