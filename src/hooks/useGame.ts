@@ -372,15 +372,18 @@ export function useGame() {
         // to prevent device clock manipulation exploits
         const serverNow = saved.lastOnlineAt || Date.now();
         const offlineMs = Math.max(0, serverNow - saved.lastSavedAt);
-        // Use prestige-based offline cap: 4h for prestige 0, 3h for prestige 1+
-        const prestigeLevel = saved.prestigeLevel || 0;
-        const offlineCap = prestigeLevel > 0 ? 3 * 3600 : 4 * 3600;
-        const offlineSec = Math.min(offlineMs / 1000, offlineCap);
+        // 6 hours offline cap - after 6 hours, no more rewards
+        // This is the SAME for all prestige levels to keep economy balanced
+        const OFFLINE_CAP_SECONDS = 6 * 3600; // 6 hours
+        const offlineSec = Math.min(offlineMs / 1000, OFFLINE_CAP_SECONDS);
+        
         // CRITICAL FIX: Offline rewards formula balanced for game economy
         // Currency based on level, prestige reduces it further to prevent snowballing
         let offlineXp = passiveXp * offlineSec;
         // Prestige multiplier reduces currency gains slightly each prestige
+        const prestigeLevel = saved.prestigeLevel || 0;
         const prestigeCurrencyMultiplier = Math.max(0.5, 1 - (prestigeLevel * 0.1));
+        // Max 200 currency/hour while offline, scaled by level
         const maxOfflineCurrencyPerHour = Math.min(saved.level * 5, 200) * prestigeCurrencyMultiplier;
         let offlineCurrency = (maxOfflineCurrencyPerHour * offlineSec) / 3600;
 

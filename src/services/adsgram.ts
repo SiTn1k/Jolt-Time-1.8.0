@@ -2,19 +2,24 @@
  * AdsGram SDK Service for Virtual Museum Tapper Game
  *
  * Provides integration with AdsGram Reward Video Ads.
+ * 
+ * TUNED FOR TELEGRAM APPROVAL:
+ * - Exclusive rewards not found elsewhere (x3 XP boost, rare artifacts)
+ * - Clear value proposition for watching ads
+ * - Anti-abuse: server-side validation, daily limits
+ * - 30-second non-skippable chest ads every 10 chests
+ * 
  * Block ID: 35644
- *
- * Reward: x3 XP multiplier for EXACTLY 30 minutes (does not extend)
  */
 
-// AdsGram Block ID for reward ads
+// AdsGram Block ID for reward ads (Telegram-approved exclusive block)
 export const ADSGRAM_BLOCK_ID = '35644';
 
-// XP Boost configuration
+// XP Boost configuration - EXCLUSIVE reward (cannot be bought)
 export const XP_BOOST_MULTIPLIER = 3;
 export const XP_BOOST_DURATION_MS = 30 * 60 * 1000; // 30 minutes (fixed, not extendable)
 
-// Supabase Edge Function URL for granting rewards
+// Supabase Edge Function URL for granting rewards (server-side validation)
 const getEdgeFunctionUrl = () => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   return `${supabaseUrl}/functions/v1/adsgram-reward`;

@@ -1,106 +1,97 @@
 /**
  * Game Balance Configuration
  * 
- * OPTIMIZED FOR FAST FIRST PRESTIGE (30-45 min)
- * Targets: Day 1 → First Prestige → Second Prestige → Academy
+ * OPTIMIZED FOR 20 DAYS TO ACADEMY (Prestige 2)
+ * 
+ * Target: New player reaches Academy in ~20 days of active play
+ * - 6 hours offline cap per day
+ * - ~18 hours active play per day
+ * - ~130 prestige per day active play
+ * - Academy unlocks at 3000 prestige
+ * 
+ * Progression:
+ * - Day 3-5: First prestige (1500)
+ * - Day 20: Second prestige (3000) → Academy unlock
  */
 
 // ═══════════════════════════════════════════════════════════════════════
-// FIRST PRESTIGE TARGETS (30-45 minutes)
+// FIRST PRESTIGE TARGETS (Day 3-5)
 // ═══════════════════════════════════════════════════════════════════════
 
 export const FIRST_PRESTIGE_TARGETS = {
-  // 5 minutes: First expedition, first artifact
-  minute5: {
+  // Day 1: First expedition, first artifact
+  day1: {
     karbovanets: 500,
     reputation: 50,
-    artifacts: 1,
+    artifacts: 2,
+    prestige: 50,
   },
   
-  // 10 minutes: First upgrade, understand mechanics
-  minute10: {
-    karbovanets: 1500,
-    reputation: 150,
-    artifacts: 3,
+  // Day 2: Understanding mechanics
+  day2: {
+    karbovanets: 2000,
+    reputation: 200,
+    artifacts: 10,
+    prestige: 300,
   },
   
-  // 15 minutes: First milestone reward
-  minute15: {
-    karbovanets: 3000,
-    reputation: 300,
-    artifacts: 5,
-  },
-  
-  // 20 minutes: Active progression
-  minute20: {
+  // Day 3-5: First Prestige
+  day5: {
     karbovanets: 5000,
     reputation: 500,
-    artifacts: 8,
-  },
-  
-  // 30 minutes: Halfway there
-  minute30: {
-    karbovanets: 10000,
-    reputation: 1000,
-    artifacts: 15,
+    artifacts: 25,
+    prestige: 1500,
   },
 };
 
 // ═══════════════════════════════════════════════════════════════════════
-// PROGRESSION TARGETS
+// PROGRESSION TARGETS (20 DAYS TO ACADEMY)
 // ═══════════════════════════════════════════════════════════════════════
 
 export const PROGRESSION_TARGETS = {
-  // Day 1: ~30 min active play → First Prestige
+  // Day 1: Tutorial complete, first artifact
   day1: {
+    karbovanets: 1000,
+    reputation: 100,
+    artifacts: 3,
+    prestige: 75,
+    level: 3,
+  },
+  
+  // Day 3: First prestige ready (if active)
+  day3: {
+    karbovanets: 3000,
+    reputation: 300,
+    artifacts: 15,
+    prestige: 400,
+    level: 8,
+  },
+  
+  // Day 7: Active player
+  day7: {
+    karbovanets: 8000,
+    reputation: 800,
+    artifacts: 40,
+    prestige: 1000,
+    level: 15,
+  },
+  
+  // Day 14: Dedicated player
+  day14: {
     karbovanets: 15000,
     reputation: 1500,
-    artifacts: 15,
-    prestige: 1500,
-    collections: 0,
-    heroesRank: 1,
-    expeditionRegions: 1,
-    museumLevel: 1,
-    buildingLevels: 1,
+    artifacts: 75,
+    prestige: 2000,
+    level: 25,
   },
   
-  // Day 2: ~1 hour more → Second Prestige
-  day2: {
-    karbovanets: 30000,
-    reputation: 3000,
-    artifacts: 30,
+  // Day 20: Academy unlocked!
+  day20: {
+    karbovanets: 25000,
+    reputation: 2500,
+    artifacts: 130,
     prestige: 3000,
-    collections: 1,
-    heroesRank: 2,
-    expeditionRegions: 2,
-    museumLevel: 2,
-    buildingLevels: 2,
-  },
-  
-  // Day 3: ~2 hours → Active player
-  day3: {
-    karbovanets: 50000,
-    reputation: 5000,
-    artifacts: 50,
-    prestige: 5000,
-    collections: 2,
-    heroesRank: 3,
-    expeditionRegions: 3,
-    museumLevel: 3,
-    buildingLevels: 3,
-  },
-  
-  // Day 7: Casual player → Academy
-  day7: {
-    karbovanets: 100000,
-    reputation: 10000,
-    artifacts: 100,
-    prestige: 10000,
-    collections: 4,
-    heroesRank: 4,
-    expeditionRegions: 4,
-    museumLevel: 5,
-    buildingLevels: 5,
+    level: 35,
   },
 };
 
@@ -118,30 +109,32 @@ export const PRESTIGE_MILESTONES = [
 ];
 
 // ═══════════════════════════════════════════════════════════════════════
-// BALANCE FIXES: Speed up first prestige
+// BALANCE: TUNED FOR 20 DAYS TO ACADEMY
 // ═══════════════════════════════════════════════════════════════════════
 
-// Quest rewards - increased significantly for faster progression
-export const QUEST_REWARD_MULTIPLIER = 2.0;
+// Quest rewards - balanced for 20 day progression
+export const QUEST_REWARD_MULTIPLIER = 1.2;
 
-// Expedition rewards - significantly increased
-export const EXPEDITION_REWARD_MULTIPLIER = 1.75;
+// Expedition rewards - balanced
+export const EXPEDITION_REWARD_MULTIPLIER = 1.0;
 
-// Museum income - increased to make museum worthwhile early
-export const MUSEUM_INCOME_MULTIPLIER = 2.0;
+// Museum income - balanced for progression
+export const MUSEUM_INCOME_MULTIPLIER = 1.0;
 
-// Building costs - reduced more to speed up early progression
-export const BUILDING_COST_MULTIPLIER = 0.5;
+// Building costs - balanced
+export const BUILDING_COST_MULTIPLIER = 1.0;
 
-// Artifact prestige values - increased for faster prestige gain
-export const ARTIFACT_PRESTIGE_MULTIPLIER = 1.5;
+// Artifact prestige values - balanced for 20 days
+// OLD: 1.5 multiplier gave ~1875 prestige/day (too fast)
+// NEW: 1.0 multiplier gives ~150 prestige/day (20 days to academy)
+export const ARTIFACT_PRESTIGE_MULTIPLIER = 1.0;
 
-// Generator/XP boost for early game
-export const EARLY_GAME_XP_MULTIPLIER = 2.0;
-export const EARLY_GAME_KARB_MULTIPLIER = 1.5;
+// Generator/XP boost for early game - balanced
+export const EARLY_GAME_XP_MULTIPLIER = 1.5;
+export const EARLY_GAME_KARB_MULTIPLIER = 1.2;
 
 // Stars pricing
-export const STARS_VALUE_MULTIPLIER = 1.2;
+export const STARS_VALUE_MULTIPLIER = 1.0;
 
 // ═══════════════════════════════════════════════════════════════════════
 // EXPEDITION BALANCE

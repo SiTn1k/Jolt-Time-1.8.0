@@ -220,6 +220,59 @@ const URGENT_MESSAGES = [
   }
 ];
 
+// LEVEL MILESTONE messages - sent when player reaches levels 5, 10, 15 etc. during offline
+// These are personalized based on player's current level
+const LEVEL_MILESTONE_MESSAGES = [
+  {
+    type: "level_5",
+    text: `🎉 Ти досяг рівня {level}!
+
+Перші кроки зроблено! Уявляєш, які таємниці чекають попереду?`,
+    milestoneLevel: 5,
+    emoji: "🌟"
+  },
+  {
+    type: "level_10",
+    text: `🏆 Рівень {level}!
+
+Ти справжній археолог! Продовжуй досліджувати нові епохи!`,
+    milestoneLevel: 10,
+    emoji: "⚔️"
+  },
+  {
+    type: "level_15",
+    text: `📈 Ти на рівні {level}!
+
+До Академії залишилось зовсім трохи! Збери більше артефактів!`,
+    milestoneLevel: 15,
+    emoji: "💎"
+  },
+  {
+    type: "level_20",
+    text: `🚀 Рівень {level}!
+
+Ти ледь не відкрив Академію! Повертайся та продовж збирати артефакти!`,
+    milestoneLevel: 20,
+    emoji: "👑"
+  },
+  {
+    type: "level_25",
+    text: `⭐ Ти досяг рівня {level}!
+
+Академія чекає на тебе! Повертайся, щоб відкрити справжню магію!`,
+    milestoneLevel: 25,
+    emoji: "🎓"
+  },
+  {
+    type: "level_30",
+    text: `🔥 Рівень {level}!
+
+Ти готовий до величі! Академія відкриє тобі нові горизонти!`,
+    milestoneLevel: 30,
+    emoji: "🌟"
+  }
+];
+
 interface CandidatePlayer {
   telegram_id: number;
   last_active_at: string | null;
@@ -278,6 +331,34 @@ function selectMessageByPrestige(prestigeLevel: number, level: number): { type: 
 function selectUrgentMessage(): { type: string; text: string } {
   const selected = URGENT_MESSAGES[Math.floor(Math.random() * URGENT_MESSAGES.length)];
   return { type: selected.type, text: selected.text };
+}
+
+/**
+ * Check if player just reached a milestone level (5, 10, 15, 20, 25, 30)
+ * Returns the milestone message if applicable
+ */
+function checkLevelMilestone(level: number): { type: string; text: string } | null {
+  // Check if level is a milestone (every 5 levels from 5 to 30)
+  const milestoneLevels = [5, 10, 15, 20, 25, 30];
+  
+  // Find the closest milestone at or below the player's level
+  const closestMilestone = milestoneLevels
+    .filter(m => m <= level)
+    .sort((a, b) => b - a)[0];
+  
+  if (!closestMilestone) return null;
+  
+  // Find the message for this milestone
+  const milestoneMessage = LEVEL_MILESTONE_MESSAGES.find(
+    m => m.milestoneLevel === closestMilestone
+  );
+  
+  if (!milestoneMessage) return null;
+  
+  // Replace {level} placeholder with actual level
+  const personalizedText = milestoneMessage.text.replace('{level}', level.toString());
+  
+  return { type: milestoneMessage.type, text: personalizedText };
 }
 
 interface TelegramResponse {
@@ -347,14 +428,13 @@ Deno.serve(async (req: Request) => {
   console.log(`[retention] deep_link=${inlineUrl}`);
 
   try {
-    // 1-hour retention notification window: players whose last genuine app
-    // activity (last_active_at) is between 6h and 7h ago.
-    // "6 to 7 hours ago" = last_active_at <= (now - 6h) AND last_active_at > (now - 7h).
+    // 2-hour retention notification window: players inactive for 6-8 hours
+    // "6 to 8 hours ago" = last_active_at <= (now - 6h) AND last_active_at > (now - 8h).
     const now = Date.now();
     const sixHoursAgoIso = new Date(now - 6 * 60 * 60 * 1000).toISOString();
-    const sevenHoursAgoIso = new Date(now - 7 * 60 * 60 * 1000).toISOString();
+    const eightHoursAgoIso = new Date(now - 8 * 60 * 60 * 1000).toISOString();
 
-    console.log(`[retention] window: last_active_at in (${sevenHoursAgoIso}, ${sixHoursAgoIso}]`);
+    console.log(`[retention] window: last_active_at in (${eightHoursAgoIso}, ${sixHoursAgoIso}]`);
 
     // Fetch player progress for personalized messages
     const { data: candidates, error } = await supabase
@@ -363,7 +443,7 @@ Deno.serve(async (req: Request) => {
       .not("telegram_id", "is", null)
       .not("last_active_at", "is", null)
       .lte("last_active_at", sixHoursAgoIso)
-      .gt("last_active_at", sevenHoursAgoIso);
+      .gt("last_active_at", eightHoursAgoIso);
 
     if (error) {
       console.error("[retention] query candidates error:", error);
@@ -421,10 +501,21 @@ Deno.serve(async (req: Request) => {
         continue;
       }
 
-      // Select message based on prestige level
-      // Late game players (prestige >= 2) get academy/expedition focused messages
-      // Early game players (prestige < 2) get core gameplay focused messages
-      const message = selectMessageByPrestige(prestigeLevel, playerLevel);
+      // Select message based on prestige level AND level milestones
+      // First check for level milestones (levels 5, 10, 15, 20, 25, 30)
+      // These are high-priority messages for early game players
+      let message;
+      if (prestigeLevel < 2 && playerLevel >= 5) {
+        const milestoneMessage = checkLevelMilestone(playerLevel);
+        if (milestoneMessage) {
+          message = milestoneMessage;
+          console.log(`[retention] sending level milestone message to ${telegramId}: level=${playerLevel}`);
+        } else {
+          message = selectMessageByPrestige(prestigeLevel, playerLevel);
+        }
+      } else {
+        message = selectMessageByPrestige(prestigeLevel, playerLevel);
+      }
 
       // Build inline keyboard based on player's progress
       const inlineKeyboard: Array<Array<{ text: string; url?: string }>> = [
@@ -490,6 +581,7 @@ Deno.serve(async (req: Request) => {
         early_game: EARLY_GAME_MESSAGES.length,
         late_game: LATE_GAME_MESSAGES.length,
         urgent: URGENT_MESSAGES.length,
+        level_milestones: LEVEL_MILESTONE_MESSAGES.length,
       },
     });
   } catch (err) {
