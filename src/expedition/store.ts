@@ -33,6 +33,7 @@ import {
   QUEST_REWARD_MULTIPLIER,
   EXPEDITION_REWARD_MULTIPLIER,
   BUILDING_COST_MULTIPLIER,
+  ARTIFACT_PRESTIGE_MULTIPLIER,
 } from './balanceConfig';
 
 const rarityRank: Record<Rarity, number> = {
@@ -42,14 +43,16 @@ const rarityRank: Record<Rarity, number> = {
   legendary: 3,
 };
 
-/** Real expedition timer (seconds) — compressed from the lore duration. */
+/** Real expedition timer (seconds) — SPEEDED UP for first prestige */
 export function expeditionSeconds(region: Region): number {
-  return 15 + region.difficulty * 10;
+  // Faster for P0: 10 + difficulty * 5 (was 15 + difficulty * 10)
+  return 10 + region.difficulty * 5;
 }
 
 /** Real restoration timer (seconds) — derived from rarity. */
 export function restorationSeconds(artifact: Artifact): number {
-  return 12 + rarityRank[artifact.rarity] * 9;
+  // Faster restoration: 8 + rarity * 6 (was 12 + rarity * 9)
+  return 8 + rarityRank[artifact.rarity] * 6;
 }
 
 function nextArtifactId(): string {
@@ -791,14 +794,19 @@ export const useExpeditionStore = create<GameState>()(
         const s = get();
         const art = s.artifacts.find((a) => a.id === artifactId);
         if (!art || art.status !== 'restored') return;
+        
+        // Apply ARTIFACT_PRESTIGE_MULTIPLIER for faster first prestige
+        const prestigeGain = Math.floor(art.prestigeBonus * ARTIFACT_PRESTIGE_MULTIPLIER);
+        const reputationGain = Math.round(prestigeGain / 2);
+        
         set((st) => ({
           artifacts: st.artifacts.map((a) =>
             a.id === artifactId ? { ...a, status: 'museum' } : a,
           ),
-          historicalPrestige: st.historicalPrestige + art.prestigeBonus,
-          reputation: st.reputation + Math.round(art.prestigeBonus / 2),
+          historicalPrestige: st.historicalPrestige + prestigeGain,
+          reputation: st.reputation + reputationGain,
         }));
-        s.pushToast(`«${art.name}» виставлено в музеї (+${art.prestigeBonus} престижу)`, '#9747FF');
+        s.pushToast(`«${art.name}» виставлено в музеї (+${prestigeGain} престижу)`, '#9747FF');
       },
 
       toggleNpcWork: (npcId) => {

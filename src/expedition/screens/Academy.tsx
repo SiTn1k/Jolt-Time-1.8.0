@@ -8,6 +8,8 @@ import { NPCSystem } from '../components/NPCSystem';
 import { UkrainianPattern } from '../components/UkrainianPattern';
 import { StorySystem } from '../components/StorySystem';
 import { AcademyProgress } from '../components/AcademyProgress';
+import { PrestigeMilestones } from '../components/PrestigeMilestones';
+import { AcademyTeaser } from '../components/AcademyTeaser';
 import { useTranslation } from '../../i18n';
 
 // Academy unlock threshold - reduced from 5000 to 3000 for better retention
@@ -119,6 +121,12 @@ export function Academy() {
           targetPrestige={ACADEMY_PRESTIGE_THRESHOLD}
           isUnlocked={isAcademyUnlocked}
         />
+        
+        {/* Prestige Milestones System */}
+        {!isAcademyUnlocked && <PrestigeMilestones />}
+        
+        {/* Academy Teaser */}
+        {!isAcademyUnlocked && <AcademyTeaser />}
 
         {/* Story System Button */}
         <Card 

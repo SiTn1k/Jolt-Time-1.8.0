@@ -553,6 +553,35 @@
     "feature_museum_curator": "Museum Curator",
     "feature_museum_curator_desc": "Manage exhibitions"
   },
+  "milestone": {
+    "prestige_milestones": "Prestige Milestones",
+    "next_in": "Next:",
+    "reached": "Milestone Reached!",
+    "achieved": "achieved!",
+    "rewards": "Rewards:",
+    "academy_unlocked": "ACADEMY UNLOCKED!",
+    "p0_prestige_milestone": "First Step",
+    "p1_prestige_milestone": "Discovery",
+    "p2_prestige_milestone": "Explorer",
+    "p3_prestige_milestone": "Master",
+    "p4_prestige_milestone": "Expert"
+  },
+  "teaser": {
+    "locked_academy": "LOCKED",
+    "unlock_at": "Unlock at",
+    "academy_title": "Historical Academy",
+    "academy_subtitle": "The next chapter of your journey",
+    "heroes": "Heroes",
+    "heroes_desc": "New heroes with unique skills",
+    "expeditions": "Expeditions",
+    "expeditions_desc": "More challenging expeditions",
+    "buildings": "Buildings",
+    "buildings_desc": "Expand and upgrade Academy",
+    "story": "Campaign",
+    "story_desc": "Deep historical campaign",
+    "progress": "Progress to unlock",
+    "collect_artifacts": "Collect artifacts to increase Prestige"
+  },
   "story_events": {
     "academy_first_discovery": "First Discovery",
     "academy_rising_fame": "Rising Fame",

@@ -1,20 +1,62 @@
 /**
  * Game Balance Configuration
  * 
- * Targets progression for Day 1, 3, 7, 14, 30
- * All values tuned to prevent walls and inflation
+ * OPTIMIZED FOR FAST FIRST PRESTIGE (30-45 min)
+ * Targets: Day 1 → First Prestige → Second Prestige → Academy
  */
+
+// ═══════════════════════════════════════════════════════════════════════
+// FIRST PRESTIGE TARGETS (30-45 minutes)
+// ═══════════════════════════════════════════════════════════════════════
+
+export const FIRST_PRESTIGE_TARGETS = {
+  // 5 minutes: First expedition, first artifact
+  minute5: {
+    karbovanets: 500,
+    reputation: 50,
+    artifacts: 1,
+  },
+  
+  // 10 minutes: First upgrade, understand mechanics
+  minute10: {
+    karbovanets: 1500,
+    reputation: 150,
+    artifacts: 3,
+  },
+  
+  // 15 minutes: First milestone reward
+  minute15: {
+    karbovanets: 3000,
+    reputation: 300,
+    artifacts: 5,
+  },
+  
+  // 20 minutes: Active progression
+  minute20: {
+    karbovanets: 5000,
+    reputation: 500,
+    artifacts: 8,
+  },
+  
+  // 30 minutes: Halfway there
+  minute30: {
+    karbovanets: 10000,
+    reputation: 1000,
+    artifacts: 15,
+  },
+};
 
 // ═══════════════════════════════════════════════════════════════════════
 // PROGRESSION TARGETS
 // ═══════════════════════════════════════════════════════════════════════
 
 export const PROGRESSION_TARGETS = {
-  // Day 1: ~30 min active play
+  // Day 1: ~30 min active play → First Prestige
   day1: {
-    karbovanets: 5000,
-    reputation: 500,
-    artifacts: 5,
+    karbovanets: 15000,
+    reputation: 1500,
+    artifacts: 15,
+    prestige: 1500,
     collections: 0,
     heroesRank: 1,
     expeditionRegions: 1,
@@ -22,11 +64,12 @@ export const PROGRESSION_TARGETS = {
     buildingLevels: 1,
   },
   
-  // Day 3: ~1-2 hours active play
-  day3: {
-    karbovanets: 15000,
-    reputation: 1500,
-    artifacts: 15,
+  // Day 2: ~1 hour more → Second Prestige
+  day2: {
+    karbovanets: 30000,
+    reputation: 3000,
+    artifacts: 30,
+    prestige: 3000,
     collections: 1,
     heroesRank: 2,
     expeditionRegions: 2,
@@ -34,60 +77,70 @@ export const PROGRESSION_TARGETS = {
     buildingLevels: 2,
   },
   
-  // Day 7: ~3-5 hours active play
-  day7: {
+  // Day 3: ~2 hours → Active player
+  day3: {
     karbovanets: 50000,
     reputation: 5000,
-    artifacts: 40,
-    collections: 3,
+    artifacts: 50,
+    prestige: 5000,
+    collections: 2,
     heroesRank: 3,
     expeditionRegions: 3,
     museumLevel: 3,
     buildingLevels: 3,
   },
   
-  // Day 14: ~6-10 hours active play
-  day14: {
-    karbovanets: 150000,
-    reputation: 15000,
-    artifacts: 80,
-    collections: 5,
+  // Day 7: Casual player → Academy
+  day7: {
+    karbovanets: 100000,
+    reputation: 10000,
+    artifacts: 100,
+    prestige: 10000,
+    collections: 4,
     heroesRank: 4,
     expeditionRegions: 4,
     museumLevel: 5,
     buildingLevels: 5,
   },
-  
-  // Day 30: ~15-20 hours active play
-  day30: {
-    karbovanets: 500000,
-    reputation: 50000,
-    artifacts: 200,
-    collections: 8,
-    heroesRank: 5,
-    expeditionRegions: 5,
-    museumLevel: 8,
-    buildingLevels: 8,
-  },
 };
 
 // ═══════════════════════════════════════════════════════════════════════
-// BALANCE FIXES: Remove progression walls
+// PRESTIGE MILESTONES
 // ═══════════════════════════════════════════════════════════════════════
 
-// Quest rewards - increased by 50% to prevent currency wall
-export const QUEST_REWARD_MULTIPLIER = 1.5;
+export const PRESTIGE_MILESTONES = [
+  { prestige: 500, title: 'p0_prestige_milestone', reward: { karbovanets: 500, xp: 100 } },
+  { prestige: 1000, title: 'p1_prestige_milestone', reward: { karbovanets: 1000, xp: 200 } },
+  { prestige: 1500, title: 'p2_prestige_milestone', reward: { karbovanets: 1500, xp: 300 } },
+  { prestige: 2000, title: 'p3_prestige_milestone', reward: { karbovanets: 2000, xp: 400 } },
+  { prestige: 2500, title: 'p4_prestige_milestone', reward: { karbovanets: 2500, xp: 500 } },
+  { prestige: 3000, title: 'academy_unlock', reward: { karbovanets: 3000, xp: 1000, title: 'Історик' } },
+];
 
-// Expedition rewards - increased to encourage active play
-export const EXPEDITION_REWARD_MULTIPLIER = 1.25;
+// ═══════════════════════════════════════════════════════════════════════
+// BALANCE FIXES: Speed up first prestige
+// ═══════════════════════════════════════════════════════════════════════
 
-// Museum income - increased by 30% to make museum worthwhile
-export const MUSEUM_INCOME_MULTIPLIER = 1.3;
+// Quest rewards - increased significantly for faster progression
+export const QUEST_REWARD_MULTIPLIER = 2.0;
 
-// Building costs - reduced by 20% to speed up progression
-export const BUILDING_COST_MULTIPLIER = 0.8;
+// Expedition rewards - significantly increased
+export const EXPEDITION_REWARD_MULTIPLIER = 1.75;
 
-// Stars pricing - value increases
+// Museum income - increased to make museum worthwhile early
+export const MUSEUM_INCOME_MULTIPLIER = 2.0;
+
+// Building costs - reduced more to speed up early progression
+export const BUILDING_COST_MULTIPLIER = 0.5;
+
+// Artifact prestige values - increased for faster prestige gain
+export const ARTIFACT_PRESTIGE_MULTIPLIER = 1.5;
+
+// Generator/XP boost for early game
+export const EARLY_GAME_XP_MULTIPLIER = 2.0;
+export const EARLY_GAME_KARB_MULTIPLIER = 1.5;
+
+// Stars pricing
 export const STARS_VALUE_MULTIPLIER = 1.2;
 
 // ═══════════════════════════════════════════════════════════════════════

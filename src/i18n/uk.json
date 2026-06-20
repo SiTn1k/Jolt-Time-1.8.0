@@ -576,6 +576,35 @@
     "feature_museum_curator": "Куратор Музею",
     "feature_museum_curator_desc": "Керуйте виставками"
   },
+  "milestone": {
+    "prestige_milestones": "Етапи Престижу",
+    "next_in": "Далі:",
+    "reached": "Етап досягнуто!",
+    "achieved": "досягнуто!",
+    "rewards": "Нагороди:",
+    "academy_unlocked": "АКАДЕМІЯ ВІДКРИТА!",
+    "p0_prestige_milestone": "Перший Крок",
+    "p1_prestige_milestone": "Відкриття",
+    "p2_prestige_milestone": "Дослідник",
+    "p3_prestige_milestone": "Майстер",
+    "p4_prestige_milestone": "Експерт"
+  },
+  "teaser": {
+    "locked_academy": "ЗАБЛОКОВАНО",
+    "unlock_at": "Відкривається при",
+    "academy_title": "Історична Академія",
+    "academy_subtitle": "Наступний розділ твоєї подорожі",
+    "heroes": "Герої",
+    "heroes_desc": "Нові герої з унікальними навичками",
+    "expeditions": "Експедиції",
+    "expeditions_desc": "Складніші та захоплюючі експедиції",
+    "buildings": "Будівлі",
+    "buildings_desc": "Розширюйте та покращуйте Академію",
+    "story": "Кампанія",
+    "story_desc": "Глибока історична кампанія",
+    "progress": "Прогрес до відкриття",
+    "collect_artifacts": "Збирай артефакти щоб збільшити Престиж"
+  },
   "story_events": {
     "academy_first_discovery": "Перше відкриття",
     "academy_rising_fame": "Слава зростає",

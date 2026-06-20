@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, ChevronLeft, ChevronRight, Target, ShoppingBag, Gift, Zap, Users, BookOpen } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Target, ShoppingBag, Gift, Zap, BookOpen, Map, Award, Crown } from 'lucide-react';
 import { hapticImpact } from '../lib/telegram';
 
 interface TutorialModalProps {
@@ -23,19 +23,24 @@ const STEPS = [
     content: 'Відкривайте скрині з артефактами. Збирайте частини та отримуйте бонуси до XP, валюти та пасивного доходу!',
   },
   {
+    icon: <Map className="w-16 h-16 text-cyan-400" />,
+    title: 'Експедиції',
+    content: 'Відправляйте героїв у експедиції! Знаходьте стародавні артефакти та збільшуйте свій Престиж. Це ключ до перемоги!',
+  },
+  {
+    icon: <Award className="w-16 h-16 text-amber-400" />,
+    title: 'Престиж',
+    content: 'Збирайте артефакти та збільшуйте Престиж! Кожні 500 Престижу — нова нагорода. На 3000 — відкривається Історична Академія!',
+  },
+  {
+    icon: <Crown className="w-16 h-16 text-red-400" />,
+    title: 'Історична Академія',
+    content: 'Мета гри — досягти Історичної Академії! Збирайте артефакти, проходьте експедиції, відкривайте нові можливості.',
+  },
+  {
     icon: <Zap className="w-16 h-16 text-yellow-400" />,
     title: 'Бустери',
-    content: 'Купуйте бустери за Telegram Stars та отримуйте тимчасові бонуси: подвійний XP, валюту або гарантованого легендарного артефакту!',
-  },
-  {
-    icon: <Users className="w-16 h-16 text-blue-400" />,
-    title: 'Друзі',
-    content: 'Запрошуйте друзів та отримуйте бонуси за кожного запрошеного гравця!',
-  },
-  {
-    icon: <BookOpen className="w-16 h-16 text-amber-400" />,
-    title: 'Епохи',
-    content: 'Розвивайтесь від Трипільської культури до Незалежної України. Кожна епоха — нові генератори та артефакти!',
+    content: 'Дивіться рекламу за нагороди! XP буст, валюта, прискорення — все безкоштовно та добровільно.',
   },
 ];
 
