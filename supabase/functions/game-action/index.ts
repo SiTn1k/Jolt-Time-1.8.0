@@ -59,7 +59,7 @@ function validateInitData(initData: string): { valid: boolean; userId: number | 
 
 // ── Action handlers ───────────────────────────────────────────────────────
 
-async function buyGenerator(supabase: ReturnType<typeof createClient>, telegramId: number, generatorId: string) {
+async function buyGenerator(supabase: ReturnType<typeof createClient>, telegramId: number) {
   // Read current state
   const { data: row } = await supabase.from("game_progress")
     .select("currency, owned_generators, unlocked_epochs, epoch_id")
@@ -70,8 +70,6 @@ async function buyGenerator(supabase: ReturnType<typeof createClient>, telegramI
   // the client to send the cost. Server still verifies balance.
   // TODO: Move epoch/generator definitions into a shared config or DB table
   // so the server can independently compute costs.
-  const currency = (row.currency as number) ?? 0;
-  const owned = (row.owned_generators as Array<{ generatorId: string; level: number }>) ?? [];
 
   // The client sends the expected cost so we can validate it
   // In a future iteration, compute cost server-side from generator defs
@@ -155,7 +153,7 @@ Deno.serve(async (req: Request) => {
         return json(await switchEpoch(supabase, telegramId, epoch_id));
       case "buy_generator":
         if (!generator_id) return json({ error: "Missing generator_id" }, 400);
-        return json(await buyGenerator(supabase, telegramId, generator_id));
+        return json(await buyGenerator(supabase, telegramId));
       default:
         return json({ error: `Unknown action: ${action}` }, 400);
     }

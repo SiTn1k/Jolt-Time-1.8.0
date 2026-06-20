@@ -12,7 +12,6 @@ interface DailyTasksPanelProps {
   dailyTasksState: DailyTasksState | null;
   currencyIcon: string;
   checkInStreak: number;
-  lastCheckIn: string | null;
   onClaimTask: (taskId: string) => void;
 }
 
@@ -25,7 +24,6 @@ export function DailyTasksPanel({
   dailyTasksState,
   currencyIcon,
   checkInStreak,
-  lastCheckIn: _lastCheckIn,
   onClaimTask,
 }: DailyTasksPanelProps) {
   const { t } = useTranslation();

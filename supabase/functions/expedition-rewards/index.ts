@@ -285,8 +285,7 @@ async function completeArtifact(
 
 async function claimPrestige(
   supabase: ReturnType<typeof createClient>,
-  telegramId: number,
-  _data?: Record<string, unknown>
+  telegramId: number
 ) {
   const { data: stateData, error: loadError } = await supabase
     .from("expedition_state")

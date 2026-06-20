@@ -282,29 +282,6 @@ interface CandidatePlayer {
   currency?: number;
 }
 
-interface PlayerProgress {
-  prestige_level: number;
-  level: number;
-  epoch_id: string;
-  currency: number;
-}
-
-// Epoch names for personalization
-const EPOCH_NAMES: Record<string, { ua: string; en: string }> = {
-  trypillia: { ua: "Трипілля", en: "Trypillia" },
-  scythia: { ua: "Скіфія", en: "Scythia" },
-  antiquity: { ua: "Античність", en: "Antiquity" },
-  kyiv_rus: { ua: "Київська Русь", en: "Kyiv Rus" },
-  halych_volhynia: { ua: "Галицько-Волинське", en: "Halych-Volhynia" },
-  polish_lithuanian: { ua: "Річ Посполита", en: "Polish-Lithuanian" },
-  cossack: { ua: "Козаччина", en: "Cossack Era" },
-  hetmanate: { ua: "Гетьманщина", en: "Hetmanate" },
-  empire: { ua: "Російська Імперія", en: "Russian Empire" },
-  revolution: { ua: "Революція", en: "Revolution" },
-  soviet: { ua: "Радянський Союз", en: "Soviet Union" },
-  independence: { ua: "Незалежність", en: "Independence" },
-};
-
 /**
  * Select appropriate message based on player's prestige level
  * Early game (prestige < 2): use early game messages
@@ -323,14 +300,6 @@ function selectMessageByPrestige(prestigeLevel: number, level: number): { type: 
   }
   
   return { type: selected.type, text: personalizedText };
-}
-
-/**
- * Select urgent message for players inactive for 24h+
- */
-function selectUrgentMessage(): { type: string; text: string } {
-  const selected = URGENT_MESSAGES[Math.floor(Math.random() * URGENT_MESSAGES.length)];
-  return { type: selected.type, text: selected.text };
 }
 
 /**
@@ -465,14 +434,11 @@ Deno.serve(async (req: Request) => {
 
     for (const candidate of candidates as CandidatePlayer[]) {
       const telegramId = candidate.telegram_id;
-      const lastActive = candidate.last_active_at;
       if (!telegramId || !Number.isFinite(telegramId) || telegramId <= 0) continue;
 
       // Get player's progress for personalized messages
       const prestigeLevel = candidate.prestige_level ?? 0;
       const playerLevel = candidate.level ?? 1;
-      const epochId = candidate.epoch_id ?? "trypillia";
-      const currency = candidate.currency ?? 0;
 
       console.log(`[retention] processing telegram_id=${telegramId} prestige=${prestigeLevel} level=${playerLevel}`);
 

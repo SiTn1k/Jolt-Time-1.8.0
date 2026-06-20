@@ -69,7 +69,7 @@ class TabManagerClass {
         this.becomeLeader();
         this.startHeartbeat();
         return;
-      } catch (e) {
+      } catch {
         console.warn('BroadcastChannel not supported, falling back to localStorage');
       }
     }
@@ -186,10 +186,10 @@ class TabManagerClass {
         this.handleLock(message);
         break;
       case 'unlock':
-        this.handleUnlock(message);
+        this.handleUnlock();
         break;
       case 'state_request':
-        this.handleStateRequest(message);
+        this.handleStateRequest();
         break;
       case 'state_response':
         this.handleStateResponse(message);
@@ -214,14 +214,14 @@ class TabManagerClass {
     }
   }
 
-  private handleUnlock(_message: TabMessage): void {
+  private handleUnlock(): void {
     // Another tab released leadership - we can try to take it
     if (!this.isLeader) {
       this.tryBecomeLeader();
     }
   }
 
-  private handleStateRequest(_message: TabMessage): void {
+  private handleStateRequest(): void {
     if (!this.isLeader) return;
 
     // Send current state back to requester
@@ -413,6 +413,7 @@ export function useTabManager(options?: {
     return () => {
       TabManager.destroy();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const dismissDuplicateWarning = () => {

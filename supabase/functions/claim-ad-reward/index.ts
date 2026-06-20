@@ -162,7 +162,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Apply reward based on type
-    let updateData: Record<string, unknown> = {};
+    const updateData: Record<string, unknown> = {};
     let rewardApplied = false;
     let newValue = 0;
 

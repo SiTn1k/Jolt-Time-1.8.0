@@ -69,7 +69,7 @@ export function SessionAdModal({ prestigeLevel, onReward, onClose }: SessionAdMo
     } finally {
       setIsLoading(false);
     }
-  }, [prestigeLevel, onReward, onClose]);
+  }, [prestigeLevel, onReward, onClose, t]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm">
@@ -201,7 +201,7 @@ export function ChestAdModal({ prestigeLevel, chestsOpened, onReward, onClose }:
     } finally {
       setIsLoading(false);
     }
-  }, [prestigeLevel, onReward, onClose]);
+  }, [prestigeLevel, onReward, onClose, t]);
 
   return (
     <div 
@@ -319,43 +319,6 @@ export function EnergyRestoreAdButton({
     controllerRef.current = initAdsgram();
   }, []);
 
-  // Only show for prestige 1+
-  if (prestigeLevel < 1) return null;
-
-  // Already at max energy
-  if (currentEnergy >= maxEnergy) {
-    return (
-      <div className="bg-gray-800/50 rounded-xl p-3 border border-gray-700 opacity-50">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-gray-700/50 rounded-lg">
-            <Battery className="w-5 h-5 text-gray-500" />
-          </div>
-          <div className="flex-1">
-            <div className="text-white font-medium text-sm">{t('ad.energy_full')}</div>
-            <div className="text-xs text-gray-500">Використай тапи для x5 буста</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Daily limit reached
-  if (dailyEnergyAdsUsed >= MAX_ENERGY_ADS_PER_DAY) {
-    return (
-      <div className="bg-gray-800/50 rounded-xl p-3 border border-gray-700 opacity-50">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-gray-700/50 rounded-lg">
-            <Battery className="w-5 h-5 text-gray-500" />
-          </div>
-          <div className="flex-1">
-            <div className="text-white font-medium text-sm">Ліміт вичерпано</div>
-            <div className="text-xs text-gray-500">{MAX_ENERGY_ADS_PER_DAY}/{MAX_ENERGY_ADS_PER_DAY} на сьогодні</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   const handleWatchAd = useCallback(async () => {
     const controller = controllerRef.current;
     if (!controller) {
@@ -408,7 +371,44 @@ export function EnergyRestoreAdButton({
     } finally {
       setIsLoading(false);
     }
-  }, [onEnergyRestored, onAdUsed, currentEnergy]);
+  }, [onEnergyRestored, onAdUsed, currentEnergy, t]);
+
+  // Only show for prestige 1+
+  if (prestigeLevel < 1) return null;
+
+  // Already at max energy
+  if (currentEnergy >= maxEnergy) {
+    return (
+      <div className="bg-gray-800/50 rounded-xl p-3 border border-gray-700 opacity-50">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-gray-700/50 rounded-lg">
+            <Battery className="w-5 h-5 text-gray-500" />
+          </div>
+          <div className="flex-1">
+            <div className="text-white font-medium text-sm">{t('ad.energy_full')}</div>
+            <div className="text-xs text-gray-500">{t('ad.use_taps_x5')}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Daily limit reached
+  if (dailyEnergyAdsUsed >= MAX_ENERGY_ADS_PER_DAY) {
+    return (
+      <div className="bg-gray-800/50 rounded-xl p-3 border border-gray-700 opacity-50">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-gray-700/50 rounded-lg">
+            <Battery className="w-5 h-5 text-gray-500" />
+          </div>
+          <div className="flex-1">
+            <div className="text-white font-medium text-sm">{t('ad_system.limit_exceeded')}</div>
+            <div className="text-xs text-gray-500">{MAX_ENERGY_ADS_PER_DAY}/{MAX_ENERGY_ADS_PER_DAY} {t('common.today')}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const remaining = MAX_ENERGY_ADS_PER_DAY - dailyEnergyAdsUsed;
 
@@ -420,7 +420,7 @@ export function EnergyRestoreAdButton({
         </div>
         <div className="flex-1">
           <div className="text-white font-medium text-sm">{t('ad_system.restore_energy')}</div>
-          <div className="text-xs text-blue-400/80">+{ENERGY_RESTORE_AMOUNT} енергії за рекламу</div>
+          <div className="text-xs text-blue-400/80">+{ENERGY_RESTORE_AMOUNT} {t('ad_system.energy_amount').replace('+{amount} ', '')}</div>
         </div>
       </div>
 

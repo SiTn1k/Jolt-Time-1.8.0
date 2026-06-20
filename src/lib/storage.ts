@@ -68,7 +68,7 @@ function estimatePassiveForEpoch(epoch: Epoch, levelInEpoch: number): number {
 
 function ensureJson<T>(value: T | string): T {
   if (typeof value === 'string') {
-    try { return JSON.parse(value) as T; } catch { }
+    try { return JSON.parse(value) as T; } catch { /* return original on parse error */ }
   }
   return value as T;
 }

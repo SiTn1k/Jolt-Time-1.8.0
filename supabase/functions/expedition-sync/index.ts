@@ -334,10 +334,9 @@ async function completeExpedition(
     return jsonResponse({ error: "Missing expedition data" }, 400);
   }
 
-  const { expedition_id, hero_id, client_computed_rewards } = data as {
+  const { expedition_id, hero_id } = data as {
     expedition_id?: string;
     hero_id?: string;
-    client_computed_rewards?: Record<string, unknown>;
   };
 
   if (!expedition_id || !hero_id) {
@@ -544,7 +543,7 @@ async function completeExpedition(
 
 // ── Helper Functions ─────────────────────────────────────────────────────────
 
-function generateArtifactId(regionId: string, difficulty: string): string {
+function generateArtifactId(regionId: string): string {
   // Generate a deterministic artifact based on region and random chance
   const rarityRoll = Math.random();
   let rarity: string;

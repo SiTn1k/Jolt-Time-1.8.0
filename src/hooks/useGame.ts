@@ -867,7 +867,7 @@ export function useGame() {
       setSyncStatus('error');
       setConnectionError('Проблеми зі з\'єднанням. Прогрес збережеться локально');
     });
-  }, [state.unlockedEpochs, state]);
+  }, [state]);
 
   const loadLeaderboard = useCallback(async () => {
     setLeaderboardLoading(true);
@@ -1027,7 +1027,7 @@ export function useGame() {
 
     hapticImpact('light');
     return true;
-  }, [state.prestigeLevel, state.energy]);
+  }, [state.prestigeLevel]);
 
   // Get energy multiplier (x5 if energy > 0, x1 if energy = 0, only for prestige 1+)
   const getEnergyMultiplier = useCallback(() => {

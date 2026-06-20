@@ -464,7 +464,8 @@
     "complete": "Завершено",
     "unlocked": "Відкрито",
     "available": "Доступно",
-    "max_level": "МАКС"
+    "max_level": "МАКС",
+    "today": "сьогодні"
   },
   "tabs": {
     "shop": "Магазин",

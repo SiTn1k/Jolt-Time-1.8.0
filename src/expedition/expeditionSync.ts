@@ -320,9 +320,10 @@ class AcademySyncService {
           return await this.saveExpeditionData(data as ExpeditionData);
         case 'story':
           return await this.saveStoryData(data as StoryProgress);
-        case 'museum':
+        case 'museum': {
           const mData = data as { museumState: MuseumState; reputation: number; visitors: number };
           return await this.saveMuseumData(mData.museumState, mData.reputation, mData.visitors);
+        }
         default:
           return false;
       }

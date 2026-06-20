@@ -481,7 +481,6 @@ function App() {
                 dailyTasksState={state.dailyTasksState}
                 currencyIcon={epoch.currencyIcon}
                 checkInStreak={state.checkInStreak}
-                lastCheckIn={state.lastCheckIn}
                 onClaimTask={claimDailyTask}
               />
               <TapUpgrade
@@ -1064,7 +1063,6 @@ function App() {
         <GachaModal
           epoch={epoch}
           currency={state.currency}
-          unlockedEpochs={state.unlockedEpochs}
           artifactParts={state.artifactParts || {}}
           completedArtifacts={state.completedArtifacts || []}
           artifactDupes={state.artifactDupes || {}}

@@ -370,7 +370,8 @@
     "complete": "Complete",
     "unlocked": "Unlocked",
     "available": "Available",
-    "max_level": "MAX"
+    "max_level": "MAX",
+    "today": "today"
   },
   "tabs": {
     "shop": "Shop",

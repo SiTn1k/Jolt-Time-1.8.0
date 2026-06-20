@@ -74,7 +74,7 @@ export function OfflineRewardModal({
     try {
       await onClaim(false);
       setClaimed(true);
-    } catch (err) {
+    } catch {
       setAdError('Сталася помилка');
     } finally {
       setIsLoading(false);

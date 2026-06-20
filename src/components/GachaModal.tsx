@@ -19,7 +19,6 @@ interface GachaReward {
 interface GachaModalProps {
   epoch: Epoch;
   currency: number;
-  unlockedEpochs: string[];
   artifactParts: Record<string, number>;
   completedArtifacts: string[];
   artifactDupes: Record<string, number>;
@@ -43,7 +42,6 @@ const ROLL_ICONS = ['🎁', '✨', '💎', '🏺', '👑', '⚔️', '☦️', '
 export function GachaModal({
   epoch,
   currency,
-  unlockedEpochs: _unlockedEpochs,
   artifactParts,
   completedArtifacts,
   artifactDupes,
