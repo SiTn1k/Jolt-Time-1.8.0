@@ -12,6 +12,7 @@ import {
   initialRegions,
   initialNpcs,
   buildings,
+  getLevelFromXP,
 
 } from './data';
 import {
@@ -156,6 +157,7 @@ interface GameState {
   // economy helpers
   addKarbovanets: (amount: number) => void;
   spendKarbovanets: (amount: number) => boolean;
+  addHeroXP: (heroId: string, amount: number) => boolean;
   pushToast: (message: string, color?: string) => void;
   dismissToast: (id: number) => void;
 
@@ -213,6 +215,37 @@ export const useExpeditionStore = create<GameState>()(
           return true;
         }
         return false;
+      },
+      
+      // Hero XP action
+      addHeroXP: (heroId, amount) => {
+        if (amount <= 0) return false;
+        
+        set((state) => {
+          const heroIndex = state.heroes.findIndex((h) => h.id === heroId);
+          if (heroIndex < 0) return state;
+          
+          const hero = state.heroes[heroIndex];
+          const newXP = hero.experience + amount;
+          const newLevel = getLevelFromXP(newXP);
+          
+          // Check if leveled up
+          if (newLevel > hero.level) {
+            const toastMessage = ` Герой ${hero.name} досяг рівня ${newLevel}!`;
+            setTimeout(() => get().pushToast(toastMessage, '#FFC72C'), 100);
+          }
+          
+          const updatedHeroes = [...state.heroes];
+          updatedHeroes[heroIndex] = {
+            ...hero,
+            experience: newXP,
+            level: newLevel,
+          };
+          
+          return { heroes: updatedHeroes };
+        });
+        
+        return true;
       },
       
       // Story/Quest actions
@@ -303,9 +336,15 @@ export const useExpeditionStore = create<GameState>()(
               get().addKarbovanets(amount);
               break;
             case 'xp':
-              // TODO: Implement XP reward - needs hero XP tracking system
-              // Requires: Hero interface has experience field but no XP grant logic
-              console.warn('XP reward not implemented:', amount);
+              // Grant XP to first available hero (lowest level if multiple available)
+              {
+                const heroes = get().heroes;
+                if (heroes.length > 0) {
+                  // Find first unassigned hero, or just use first hero
+                  const activeHero = heroes.find(h => !h.assigned) || heroes[0];
+                  get().addHeroXP(activeHero.id, amount);
+                }
+              }
               break;
             case 'academy_xp':
               // TODO: Implement Academy XP - needs academyLevel progression system
@@ -906,17 +945,12 @@ export const useExpeditionStore = create<GameState>()(
             const artifactId = rewards.artifactId as string | null;
 
             set((st) => {
+              const gainedXp = (rewards.xp as number) || 100;
               const heroes = st.heroes.map((h) => {
                 if (!exp.heroes.includes(h.id)) return h;
-                const gainedXp = (rewards.xp as number) || 100;
-                let level = h.level;
-                let experience = h.experience + gainedXp;
-                const need = (level + 1) * 200;
-                if (experience >= need) {
-                  level += 1;
-                  experience -= need;
-                }
-                return { ...h, assigned: false, assignedTo: undefined, level, experience };
+                const newXP = h.experience + gainedXp;
+                const newLevel = getLevelFromXP(newXP);
+                return { ...h, assigned: false, assignedTo: undefined, experience: newXP, level: newLevel };
               });
 
               // Unlock next region on success

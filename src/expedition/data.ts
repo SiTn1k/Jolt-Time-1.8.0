@@ -100,6 +100,57 @@ export const STAT_GROWTH_PER_LEVEL: Record<Rarity, { base: number; perLevel: num
   legendary: { base: 15, perLevel: 6 },
 };
 
+/**
+ * Hero XP Table for level progression
+ * Index = level, value = cumulative XP required to reach that level
+ * Level 1 = 0 XP, Level 2 = 100 XP, Level 3 = 300 XP, etc.
+ */
+export const HERO_XP_TABLE: number[] = [
+  0,      // Level 1 (index 0)
+  100,    // Level 2
+  300,    // Level 3
+  700,    // Level 4
+  1500,   // Level 5
+  2800,   // Level 6
+  4700,   // Level 7
+  7500,   // Level 8
+  11500,  // Level 9
+  17000,  // Level 10
+  24000,  // Level 11
+  33000,  // Level 12
+  44000,  // Level 13
+  58000,  // Level 14
+  75000,  // Level 15
+  96000,  // Level 16
+  121000, // Level 17
+  150000, // Level 18
+  185000, // Level 19
+  226000, // Level 20
+];
+
+/**
+ * Get XP required for next level
+ */
+export function getXpForLevel(level: number): number {
+  if (level < 1 || level >= HERO_XP_TABLE.length) {
+    // Fallback for levels beyond table
+    return Math.floor(100 * Math.pow(1.5, level));
+  }
+  return HERO_XP_TABLE[level];
+}
+
+/**
+ * Get level from total XP
+ */
+export function getLevelFromXP(xp: number): number {
+  for (let level = HERO_XP_TABLE.length - 1; level >= 0; level--) {
+    if (xp >= HERO_XP_TABLE[level]) {
+      return level + 1;
+    }
+  }
+  return 1;
+}
+
 export interface Region {
   id: string;
   name: string;
