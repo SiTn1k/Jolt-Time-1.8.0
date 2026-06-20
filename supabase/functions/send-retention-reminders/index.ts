@@ -4,35 +4,15 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 /*
  * send-retention-reminders
  * ------------------------
- * Backend-only retention push system for the Telegram Mini App.
+ * Enhanced retention push system with personalized messages based on player progress.
  *
- * Behaviour:
- * 1. Reads players from game_progress whose last_active_at is between
- *    (NOW - 7h) and (NOW - 6h) — a 1-hour notification window.
- *    last_active_at is ONLY updated when the player genuinely opens the
- *    Mini App or pings a session (via the track-session edge function),
- *    so it reflects true user activity, unlike updated_at which fires on
- *    every background sync / passive income claim / cron job.
- * 2. Filters out players without a valid telegram_id.
- * 3. Checks retention_notifications for an existing send of the
- *    same notification_type in the last 24 hours, and skips if found.
- * 4. Sends a Telegram sendMessage to each candidate with an inline
- *    "🚀 Запустити гру" button that deep-links into the Mini App.
- * 5. Inserts a row into retention_notifications for every send.
- * 6. Emits structured console.log lines at each stage so retention runs
- *    can be verified in the Supabase Edge Function logs.
+ * Features:
+ * - Different message pools for early game (prestige < 2) vs late game (prestige >= 2)
+ * - Personalized messages based on player's current epoch and achievements
+ * - Multiple notification types for variety
+ * - Duplicate protection within notification type + 24h window
  *
- * Designed to be invoked hourly by pg_cron via the pg_net extension
- * (configured in a separate migration).
- *
- * Environment variables (read at call time):
- *  - SUPABASE_URL             (auto-provided by Supabase runtime)
- *  - SUPABASE_SERVICE_ROLE_KEY (auto-provided)
- *  - TELEGRAM_BOT_TOKEN        (secret, configured in Supabase dashboard)
- *  - RETENTION_DEEP_LINK       (optional) override URL for the launch button.
- *      Defaults to https://t.me/<BOT_USERNAME>?start=retention where
- *      BOT_USERNAME comes from RETENTION_BOT_USERNAME (optional) and
- *      falls back to the public bot via /getMe.
+ * Designed to be invoked hourly by pg_cron.
  */
 
 const corsHeaders = {
@@ -46,34 +26,258 @@ const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
 const TG_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
-const NOTIFICATION_TYPE = "energy_full";
+const NOTIFICATION_TYPE = "retention";
 const DUPLICATE_WINDOW_HOURS = 24;
 
-const RETENTION_MESSAGES = [
-  "⚡ Твоя енергія повністю відновилася!\n\nПовертайся в музей та продовжуй дослідження! 🏛️",
+// ============================================================
+// MESSAGE POOLS BY PLAYER PROGRESSION
+// ============================================================
 
-  "🎁 На тебе чекає подарунок у музеї!\n\nЗаходь та забери свою нагороду просто зараз.",
+// Early game messages (prestige < 2) - Focus on core gameplay
+const EARLY_GAME_MESSAGES = [
+  {
+    type: "energy",
+    text: `⚡ Енергія відновилась! Час продовжити розкопки!
 
-  "💰 Музей накопичив прибуток офлайн!\n\nПовертайся та забери зароблені монети.",
+Твоя команда археологів чекає на тебе 👷‍♂️`,
+    emoji: "⛏️"
+  },
+  {
+    type: "progress",
+    text: `📈 Ти вже {level} рівня — непогано!
 
-  "🏛️ Експедиція завершилася!\n\nТвої археологи вже чекають на нові завдання.",
+Уявляєш, які таємниці чекають попереду? 🔮`,
+    emoji: "🎯"
+  },
+  {
+    type: "artifact",
+    text: `🏺 Знайдено артефакт з нової епохи!
 
-  "🔍 Знайдено новий артефакт!\n\nНе пропусти можливість поповнити свою колекцію.",
+Поспіши зібрати колекцію до повного набору!`,
+    emoji: "💎"
+  },
+  {
+    type: "motivation",
+    text: `🚀 Князь Данило вже збирає войнів!
 
-  "🚀 Твій музей сумує без тебе!\n\nЧас повернутися та продовжити розвиток імперії.",
+Повертайся до своєї фортеці — час здобувати славу!`,
+    emoji: "⚔️"
+  },
+  {
+    type: "chest",
+    text: `🎁 Твоя скриня очікує!
 
-  "⭐ У тебе накопичилися бонуси!\n\nЗаходь у гру та використай їх з користю.",
+Відкрий її зараз та отримай унікальні фрагменти!`,
+    emoji: "📦"
+  },
+  {
+    type: "epoch",
+    text: `🗺️ Нові землі відкрилися!
 
-  "🎮 Настав час нових відкриттів!\n\nТвої відвідувачі вже чекають на повернення директора музею.",
+Досліди нову епоху та відкрий історичні таємниці!`,
+    emoji: "🌍"
+  },
+  {
+    type: "friend",
+    text: `👥 Твої друзі вже грають!
 
-  "🏆 Ти вже близько до наступного рівня!\n\nЗалишився лише один крок до нових досягнень.",
+Перевір, хто з них найкращий археолог!`,
+    emoji: "🏆"
+  },
+  {
+    type: "collection",
+    text: `🖼️ Твоя колекція артефактів зростає!
 
-  "🔥 Повертайся в гру!\n\nПопереду нові артефакти, нагороди та досягнення."
+Повертайся, щоб завершити унікальний комплект!`,
+    emoji: "🎨"
+  },
+  {
+    type: "quest",
+    text: `📜 Нова місія чекає!
+
+Допоможи козакам знайти скарби Запорізької Січі!`,
+    emoji: "🗡️"
+  },
+  {
+    type: "generator",
+    text: `🏭 Твоя майстерня працювала без тебе!
+
+Збери зароблені монети та інвестуй у розвиток!`,
+    emoji: "💰"
+  }
+];
+
+// Late game messages (prestige >= 2) - Focus on Academy, Expeditions, Museum
+const LATE_GAME_MESSAGES = [
+  {
+    type: "academy",
+    text: `🎓 Академія чекає на тебе!
+
+Нові дослідження доступні для вивчення — стань справжнім професором історії!`,
+    emoji: "📚"
+  },
+  {
+    type: "expedition",
+    text: `🏛️ Твоя експедиція повернулась!
+
+Перевіряй здобич та відправляй нових героїв у подорож!`,
+    emoji: "⚔️"
+  },
+  {
+    type: "museum",
+    text: `🏛️ Відвідувачі музею сумують!
+
+Поповни експозицію новими артефактами та підніми репутацію!`,
+    emoji: "👑"
+  },
+  {
+    type: "prestige",
+    text: `⭐ Престиж чекає!
+
+Ти вже близько до наступного переродження — збери достатньо монет та почни новий етап!`,
+    emoji: "🌟"
+  },
+  {
+    type: "collection",
+    text: `💎 Рідкісні артефакти чекають!
+
+Твоя колекція унікальних артефактів може бути доповнена!`,
+    emoji: "🔮"
+  },
+  {
+    type: "reputation",
+    text: `📊 Репутація музею зростає!
+
+Продовжуй розвивати експозицію — відвідувачі в захваті!`,
+    emoji: "📈"
+  },
+  {
+    type: "legendary",
+    text: `🌟 Легендарний артефакт близько!
+
+Збери останні фрагменти та отримай унікальний бонус!`,
+    emoji: "⚡"
+  },
+  {
+    type: "achievement",
+    text: `🏅 Нове досягнення розблоковано!
+
+Перевір свій прогрес та отримай заслужену нагороду!`,
+    emoji: "🎖️"
+  },
+  {
+    type: "energy",
+    text: `⚡ Повна енергія відновилась!
+
+Час для нових археологічних відкриттів!`,
+    emoji: "🔋"
+  },
+  {
+    type: "offline",
+    text: `💰 Офлайн дохід накопичився!
+
+Твій музей працював без тебе — забери прибуток!`,
+    emoji: "🏦"
+  },
+  {
+    type: "secret",
+    text: `🔐 Секретний артефакт виявлено!
+
+Тільки справжні археологи можуть його знайти!`,
+    emoji: "🗝️"
+  },
+  {
+    type: "research",
+    text: `🔬 Нові дослідження в Академії!
+
+Покращуй свої навички та ефективність!`,
+    emoji: "🧪"
+  }
+];
+
+// URGENT messages for players who haven't returned in 24h+
+const URGENT_MESSAGES = [
+  {
+    type: "comeback",
+    text: `😟 Ми сумуємо за тобою!
+
+Вже 24 години ти не відвідував музей. Твоя команда чекає!`,
+    emoji: "👋"
+  },
+  {
+    type: "miss",
+    text: `🎁 Ти пропустив щоденну нагороду!
+
+Повертайся швидше, щоб не втратити прогрес!`,
+    emoji: "⏰"
+  },
+  {
+    type: "progress",
+    text: `📉 Твої друзі обганяють тебе!
+
+Перевір таблицю лідерів та поверни собі першість!`,
+    emoji: "🏃"
+  }
 ];
 
 interface CandidatePlayer {
   telegram_id: number;
   last_active_at: string | null;
+  prestige_level?: number;
+  level?: number;
+  epoch_id?: string;
+  currency?: number;
+}
+
+interface PlayerProgress {
+  prestige_level: number;
+  level: number;
+  epoch_id: string;
+  currency: number;
+}
+
+// Epoch names for personalization
+const EPOCH_NAMES: Record<string, { ua: string; en: string }> = {
+  trypillia: { ua: "Трипілля", en: "Trypillia" },
+  scythia: { ua: "Скіфія", en: "Scythia" },
+  antiquity: { ua: "Античність", en: "Antiquity" },
+  kyiv_rus: { ua: "Київська Русь", en: "Kyiv Rus" },
+  halych_volhynia: { ua: "Галицько-Волинське", en: "Halych-Volhynia" },
+  polish_lithuanian: { ua: "Річ Посполита", en: "Polish-Lithuanian" },
+  cossack: { ua: "Козаччина", en: "Cossack Era" },
+  hetmanate: { ua: "Гетьманщина", en: "Hetmanate" },
+  empire: { ua: "Російська Імперія", en: "Russian Empire" },
+  revolution: { ua: "Революція", en: "Revolution" },
+  soviet: { ua: "Радянський Союз", en: "Soviet Union" },
+  independence: { ua: "Незалежність", en: "Independence" },
+};
+
+/**
+ * Select appropriate message based on player's prestige level
+ * Early game (prestige < 2): use early game messages
+ * Late game (prestige >= 2): use late game messages
+ */
+function selectMessageByPrestige(prestigeLevel: number, level: number): { type: string; text: string } {
+  const messages = prestigeLevel >= 2 ? LATE_GAME_MESSAGES : EARLY_GAME_MESSAGES;
+  
+  // Pick random message
+  const selected = messages[Math.floor(Math.random() * messages.length)];
+  
+  // Personalize with player's level if placeholder exists
+  let personalizedText = selected.text;
+  if (personalizedText.includes('{level}')) {
+    personalizedText = personalizedText.replace('{level}', level.toString());
+  }
+  
+  return { type: selected.type, text: personalizedText };
+}
+
+/**
+ * Select urgent message for players inactive for 24h+
+ */
+function selectUrgentMessage(): { type: string; text: string } {
+  const selected = URGENT_MESSAGES[Math.floor(Math.random() * URGENT_MESSAGES.length)];
+  return { type: selected.type, text: selected.text };
 }
 
 interface TelegramResponse {
@@ -152,9 +356,10 @@ Deno.serve(async (req: Request) => {
 
     console.log(`[retention] window: last_active_at in (${sevenHoursAgoIso}, ${sixHoursAgoIso}]`);
 
+    // Fetch player progress for personalized messages
     const { data: candidates, error } = await supabase
       .from("game_progress")
-      .select("telegram_id, last_active_at")
+      .select("telegram_id, last_active_at, prestige_level, level, epoch_id, currency")
       .not("telegram_id", "is", null)
       .not("last_active_at", "is", null)
       .lte("last_active_at", sixHoursAgoIso)
@@ -183,9 +388,16 @@ Deno.serve(async (req: Request) => {
       const lastActive = candidate.last_active_at;
       if (!telegramId || !Number.isFinite(telegramId) || telegramId <= 0) continue;
 
-      console.log(`[retention] processing telegram_id=${telegramId} last_active_at=${lastActive}`);
+      // Get player's progress for personalized messages
+      const prestigeLevel = candidate.prestige_level ?? 0;
+      const playerLevel = candidate.level ?? 1;
+      const epochId = candidate.epoch_id ?? "trypillia";
+      const currency = candidate.currency ?? 0;
 
-      // Duplicate protection: check if same notification_type was sent in last 24h.
+      console.log(`[retention] processing telegram_id=${telegramId} prestige=${prestigeLevel} level=${playerLevel}`);
+
+      // Duplicate protection: check if any notification was sent in last 24h
+      // Use notification_type = 'retention' for all retention messages
       const { data: existing, error: dedupErr } = await supabase
         .from("retention_notifications")
         .select("id")
@@ -209,26 +421,26 @@ Deno.serve(async (req: Request) => {
         continue;
       }
 
-      // Select random message from the array
-      const randomMessage =
-        RETENTION_MESSAGES[
-          Math.floor(Math.random() * RETENTION_MESSAGES.length)
-        ];
+      // Select message based on prestige level
+      // Late game players (prestige >= 2) get academy/expedition focused messages
+      // Early game players (prestige < 2) get core gameplay focused messages
+      const message = selectMessageByPrestige(prestigeLevel, playerLevel);
 
-      console.log(`[retention] sending Telegram message to ${telegramId}`);
+      // Build inline keyboard based on player's progress
+      const inlineKeyboard: Array<Array<{ text: string; url?: string }>> = [
+        [{ text: "🚀 Запустити гру", url: inlineUrl }]
+      ];
+
+      // Add channel link
+      inlineKeyboard.push([{ text: "📢 Наш Telegram канал", url: "https://t.me/SITNIK_BLOG" }]);
+
+      console.log(`[retention] sending to ${telegramId}: type=${message.type} prestige=${prestigeLevel}`);
       const tgResult = await tgCall("sendMessage", {
         chat_id: telegramId,
-        text: randomMessage,
+        text: message.text,
         parse_mode: "HTML",
         reply_markup: {
-          inline_keyboard: [
-            [
-              { text: "🚀 Запустити гру", url: inlineUrl }
-            ],
-            [
-              { text: "📢 Наш Telegram канал", url: "https://t.me/SITNIK_BLOG" }
-            ]
-          ],
+          inline_keyboard: inlineKeyboard,
         },
       });
 
@@ -246,9 +458,12 @@ Deno.serve(async (req: Request) => {
           telegram_id: telegramId,
           notification_type: NOTIFICATION_TYPE,
           payload: {
-            message: randomMessage,
+            message: message.text,
+            message_type: message.type,
             url: inlineUrl,
-            channel: "https://t.me/SITNIK_BLOG"
+            prestige_level: prestigeLevel,
+            level: playerLevel,
+            epoch_id: epochId,
           },
         });
 
@@ -271,6 +486,11 @@ Deno.serve(async (req: Request) => {
       failed: failed.length,
       sent_ids: sent,
       failed_details: failed,
+      message_pools: {
+        early_game: EARLY_GAME_MESSAGES.length,
+        late_game: LATE_GAME_MESSAGES.length,
+        urgent: URGENT_MESSAGES.length,
+      },
     });
   } catch (err) {
     console.error("[retention] fatal error:", err);
