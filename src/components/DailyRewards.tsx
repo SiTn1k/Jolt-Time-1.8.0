@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { X, Flame } from 'lucide-react';
+import { useTranslation } from '../i18n';
 import { formatNumber } from '../lib/utils';
 import { hapticNotification, hapticImpact } from '../lib/telegram';
 import { getTodayDateStr, getYesterdayDateStr } from '../data/tasks';
@@ -66,6 +67,7 @@ interface DailyRewardsProps {
 }
 
 export function DailyRewards({ checkInStreak, lastCheckIn, onClaim, onSkip }: DailyRewardsProps) {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
   const [claimed, setClaimed] = useState(false);
 
@@ -124,7 +126,7 @@ export function DailyRewards({ checkInStreak, lastCheckIn, onClaim, onSkip }: Da
             {claimed ? '✨' : nextReward.special === 'gacha_ticket' ? '🎁' : '📅'}
           </div>
           <h2 className="text-xl font-black text-white">
-            {claimed ? 'Нагороду отримано!' : 'Щоденна нагорода'}
+            {claimed ? t('daily.reward_received') : t('daily.daily_reward')}
           </h2>
           {checkInStreak > 0 && !claimed && (
             <p className="text-sm text-amber-300 mt-1 font-medium">
@@ -178,7 +180,7 @@ export function DailyRewards({ checkInStreak, lastCheckIn, onClaim, onSkip }: Da
           <div className="px-6 pb-3">
             <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4">
               <p className="text-xs text-gray-400 text-center mb-2 uppercase tracking-wider">
-                День {nextDayInWeek} — Ваша нагорода
+                {t('daily.day_reward', { day: nextDayInWeek })}
               </p>
               <div className="flex gap-3">
                 {nextReward.currency > 0 && (
@@ -219,7 +221,7 @@ export function DailyRewards({ checkInStreak, lastCheckIn, onClaim, onSkip }: Da
               onClick={handleClaim}
               className="w-full py-4 bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-bold text-lg rounded-2xl hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-amber-500/30"
             >
-              Отримати нагороду!
+              {t('daily.claim_reward')}
             </button>
           )}
         </div>
@@ -228,7 +230,7 @@ export function DailyRewards({ checkInStreak, lastCheckIn, onClaim, onSkip }: Da
         <div className="px-6 pb-4 text-center">
           <p className="text-xs text-gray-500">
             <Flame className="w-3 h-3 inline text-amber-500 mr-1" />
-            Пропущений день скидає серію. День 7 — гарантований гача-тикет!
+            {t('daily.skip_info')}
           </p>
         </div>
 

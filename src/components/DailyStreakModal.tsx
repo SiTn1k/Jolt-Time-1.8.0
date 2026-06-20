@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { X, Flame, Star } from 'lucide-react';
+import { useTranslation } from '../i18n';
 import type { StreakReward } from '../data/tasks';
 import { formatNumber } from '../lib/utils';
 import { hapticNotification } from '../lib/telegram';
@@ -13,6 +14,7 @@ interface DailyStreakModalProps {
 const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
 
 export function DailyStreakModal({ streak, reward, onClose }: DailyStreakModalProps) {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -45,7 +47,7 @@ export function DailyStreakModal({ streak, reward, onClose }: DailyStreakModalPr
           <h2 className="text-2xl font-black text-white mt-3">
             {reward.isWeekly ? `Тижень ${Math.ceil(streak / 7)}!` : `${streak} ${streakDayWord(streak)} поспіль!`}
           </h2>
-          <p className="text-sm text-amber-300 mt-1 font-medium">Щоденний бонус отримано</p>
+          <p className="text-sm text-amber-300 mt-1 font-medium">{t('streak.daily_bonus_received')}</p>
         </div>
 
         {/* Week progress dots */}
@@ -104,7 +106,7 @@ export function DailyStreakModal({ streak, reward, onClose }: DailyStreakModalPr
             onClick={handleClose}
             className="w-full py-4 bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-bold text-lg rounded-2xl hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-amber-500/30"
           >
-            Отримати!
+            {t('streak.claim')}
           </button>
         </div>
 

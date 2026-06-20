@@ -98,6 +98,9 @@ function App() {
 
   // i18n
   const { locale, toggleLocale, t } = useTranslation();
+  
+  // Translation helper for static strings
+  const tr = (key: string, params?: Record<string, string | number>) => t(key as never, params as never);
 
   // Session Ad hook - triggers after 20 min of play
   const { shouldShowSessionAd, dismissSessionAd } = useSessionAdTrigger(
@@ -272,9 +275,9 @@ function App() {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-gray-950 text-white">
         <Loader2 className="w-12 h-12 animate-spin text-yellow-400 mb-4" />
-        <p className="text-lg">Завантаження...</p>
+        <p className="text-lg">{tr('common.loading')}</p>
         {telegramId && (
-          <p className="text-xs text-gray-500 mt-2">Telegram ID: {telegramId}</p>
+          <p className="text-xs text-gray-500 mt-2">{tr('app.telegram_id', { id: telegramId })}</p>
         )}
       </div>
     );
@@ -502,7 +505,7 @@ function App() {
           {activeTab === 'epochs' && (
             <div className="p-3">
               <div className="flex justify-between items-center mb-3">
-                <h3 className="font-bold text-lg">Епохи України</h3>
+                <h3 className="font-bold text-lg">{tr('app.epochs_title')}</h3>
                 <span className="text-xs text-gray-400">{state.unlockedEpochs.length}/12</span>
               </div>
 
@@ -524,7 +527,7 @@ function App() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs opacity-70">Прогрес</div>
+                    <div className="text-xs opacity-70">{tr('app.progress')}</div>
                     <div className="text-lg font-bold">
                       {Math.round(((state.level - epoch.levelRange.min + 1) / (epoch.levelRange.max - epoch.levelRange.min + 1)) * 100)}%
                     </div>
@@ -539,7 +542,7 @@ function App() {
               </div>
 
               {/* Unlocked epochs - clickable to switch */}
-              <h4 className="text-sm font-medium text-gray-400 mb-2">Розблоковані епохи</h4>
+              <h4 className="text-sm font-medium text-gray-400 mb-2">{tr('app.unlocked_epochs')}</h4>
               <div className="space-y-2">
                 {state.unlockedEpochs.map(epochId => {
                   const e = getEpochById(epochId);
@@ -570,7 +573,7 @@ function App() {
               </div>
 
               {/* Locked epochs */}
-              <h4 className="text-sm font-medium text-gray-400 mb-2 mt-4">Заблоковані епохи</h4>
+              <h4 className="text-sm font-medium text-gray-400 mb-2 mt-4">{tr('app.locked_epochs')}</h4>
               <div className="space-y-2">
                 {EPOCHS.filter(e => !state.unlockedEpochs.includes(e.id)).map(e => {
                   const progress = state.level >= e.unlockLevel - 10
@@ -609,12 +612,12 @@ function App() {
           {activeTab === 'artifacts' && (
             <div className="p-3">
               <div className="flex justify-between items-center mb-3">
-                <h3 className="font-bold text-lg">Артефакти</h3>
+                <h3 className="font-bold text-lg">{tr('app.artifacts')}</h3>
                 <button
                   onClick={() => setShowGacha(true)}
                   className="bg-gradient-to-r from-purple-600 to-pink-600 px-3 py-1.5 rounded-lg text-sm font-medium hover:from-purple-500 hover:to-pink-500 transition-all active:scale-95"
                 >
-                  Відкрити скриню
+                  {tr('app.open_chest')}
                 </button>
               </div>
 
@@ -628,12 +631,12 @@ function App() {
                   )}
                   {artifactMultipliers.currency > 1 && (
                     <div className="flex items-center gap-1.5 text-xs">
-                      <span className="text-green-400 font-semibold">Валюта x{artifactMultipliers.currency.toFixed(2)}</span>
+                      <span className="text-green-400 font-semibold">{tr('app.currency_multiplier', { multiplier: artifactMultipliers.currency.toFixed(2) })}</span>
                     </div>
                   )}
                   {artifactMultipliers.passive > 1 && (
                     <div className="flex items-center gap-1.5 text-xs">
-                      <span className="text-blue-400 font-semibold">Пасивний x{artifactMultipliers.passive.toFixed(2)}</span>
+                      <span className="text-blue-400 font-semibold">{tr('app.passive_multiplier', { multiplier: artifactMultipliers.passive.toFixed(2) })}</span>
                     </div>
                   )}
                 </div>
@@ -643,13 +646,13 @@ function App() {
               <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-3 mb-4">
                 <div className="flex items-center gap-2 text-purple-400 text-sm font-medium mb-2">
                   <Gift className="w-4 h-4" />
-                  Скриня артефактів
+                  {tr('app.artifact_chest')}
                 </div>
                 <p className="text-xs text-gray-400">
-                  Відкривайте скрині за {100 * (EPOCHS.findIndex(e => e.id === epoch.id) + 1)} {epoch.currencyIcon} та збирайте унікальні артефакти.
+                  {tr('app.chest_open_cost', { cost: 100 * (EPOCHS.findIndex(e => e.id === epoch.id) + 1), icon: epoch.currencyIcon })}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  Шанси: Звичайний 39% | Рідкісний 35% | Епічний 18% | Легендарний 8%
+                  {tr('app.chest_odds')}
                 </p>
               </div>
 
@@ -717,7 +720,7 @@ function App() {
                          artifact.rarity === 'epic' ? 'Епічний' :
                          artifact.rarity === 'rare' ? 'Рідкісний' : 'Звичайний'}
                         {isComplete && (
-                          <span className="text-amber-400 ml-1">Рів.{artifactLevel}</span>
+                          <span className="text-amber-400 ml-1">{tr('app.level', { level: artifactLevel })}</span>
                         )}
                       </div>
                       {!isComplete && isUnlocked && (
@@ -753,8 +756,8 @@ function App() {
                             }`}
                           >
                             {parts >= partsForNextLevel
-                              ? `⬆️ Покращити (Рів.${artifactLevel + 1})`
-                              : `${parts}/${partsForNextLevel} фраг.`
+                              ? tr('app.upgrade_to_level', { level: artifactLevel + 1 })
+                              : tr('app.fragments', { current: parts, total: partsForNextLevel })
                             }
                           </button>
                         </div>
@@ -762,7 +765,7 @@ function App() {
                       {/* Max level indicator */}
                       {isComplete && artifactLevel >= 4 && (
                         <div className="mt-1 text-xs text-amber-400 font-medium">
-                          ⭐ Макс. рівень
+                          {tr('app.max_level')}
                         </div>
                       )}
                     </div>
@@ -776,7 +779,7 @@ function App() {
             <div className="p-3">
               <div className="flex items-center gap-2 mb-4">
                 <Star className="w-5 h-5 text-yellow-400" />
-                <h3 className="font-bold text-lg">Бустери</h3>
+                <h3 className="font-bold text-lg">{tr('app.boosters')}</h3>
               </div>
 
               {/* Free AdsGram XP Boost */}
@@ -823,7 +826,7 @@ function App() {
                     )}
                     {boosterMultipliers.currency > 1 && (
                       <ActiveBoosterBadge
-                        label={`Валюта x${boosterMultipliers.currency}`}
+                        label={t('app.currency_multiplier', { multiplier: boosterMultipliers.currency })}
                         endTime={state.activeBoosters?.super_boost_end ?? state.activeBoosters?.currency_boost_end ?? null}
                         color="text-green-400"
                       />
@@ -836,8 +839,8 @@ function App() {
                 <div className="bg-yellow-500/10 border border-yellow-500/40 rounded-xl p-3 mb-4 flex items-center gap-2">
                   <span className="text-xl">🎁</span>
                   <div>
-                    <div className="text-sm font-semibold text-yellow-400">Легендарний гарантовано!</div>
-                    <div className="text-xs text-gray-400">Наступне відкриття скрині дасть легендарний артефакт</div>
+                    <div className="text-sm font-semibold text-yellow-400">{tr('app.legendary_guaranteed')}</div>
+                    <div className="text-xs text-gray-400">{tr('app.legendary_guaranteed_desc')}</div>
                   </div>
                 </div>
               )}
@@ -910,7 +913,7 @@ function App() {
 
                 {/* Phase 2: New Prestige-related products */}
                 <div className="border-t border-gray-700 pt-3 mt-3">
-                  <div className="text-xs text-purple-400 font-medium mb-2">Преміум покращення</div>
+                  <div className="text-xs text-purple-400 font-medium mb-2">{tr('app.premium_upgrades')}</div>
                 </div>
 
                 <BoosterCard
@@ -971,20 +974,20 @@ function App() {
           {activeTab === 'stats' && (
             <div className="p-3 space-y-4">
               <div className="grid grid-cols-2 gap-2">
-                <StatCard label="Загальний XP" value={formatNumber(state.totalXp)} />
-                <StatCard label="Рівень" value={state.level.toString()} />
-                <StatCard label="Пасивний XP/с" value={formatNumber(state.passiveXpPerSecond)} />
-                <StatCard label="Сила тапу" value={`${effectiveTapPower} XP`} />
-                <StatCard label="Валюта" value={`${formatNumber(state.currency)} ${epoch.currencyIcon}`} />
-                <StatCard label="Генераторів" value={state.ownedGenerators.length.toString()} />
-                <StatCard label="🔥 Серія" value={`${state.dailyStreak} ${state.dailyStreak === 1 ? 'день' : state.dailyStreak >= 2 && state.dailyStreak <= 4 ? 'дні' : 'днів'}`} />
-                <StatCard label="Рекорд серії" value={`${state.bestStreak} ${state.bestStreak === 1 ? 'день' : state.bestStreak >= 2 && state.bestStreak <= 4 ? 'дні' : 'днів'}`} />
+                <StatCard label={tr('app.total_xp')} value={formatNumber(state.totalXp)} />
+                <StatCard label={tr('prestige.level')} value={state.level.toString()} />
+                <StatCard label={tr('app.passive_xp_sec')} value={formatNumber(state.passiveXpPerSecond)} />
+                <StatCard label={tr('app.tap_power')} value={`${effectiveTapPower} XP`} />
+                <StatCard label={tr('app.currency')} value={`${formatNumber(state.currency)} ${epoch.currencyIcon}`} />
+                <StatCard label={tr('prestige.generators')} value={state.ownedGenerators.length.toString()} />
+                <StatCard label={tr('app.streak')} value={`${state.dailyStreak} ${t('app.days', { count: state.dailyStreak })}`} />
+                <StatCard label={tr('app.record_streak')} value={`${state.bestStreak} ${t('app.days', { count: state.bestStreak })}`} />
               </div>
 
               {/* Artifact multipliers summary */}
               {completedArtifacts > 0 && (
                 <div className="bg-gray-800 rounded-xl p-3">
-                  <h4 className="font-semibold mb-2 text-sm text-yellow-400">Бонуси артефактів</h4>
+                  <h4 className="font-semibold mb-2 text-sm text-yellow-400">{tr('app.artifact_bonuses')}</h4>
                   <div className="grid grid-cols-3 gap-2 text-center">
                     <div className="bg-gray-700 rounded-lg p-2">
                       <div className="text-yellow-400 font-bold">x{artifactMultipliers.xp.toFixed(2)}</div>
@@ -992,22 +995,22 @@ function App() {
                     </div>
                     <div className="bg-gray-700 rounded-lg p-2">
                       <div className="text-green-400 font-bold">x{artifactMultipliers.currency.toFixed(2)}</div>
-                      <div className="text-xs text-gray-400">Валюта</div>
+                      <div className="text-xs text-gray-400">{tr('app.currency')}</div>
                     </div>
                     <div className="bg-gray-700 rounded-lg p-2">
                       <div className="text-blue-400 font-bold">x{artifactMultipliers.passive.toFixed(2)}</div>
-                      <div className="text-xs text-gray-400">Пасивний</div>
+                      <div className="text-xs text-gray-400">{tr('app.passive')}</div>
                     </div>
                   </div>
                 </div>
               )}
 
               <div className="bg-gray-800 rounded-xl p-3">
-                <h4 className="font-semibold mb-2 text-sm">Прогрес</h4>
+                <h4 className="font-semibold mb-2 text-sm">{tr('app.progress')}</h4>
                 <div className="space-y-3">
                   <div>
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-400">Епоха: {epoch.name.ua}</span>
+                      <span className="text-gray-400">{tr('app.epoch_current', { name: epoch.name.ua })}</span>
                       <span>{state.level}/{epoch.levelRange.max}</span>
                     </div>
                     <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
@@ -1027,7 +1030,7 @@ function App() {
                     return (
                       <div>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-400">Наступна: {nextEpoch.name.ua}</span>
+                          <span className="text-gray-400">{tr('app.epoch_next', { name: nextEpoch.name.ua })}</span>
                           <span>{nextEpoch.unlockLevel - state.level} рівнів</span>
                         </div>
                         <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
@@ -1044,11 +1047,11 @@ function App() {
 
               {/* Info section */}
               <div className="bg-gray-800 rounded-xl p-3">
-                <h4 className="font-semibold mb-2 text-sm">Про гру</h4>
+                <h4 className="font-semibold mb-2 text-sm">{tr('app.about_game')}</h4>
                 <div className="text-xs text-gray-400 space-y-1">
-                  <p>Україна Крізь Час - історична тапалка про 12 епох України.</p>
-                  <p>Від Трипільської культури до Незалежної України.</p>
-                  <p className="text-gray-500 mt-2">Версія 1.0.0</p>
+                  <p>{tr('app.game_description')}</p>
+                  <p>{tr('app.game_full_desc')}</p>
+                  <p className="text-gray-500 mt-2">{tr('app.version')}</p>
                 </div>
               </div>
             </div>
@@ -1091,7 +1094,7 @@ function App() {
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg">Обрати епоху</h3>
+              <h3 className="font-bold text-lg">{tr('app.select_epoch')}</h3>
               <button onClick={() => setShowEpochModal(false)} className="p-1">
                 <X className="w-5 h-5" />
               </button>

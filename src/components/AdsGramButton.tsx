@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Zap, Gift, AlertCircle, Loader2 } from 'lucide-react';
+import { useTranslation } from '../i18n';
 import { getTelegramUserId } from '../lib/telegram';
 import { hapticImpact, hapticNotification } from '../lib/telegram';
 import {
@@ -18,6 +19,7 @@ interface AdsGramButtonProps {
 }
 
 export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButtonProps) {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [remainingTime, setRemainingTime] = useState(0);
@@ -149,7 +151,7 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
         {isLoading ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
-            <span>Завантаження...</span>
+            <span>{t('ad.loading')}</span>
           </>
         ) : (
           <>

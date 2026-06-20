@@ -1,4 +1,5 @@
 import { formatNumber } from '../lib/utils';
+import { useTranslation } from '../i18n';
 
 interface TapUpgradeProps {
   tapPower: number;
@@ -11,6 +12,7 @@ interface TapUpgradeProps {
 }
 
 export function TapUpgrade({ tapPower, effectiveTapPower, passiveXpPerSecond, cost, currency, onUpgrade }: TapUpgradeProps) {
+  const { t } = useTranslation();
   const canAfford = currency >= cost;
   const isMaxed = cost === Number.MAX_SAFE_INTEGER;
 
@@ -38,13 +40,13 @@ export function TapUpgrade({ tapPower, effectiveTapPower, passiveXpPerSecond, co
       </div>
 
       <div className="flex-1">
-        <div className="font-semibold text-white">Покращити тап</div>
+        <div className="font-semibold text-white">{t('stats.upgrade_tap')}</div>
         <div className="text-xs text-gray-300">
-          {isMaxed ? 'Максимальний рівень' : `Потужність: ${formatNumber(effectiveTapPower)} → ${formatNumber(estimatedNextEffective)} XP/тап`}
+          {isMaxed ? t('stats.max_level') : t('stats.power', { from: formatNumber(effectiveTapPower), to: formatNumber(estimatedNextEffective) })}
         </div>
         {passiveXpPerSecond > 0 && (
           <div className="text-xs text-blue-400 mt-0.5">
-            Базовий: +{nextBasePower} | Пасивний підлога: {formatNumber(Math.round(passiveXpPerSecond * 0.015))}
+            {t('stats.base_passive', { base: nextBasePower, passive: formatNumber(Math.round(passiveXpPerSecond * 0.015)) })}
           </div>
         )}
       </div>
@@ -55,7 +57,7 @@ export function TapUpgrade({ tapPower, effectiveTapPower, passiveXpPerSecond, co
         ) : (
           <>
             <div className="font-bold text-yellow-400">{formatNumber(cost)}</div>
-            <div className="text-xs text-gray-400">вартість</div>
+            <div className="text-xs text-gray-400">{t('stats.cost')}</div>
           </>
         )}
       </div>

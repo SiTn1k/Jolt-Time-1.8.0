@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from '../i18n';
 import { RotateCcw, Star, AlertTriangle, FlaskConical, Globe, BookOpen } from 'lucide-react';
 import { hapticImpact } from '../lib/telegram';
 
@@ -20,6 +21,7 @@ export function PrestigeButton({
   onPrestige,
 }: PrestigeButtonProps) {
   const [showConfirm, setShowConfirm] = useState(false);
+  const { t } = useTranslation();
 
   const handlePrestige = () => {
     if (!canPrestige) return;
@@ -57,8 +59,8 @@ export function PrestigeButton({
             <RotateCcw className="w-6 h-6 text-gray-500" />
           </div>
           <div className="flex-1">
-            <h3 className="text-white font-bold text-lg">Переродження</h3>
-            <p className="text-gray-400 text-sm">Скинути прогрес та отримати нагороду</p>
+            <h3 className="text-white font-bold text-lg">{t('prestige.title')}</h3>
+            <p className="text-gray-400 text-sm">{t('prestige.description')}</p>
           </div>
           {prestigeBadge}
         </div>
@@ -66,7 +68,7 @@ export function PrestigeButton({
         <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-3 mb-3">
           <div className="flex items-center gap-2 text-red-400 text-sm mb-2">
             <AlertTriangle className="w-4 h-4" />
-            <span className="font-medium">Вимоги не виконані</span>
+            <span className="font-medium">{t('prestige.requirements_not_met')}</span>
           </div>
           <ul className="text-xs text-gray-400 space-y-1">
             {missingLevel > 0 && (
@@ -106,14 +108,14 @@ export function PrestigeButton({
             <RotateCcw className="w-6 h-6 text-yellow-400" />
           </div>
           <div className="flex-1">
-            <h3 className="text-white font-bold text-lg">Переродження доступне!</h3>
-            <p className="text-yellow-400/80 text-sm">Отримай 10 очок та нові можливості</p>
+            <h3 className="text-white font-bold text-lg">{t('prestige.available')}</h3>
+            <p className="text-yellow-400/80 text-sm">{t('prestige.available_desc', { points: 10 })}</p>
           </div>
           {prestigeBadge}
         </div>
 
         <div className="bg-green-900/20 border border-green-500/30 rounded-xl p-3 mb-3">
-          <div className="text-sm text-green-400 font-medium mb-2">Всі вимоги виконані!</div>
+          <div className="text-sm text-green-400 font-medium mb-2">{t('prestige.requirements_met')}</div>
           <div className="grid grid-cols-2 gap-2 text-xs text-gray-400">
             <div className="text-green-400">✓ Рівень {level} (≥960)</div>
             <div className="text-green-400">✓ Епоха: Незалежність</div>
@@ -121,14 +123,14 @@ export function PrestigeButton({
         </div>
 
         <div className="bg-gray-800/50 rounded-xl p-3 mb-3">
-          <div className="text-xs text-gray-400 mb-2">Що збережеться:</div>
+          <div className="text-xs text-gray-400 mb-2">{t('prestige.what_keeps')}</div>
           <div className="grid grid-cols-2 gap-1 text-xs text-green-400">
             <span>✓ Артефакти</span>
             <span>✓ Дослідження</span>
             <span>✓ Реферали</span>
             <span>✓ Серія входів</span>
           </div>
-          <div className="text-xs text-gray-400 mt-2 mb-1">Що скинеться:</div>
+          <div className="text-xs text-gray-400 mt-2 mb-1">{t('prestige.what_resets')}</div>
           <div className="grid grid-cols-2 gap-1 text-xs text-red-400">
             <span>✗ Рівень → 1</span>
             <span>✗ Валюта → 0</span>
@@ -158,13 +160,13 @@ export function PrestigeButton({
               <div className="w-16 h-16 mx-auto mb-4 bg-yellow-500/20 rounded-full flex items-center justify-center">
                 <RotateCcw className="w-8 h-8 text-yellow-400" />
               </div>
-              <h2 className="text-xl font-bold text-white mb-2">Підтвердити переродження?</h2>
+              <h2 className="text-xl font-bold text-white mb-2">{t('prestige.confirm_title')}</h2>
               <p className="text-gray-400 text-sm mb-4">
                 Ваш рівень, валюта та генератори будуть скинуті. Артефакти та дослідження збережуться.
               </p>
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3 mb-4">
-                <div className="text-yellow-400 font-bold">+10 очок переродження</div>
-                <div className="text-gray-400 text-xs">Загальний рівень: {prestigeLevel + 1}</div>
+                <div className="text-yellow-400 font-bold">{t('prestige.prestige_points', { points: 10 })}</div>
+                <div className="text-gray-400 text-xs">{t('prestige.total_level', { level: prestigeLevel + 1 })}</div>
               </div>
             </div>
             <div className="p-4 border-t border-gray-700 flex gap-2">
@@ -236,6 +238,7 @@ export function MuseumLaboratory({
   prestigeResearch,
   onBuyUpgrade,
 }: MuseumLaboratoryProps) {
+  const { t } = useTranslation();
   if (prestigeLevel < 1) {
     return (
       <div className="bg-gray-800/50 rounded-2xl p-4 border border-gray-700">
@@ -244,8 +247,8 @@ export function MuseumLaboratory({
             <FlaskConical className="w-6 h-6 text-gray-500" />
           </div>
           <div>
-            <h3 className="text-white font-bold text-lg">Лабораторія Музею</h3>
-            <p className="text-gray-500 text-sm">Відкривається після першого переродження</p>
+            <h3 className="text-white font-bold text-lg">{t('prestige.museum_lab_title')}</h3>
+            <p className="text-gray-500 text-sm">{t('prestige.museum_lab_locked')}</p>
           </div>
         </div>
       </div>
@@ -260,13 +263,13 @@ export function MuseumLaboratory({
             <FlaskConical className="w-6 h-6 text-purple-400" />
           </div>
           <div>
-            <h3 className="text-white font-bold text-lg">Лабораторія Музею</h3>
-            <p className="text-purple-400/80 text-sm">Покращення назавжди</p>
+            <h3 className="text-white font-bold text-lg">{t('prestige.museum_lab_title')}</h3>
+            <p className="text-purple-400/80 text-sm">{t('prestige.museum_lab_permanent')}</p>
           </div>
         </div>
         <div className="text-right">
           <div className="text-purple-400 font-bold">{prestigePoints}</div>
-          <div className="text-xs text-gray-400">очок</div>
+          <div className="text-xs text-gray-400">{t('prestige.points')}</div>
         </div>
       </div>
 

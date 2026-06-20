@@ -1,5 +1,6 @@
 import { Flame, CheckCircle2, Circle, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from '../i18n';
 import type { DailyTasksState } from '../types/game';
 import { TASK_POOL, isTaskComplete, type TaskDef } from '../data/tasks';
 import { formatNumber } from '../lib/utils';
@@ -27,6 +28,7 @@ export function DailyTasksPanel({
   lastCheckIn: _lastCheckIn,
   onClaimTask,
 }: DailyTasksPanelProps) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(true);
 
   const tasks = dailyTasksState
@@ -50,7 +52,7 @@ export function DailyTasksPanel({
       >
         <div className="flex items-center gap-2.5">
           <Flame className="w-4 h-4 text-amber-400" />
-          <span className="font-semibold text-sm text-white">Щоденні завдання</span>
+          <span className="font-semibold text-sm text-white">{t('daily.daily_tasks')}</span>
           {hasUnclaimed && (
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
           )}

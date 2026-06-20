@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Battery, Gift, Zap, AlertCircle, Loader2, X } from 'lucide-react';
 import { hapticImpact, hapticNotification } from '../lib/telegram';
+import { useTranslation } from '../i18n';
 import { getTelegramUserId } from '../lib/telegram';
 import {
   initAdsgram,
@@ -18,6 +19,7 @@ interface SessionAdModalProps {
 }
 
 export function SessionAdModal({ prestigeLevel, onReward, onClose }: SessionAdModalProps) {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const controllerRef = useRef<ReturnType<typeof initAdsgram>>(null);
@@ -79,20 +81,19 @@ export function SessionAdModal({ prestigeLevel, onReward, onClose }: SessionAdMo
           <div className="w-16 h-16 mx-auto mb-4 bg-green-500/20 rounded-full flex items-center justify-center">
             <Gift className="w-8 h-8 text-green-400" />
           </div>
-          <h2 className="text-xl font-bold text-white mb-2">Підтримай гру!</h2>
+          <h2 className="text-xl font-bold text-white mb-2">{t('ad.support_game')}</h2>
           <p className="text-gray-400 text-sm mb-4">
-            Реклама допомагає розвивати Музей України, підтримувати сервери гри та створювати новий контент.
-            Також ви можете підтримати проєкт через Telegram Stars.
+            {t('ad.support_game_desc')}
           </p>
         </div>
 
         <div className="p-4 border-t border-gray-700">
           <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 mb-4">
             <div className="text-green-400 font-bold text-center">
-              {prestigeLevel >= 1 ? '+20 Енергії' : 'x2 Дохід на 15 хв'}
+              {prestigeLevel >= 1 ? t('ad.energy_boost') : t('ad.x2_income')}
             </div>
             <div className="text-xs text-gray-400 text-center mt-1">
-              {prestigeLevel >= 1 ? 'Продовжуй грати з бустом' : 'Подвійний пасивний дохід'}
+              {prestigeLevel >= 1 ? t('ad.continue_with_boost') : t('ad.double_passive')}
             </div>
           </div>
 
@@ -115,7 +116,7 @@ export function SessionAdModal({ prestigeLevel, onReward, onClose }: SessionAdMo
             {isLoading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Завантаження...</span>
+                <span>{t('ad.loading')}</span>
               </>
             ) : (
               <>
@@ -150,6 +151,7 @@ interface ChestAdModalProps {
 }
 
 export function ChestAdModal({ prestigeLevel, chestsOpened, onReward, onClose }: ChestAdModalProps) {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const controllerRef = useRef<ReturnType<typeof initAdsgram>>(null);
@@ -235,7 +237,7 @@ export function ChestAdModal({ prestigeLevel, chestsOpened, onReward, onClose }:
             {isLoading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Завантаження...</span>
+                <span>{t('ad.loading')}</span>
               </>
             ) : (
               <>
@@ -279,6 +281,7 @@ export function EnergyRestoreAdButton({
   onEnergyRestored,
   onAdUsed,
 }: EnergyRestoreAdButtonProps) {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const controllerRef = useRef<ReturnType<typeof initAdsgram>>(null);
@@ -299,7 +302,7 @@ export function EnergyRestoreAdButton({
             <Battery className="w-5 h-5 text-gray-500" />
           </div>
           <div className="flex-1">
-            <div className="text-white font-medium text-sm">Енергія повна</div>
+            <div className="text-white font-medium text-sm">{t('ad.energy_full')}</div>
             <div className="text-xs text-gray-500">Використай тапи для x5 буста</div>
           </div>
         </div>
@@ -411,7 +414,7 @@ export function EnergyRestoreAdButton({
         {isLoading ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span>Завантаження...</span>
+            <span>{t('ad.loading')}</span>
           </>
         ) : (
           <>

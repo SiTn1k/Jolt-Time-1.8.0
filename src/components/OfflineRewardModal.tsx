@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Clock, Play, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { useTranslation } from '../i18n';
 import { formatNumber } from '../lib/utils';
 import { initAdsgram } from '../services/adsgram';
 import { hapticImpact, hapticNotification } from '../lib/telegram';
@@ -26,6 +27,7 @@ export function OfflineRewardModal({
   canWatchAd,
   adsRemaining,
 }: OfflineRewardModalProps) {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [adError, setAdError] = useState<string | null>(null);
   const [claimed, setClaimed] = useState(false);
@@ -84,7 +86,7 @@ export function OfflineRewardModal({
       <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
         <div className="bg-gray-900 rounded-2xl p-6 max-w-sm w-full text-center border border-green-500/40">
           <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
-          <h3 className="text-lg font-bold text-white mb-2">Прибуток отримано!</h3>
+          <h3 className="text-lg font-bold text-white mb-2">{t('offline.profit_received')}</h3>
           <p className="text-sm text-gray-400 mb-4">
             +{formatNumber(offlineGains.xp)} XP + {formatNumber(offlineGains.currency)} {currencyIcon}
           </p>
@@ -92,7 +94,7 @@ export function OfflineRewardModal({
             onClick={onDismiss}
             className="w-full py-3 bg-green-500 text-black font-bold rounded-xl hover:bg-green-400 transition-colors"
           >
-            Продовжити
+            {t('offline.continue')}
           </button>
         </div>
       </div>

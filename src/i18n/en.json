@@ -1,4 +1,135 @@
 {
+  "laboratory": {
+    "damaged": "Damaged",
+    "in_progress": "In Progress",
+    "ready": "Ready",
+    "no_damaged": "No damaged artifacts",
+    "no_active": "No active restorations",
+    "select_damaged": "Select damaged artifacts",
+    "no_completed": "No completed restorations"
+  },
+  "prestige": {
+    "title": "Prestige",
+    "prestige_points": "+{points} prestige points",
+    "prestige_level": "Prestige Level",
+    "perform_prestige": "Prestige",
+    "confirm_prestige": "Confirm Prestige?",
+    "prestige_description": "Reset progress and receive rewards",
+    "requirements": "Requirements",
+    "requirement_level": "Level {current}/960",
+    "requirement_epoch": "Epoch: Independence",
+    "all_requirements_met": "All requirements met!",
+    "preserved": "Preserved",
+    "will_reset": "Will reset",
+    "what_preserved": {
+      "artifacts": "Artifacts",
+      "research": "Research",
+      "referrals": "Referrals",
+      "streak": "Login Streak"
+    },
+    "what_resets": "What Will Be Reset:",
+    "description": "Reset progress and get rewards",
+    "available": "Prestige Available!",
+    "available_desc": "Get {points} points and new opportunities",
+    "requirements_not_met": "Requirements Not Met",
+    "level_requirement": "Level {current}/{required} (need {missing} more)",
+    "epoch_requirement": "Epoch: Independence (current: {current})",
+    "epoch_met": "Epoch: Independence",
+    "requirements_met": "All Requirements Met!",
+    "what_keeps": "What Will Be Kept:",
+    "artifacts": "Artifacts",
+    "research": "Research",
+    "referrals": "Referrals",
+    "streak": "Login Streak",
+    "level": "Level",
+    "currency": "Currency",
+    "generators": "Generators",
+    "epoch": "Epoch",
+    "prestige_button": "Prestige",
+    "next_prestige": "Next prestige: {level} ★",
+    "confirm_title": "Confirm Prestige?",
+    "confirm_desc": "Your level, currency and generators will be reset. Artifacts and research will be kept.",
+    "total_level": "Total level: {level}",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "current_prestige": "Current prestige: {level}",
+    "points": "Points",
+    "museum_lab_title": "Museum Laboratory",
+    "museum_lab_locked": "Unlocks after first prestige",
+    "museum_lab_permanent": "Upgrades permanent",
+    "preserved_after_prestige": "All upgrades preserved after prestige",
+    "rare_artifact_chance": "Black Archaeology",
+    "rare_artifact_desc": "+5% rare artifact chance",
+    "passive_income": "World Expedition",
+    "passive_income_desc": "+10% passive income",
+    "xp_gain": "Chief Historian",
+    "xp_gain_desc": "+5% XP",
+    "max": "MAX",
+    "pts": "PT"
+  },
+  "app": {
+    "loading": "Loading...",
+    "epochs_title": "Epochs of Ukraine",
+    "progress": "Progress",
+    "locked_epochs": "Locked epochs",
+    "unlocked_epochs": "Unlocked epochs",
+    "artifacts": "Artifacts",
+    "boosters": "Boosters",
+    "legendary_guaranteed": "Legendary guaranteed!",
+    "legendary_guaranteed_desc": "Next chest opening will give a legendary artifact",
+    "premium_upgrades": "Premium upgrades",
+    "artifact_bonuses": "Artifact bonuses",
+    "currency": "Currency",
+    "passive": "Passive",
+    "currency_multiplier": "Currency x{multiplier}",
+    "passive_multiplier": "Passive x{multiplier}",
+    "level": "Lvl {level}",
+    "about_game": "About game",
+    "game_description": "Ukraine Through Time - historical tap game about 12 epochs of Ukraine.",
+    "game_full_desc": "From Trypillia culture to Independent Ukraine.",
+    "version": "Version 1.0.0",
+    "select_epoch": "Select epoch",
+    "epoch_current": "Epoch: {name}",
+    "epoch_next": "Next: {name}",
+    "telegram_id": "Telegram ID: {id}",
+    "total_xp": "Total XP",
+    "passive_xp_per_sec": "Passive XP/s",
+    "tap_power": "Tap Power",
+    "generators": "Generators",
+    "streak": "🔥 Streak",
+    "record_streak": "Record Streak",
+    "days": "days",
+    "days_one": "day",
+    "days_few": "days",
+    "passive_xp_sec": "Passive XP/s",
+    "day": "day",
+    "days_many": "days",
+    "artifact_chest": "Artifact Chest",
+    "chest_open_cost": "Open chests for {cost} {icon} and collect unique artifacts.",
+    "chest_odds": "Odds: Common 39% | Rare 35% | Epic 18% | Legendary 8%",
+    "upgrade_to_level": "⬆️ Upgrade (Lvl {level})",
+    "fragments": "{current}/{total} frag.",
+    "max_level": "⭐ Max level",
+    "open_chest": "Open chest"
+  },
+  "ad": {
+    "support_game": "Support the game!",
+    "loading": "Loading...",
+    "watch_ad": "Watch ad",
+    "chests_opened": "Great! Opened {count} chests",
+    "get_bonus": "Get bonus",
+    "energy_full": "Energy is full",
+    "energy_full_desc": "Use taps for x5 boost",
+    "limit_exceeded": "Limit exceeded",
+    "restore_energy": "Restore energy",
+    "free_xp_boost": "Free XP booster",
+    "get_xp_boost": "Get x3 XP for 30 min",
+    "support_game_desc": "Ads help develop Museum of Ukraine, support game servers and create new content. You can also support the project via Telegram Stars.",
+    "x2_income": "x2 Income for 15 min",
+    "energy_boost": "+20 Energy",
+    "continue_with_boost": "Continue playing with boost",
+    "double_passive": "Double passive income"
+  },
   "duplicate_tab": {
     "title": "Game opened in another tab",
     "description": "The game is active in another window. Open only one tab to avoid progress loss.",
@@ -72,15 +203,6 @@
       "objective_build": "Build",
       "objective_collect": "Collect"
     }
-  },
-  "laboratory": {
-    "damaged": "Damaged",
-    "in_progress": "In Progress",
-    "ready": "Ready",
-    "no_damaged": "No damaged artifacts",
-    "no_active": "No active restorations",
-    "select_damaged": "Select damaged artifacts",
-    "no_completed": "No completed restorations"
   },
   "museum": {
     "title": "National Museum",
@@ -231,7 +353,13 @@
     "remaining": "Remaining",
     "per_hour": "/hr",
     "per_minute": "/min",
-    "per_second": "/sec"
+    "per_second": "/sec",
+    "coins": "Coins",
+    "pending": "Pending",
+    "complete": "Complete",
+    "unlocked": "Unlocked",
+    "available": "Available",
+    "max_level": "MAX"
   },
   "tabs": {
     "shop": "Shop",
@@ -283,32 +411,6 @@
     "parts_required": "Parts Required",
     "part_found": "Part found!",
     "parts_found": "Parts found!"
-  },
-  "prestige": {
-    "title": "Prestige",
-    "prestige_points": "Prestige Points",
-    "prestige_level": "Prestige Level",
-    "perform_prestige": "Prestige",
-    "confirm_prestige": "Confirm Prestige?",
-    "prestige_description": "Reset progress and receive rewards",
-    "requirements": "Requirements",
-    "requirement_level": "Level {current}/960",
-    "requirement_epoch": "Epoch: Independence",
-    "all_requirements_met": "All requirements met!",
-    "preserved": "Preserved",
-    "will_reset": "Will reset",
-    "what_preserved": {
-      "artifacts": "Artifacts",
-      "research": "Research",
-      "referrals": "Referrals",
-      "streak": "Login Streak"
-    },
-    "what_resets": {
-      "level": "Level → 1",
-      "currency": "Currency → 0",
-      "generators": "Generators → 0",
-      "epoch": "Epoch → Trypillia"
-    }
   },
   "museum_laboratory": {
     "title": "Museum Laboratory",
@@ -392,11 +494,10 @@
     "task_earn_xp": "Earn {count} XP"
   },
   "streak": {
-    "title": "Login Streak",
-    "current_streak": "Current Streak",
-    "best_streak": "Best Streak",
-    "days": "days",
-    "streak_reward": "Streak Reward!"
+    "daily_bonus_received": "Daily bonus received",
+    "reward": "Reward",
+    "coins": "Coins",
+    "claim": "Claim!"
   },
   "leaderboard": {
     "title": "Leaderboard",
@@ -671,5 +772,38 @@
     "next_level": "Next Level",
     "upgrade": "Upgrade",
     "not_enough": "Not Enough"
+  },
+  "daily": {
+    "daily_tasks": "Daily Tasks",
+    "tasks_loading": "Loading tasks...",
+    "daily_reward": "Daily Reward",
+    "reward_received": "Reward received!",
+    "day_reward": "Day {day} — Your Reward",
+    "claim_reward": "Claim Reward!",
+    "skip_info": "Missing a day resets your streak. Day 7 guarantees a gacha ticket!"
+  },
+  "referral": {
+    "invite_friends": "Invite Friends",
+    "share_link": "Share link — get reward!",
+    "invited": "Invited",
+    "leaderboard": "Leaderboard"
+  },
+  "offline": {
+    "profit_received": "Profit received!",
+    "passive_income": "Passive income",
+    "continue": "Continue"
+  },
+  "stats": {
+    "upgrade_tap": "Upgrade tap",
+    "max_level": "Maximum level",
+    "power": "Power: {from} → {to} XP/tap",
+    "base_passive": "Base: +{base} | Passive floor: {passive}",
+    "cost": "cost"
+  },
+  "duplicate": {
+    "progress_loss": "• Loss of expedition progress",
+    "double_rewards": "• Double rewards",
+    "incorrect_save": "• Incorrect save",
+    "data_loss": "• Data loss"
   }
 }

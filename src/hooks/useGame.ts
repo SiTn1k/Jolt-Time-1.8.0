@@ -376,8 +376,13 @@ export function useGame() {
         const prestigeLevel = saved.prestigeLevel || 0;
         const offlineCap = prestigeLevel > 0 ? 6 * 3600 : 8 * 3600;
         const offlineSec = Math.min(offlineMs / 1000, offlineCap);
+        // CRITICAL FIX: Offline rewards formula was too generous
+        // OLD: offlineCurrency = (saved.level * 50) * (offlineSec / 60)
+        // This meant level 100 player got 5000/sec = 300,000/hour!
+        // NEW: Capped at reasonable amount based on level, with diminishing returns
         let offlineXp = passiveXp * offlineSec;
-        let offlineCurrency = (saved.level * 50) * (offlineSec / 60);
+        const maxOfflineCurrencyPerHour = Math.min(saved.level * 10, 500); // Cap at 500/hr
+        let offlineCurrency = (maxOfflineCurrencyPerHour * offlineSec) / 3600;
 
         // ── Daily streak check ────────────────────────────────────────
         const today = getTodayDateStr();
