@@ -101,6 +101,26 @@ export const STAT_GROWTH_PER_LEVEL: Record<Rarity, { base: number; perLevel: num
 };
 
 /**
+ * Artifact Fragment Costs for Assembly
+ */
+export const ARTIFACT_FRAGMENT_COSTS: Record<Rarity, number> = {
+  common: 20,
+  rare: 50,
+  epic: 100,
+  legendary: 250,
+};
+
+/**
+ * Rarity display names
+ */
+export const RARITY_NAMES: Record<Rarity, string> = {
+  common: 'Звичайний',
+  rare: 'Рідкісний',
+  epic: 'Епічний',
+  legendary: 'Легендарний',
+};
+
+/**
  * Hero XP Table for level progression
  * Index = level, value = cumulative XP required to reach that level
  * Level 1 = 0 XP, Level 2 = 100 XP, Level 3 = 300 XP, etc.

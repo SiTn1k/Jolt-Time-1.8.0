@@ -1,9 +1,18 @@
 import { useExpeditionStore } from '../store';
 import { motion } from 'motion/react';
-import { Vault, Coins, TrendingUp, ShieldCheck, Gift, ExternalLink, Award } from 'lucide-react';
+import { Vault, Coins, TrendingUp, ShieldCheck, Gift, ExternalLink, Award, Sparkles, Hammer } from 'lucide-react';
 import { Card, Button, Progress } from '../ui';
 import { useState } from 'react';
 import { useTranslation } from '../../i18n';
+import { RARITY_NAMES, ARTIFACT_FRAGMENT_COSTS } from '../data';
+import type { Rarity } from '../data';
+
+const rarityColors: Record<Rarity, string> = {
+  common: '#9CA3AF',
+  rare: '#3B82F6',
+  epic: '#A855F7',
+  legendary: '#F59E0B',
+};
 
 export function Treasury() {
   const { t } = useTranslation();
@@ -13,6 +22,8 @@ export function Treasury() {
   const spendKarbovanets = useExpeditionStore((s) => s.spendKarbovanets);
   const addKarbovanets = useExpeditionStore((s) => s.addKarbovanets);
   const pushToast = useExpeditionStore((s) => s.pushToast);
+  const artifactFragments = useExpeditionStore((s) => s.artifactFragments);
+  const assembleArtifact = useExpeditionStore((s) => s.assembleArtifact);
 
   const [premium, setPremium] = useState(false);
   const bondValue = Math.floor(karbovanets * 0.15);
@@ -39,6 +50,15 @@ export function Treasury() {
       pushToast(t('treasury.premium_activated'), '#9747FF');
     } else {
       pushToast(t('treasury.need_karbovanets'), '#FF2A5F');
+    }
+  };
+
+  const handleAssemble = (rarity: Rarity) => {
+    const result = assembleArtifact(rarity);
+    if (result.success) {
+      pushToast(result.message, rarityColors[rarity]);
+    } else {
+      pushToast(result.message, '#FF2A5F');
     }
   };
 
@@ -145,6 +165,69 @@ export function Treasury() {
           )}
         </Card>
       </div>
+
+      {/* Artifact Assembly Section */}
+      <Card className="border-2 p-4 mb-4" style={{ borderColor: '#00E5FF30', background: 'linear-gradient(135deg, #00E5FF10, transparent)' }}>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#00E5FF20' }}>
+            <Sparkles className="w-5 h-5" style={{ color: '#00E5FF' }} />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm mb-1" style={{ fontFamily: "'Exo 2', sans-serif" }}>Збірка артефактів</h3>
+            <p className="text-xs text-muted-foreground">Об'єднайте фрагменти в артефакти</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          {(['common', 'rare', 'epic', 'legendary'] as Rarity[]).map((rarity) => {
+            const fragments = artifactFragments[rarity] || 0;
+            const cost = ARTIFACT_FRAGMENT_COSTS[rarity];
+            const canAssemble = fragments >= cost;
+            
+            return (
+              <div 
+                key={rarity}
+                className="rounded-lg p-3 border"
+                style={{ 
+                  borderColor: `${rarityColors[rarity]}40`,
+                  backgroundColor: `${rarityColors[rarity]}10`
+                }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="w-4 h-4" style={{ color: rarityColors[rarity] }} />
+                  <span className="text-xs font-medium" style={{ color: rarityColors[rarity] }}>
+                    {RARITY_NAMES[rarity]}
+                  </span>
+                </div>
+                <div className="text-xs text-muted-foreground mb-2">
+                  Фрагменти: <span className="text-white font-medium">{fragments}</span> / {cost}
+                </div>
+                <Progress 
+                  value={(fragments / cost) * 100} 
+                  className="h-1.5 mb-2"
+                  style={{ 
+                    backgroundColor: `${rarityColors[rarity]}20`,
+                  }}
+                />
+                <Button
+                  size="sm"
+                  className="w-full text-xs"
+                  disabled={!canAssemble}
+                  onClick={() => handleAssemble(rarity)}
+                  style={{ 
+                    backgroundColor: canAssemble ? rarityColors[rarity] : '#333',
+                    color: canAssemble ? '#000' : '#666',
+                    fontFamily: "'Exo 2', sans-serif"
+                  }}
+                >
+                  <Hammer className="w-3 h-3 mr-1" />
+                  Зібрати
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
 
       <Card className="border-white/10 p-4">
         <div className="flex items-center gap-3 mb-3">

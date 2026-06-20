@@ -13,6 +13,7 @@ import {
   initialNpcs,
   buildings,
   getLevelFromXP,
+  ARTIFACT_FRAGMENT_COSTS,
 
 } from './data';
 import {
@@ -166,6 +167,7 @@ interface GameState {
   addArtifactFragment: (rarity: string, amount: number) => void;
   getHeroFragmentCount: (heroId: string) => number;
   checkHeroUnlockable: (heroId: string) => boolean;
+  assembleArtifact: (rarity: Rarity) => { success: boolean; message: string; artifactId?: string };
   pushToast: (message: string, color?: string) => void;
   dismissToast: (id: number) => void;
 
@@ -312,6 +314,110 @@ export const useExpeditionStore = create<GameState>()(
         const HERO_FRAGMENT_THRESHOLD = 50;
         
         return fragmentCount >= HERO_FRAGMENT_THRESHOLD;
+      },
+      
+      // Artifact Assembly
+      assembleArtifact: (rarity) => {
+        const state = get();
+        const cost = ARTIFACT_FRAGMENT_COSTS[rarity];
+        const currentFragments = state.artifactFragments[rarity] || 0;
+        
+        // Check if enough fragments
+        if (currentFragments < cost) {
+          return { 
+            success: false, 
+            message: `Потрібно ${cost} фрагментів (є ${currentFragments})` 
+          };
+        }
+        
+        // Find available artifacts of this rarity
+        // Generate from artifact pools based on era/region
+        const artifactPools: Record<Rarity, Array<{ name: string; era: string }>> = {
+          common: [
+            { name: 'Кам\'яна знаряддя', era: 'Кам\'яна доба' },
+            { name: 'Глиняний посуд', era: 'Неоліт' },
+            { name: 'Бронзовий наконечник', era: 'Бронзова доба' },
+            { name: 'Керамічний уламок', era: 'Трипільська культура' },
+            { name: 'Кремнієвий скребок', era: 'Палеоліт' },
+          ],
+          rare: [
+            { name: 'Трипільська кераміка', era: 'Трипільська культура' },
+            { name: 'Скіфський меч', era: 'Скіфія' },
+            { name: 'Галоцький хрест', era: 'Галицьке князівство' },
+            { name: 'Руська пектораль', era: 'Київська Русь' },
+          ],
+          epic: [
+            { name: 'Грецька амфора', era: 'Грецькі колонії' },
+            { name: 'Козацька булава', era: 'Запорозька Січ' },
+            { name: 'Золота підвіска', era: 'Чернігівська земля' },
+          ],
+          legendary: [
+            { name: 'Печатка Київської Русі', era: 'Київська Русь' },
+            { name: 'Корона Данила Галицького', era: 'Галицько-Волинське князівство' },
+            { name: 'Меч Івана Мазепи', era: 'Козацька доба' },
+          ],
+        };
+        
+        const pool = artifactPools[rarity];
+        if (!pool || pool.length === 0) {
+          return { success: false, message: 'Помилка вибору артефакту' };
+        }
+        
+        // Get names of non-museum artifacts already owned
+        const ownedNames = state.artifacts
+          .filter(a => a.status !== 'museum')
+          .map(a => a.name);
+        
+        // Filter pool to only unowned artifacts
+        const availableArtifacts = pool.filter(a => !ownedNames.includes(a.name));
+        
+        // If all artifacts of this rarity are owned, give bonus fragments
+        if (availableArtifacts.length === 0) {
+          const bonus = Math.floor(cost * 0.3);
+          set((st) => ({
+            artifactFragments: { 
+              ...st.artifactFragments, 
+              [rarity]: st.artifactFragments[rarity] - cost + bonus 
+            },
+          }));
+          return { 
+            success: true, 
+            message: `Всі ${rarity} артефакти вже є! +${bonus} фрагментів` 
+          };
+        }
+        
+        // Pick random artifact from available pool
+        const template = availableArtifacts[Math.floor(Math.random() * availableArtifacts.length)];
+        
+        // Generate unique ID
+        const artifactId = `artifact-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Create new artifact
+        const newArtifact: Artifact = {
+          id: artifactId,
+          name: template.name,
+          era: template.era,
+          rarity: rarity,
+          status: 'damaged',
+          description: `Артефакт з епохи ${template.era}. Потребує реставрації.`,
+          restoreTime: 60 + rarityRank[rarity] * 60,
+          value: rarityValue[rarity],
+          prestigeBonus: rarityPrestige[rarity],
+        };
+        
+        // Deduct fragments
+        const newFragments = currentFragments - cost;
+        
+        set((st) => ({
+          artifacts: [...st.artifacts, newArtifact],
+          artifactFragments: { ...st.artifactFragments, [rarity]: newFragments },
+        }));
+        
+        return { 
+          success: true, 
+          message: `Створено "${template.name}"!`,
+          artifactId: artifactId
+        };
       },
       
       // Story/Quest actions
