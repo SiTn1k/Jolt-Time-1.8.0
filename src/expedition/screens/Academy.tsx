@@ -2,12 +2,16 @@ import { useState } from 'react';
 import { useExpeditionStore } from '../store';
 import { buildings } from '../data';
 import { motion } from 'motion/react';
-import { TrendingUp, Coins, Eye, Send, Award, BookOpen, MessageCircle } from 'lucide-react';
-import { Card, Badge, Progress } from '../ui';
+import { TrendingUp, Coins, Eye, Send, BookOpen, MessageCircle } from 'lucide-react';
+import { Card, Badge } from '../ui';
 import { NPCSystem } from '../components/NPCSystem';
 import { UkrainianPattern } from '../components/UkrainianPattern';
 import { StorySystem } from '../components/StorySystem';
+import { AcademyProgress } from '../components/AcademyProgress';
 import { useTranslation } from '../../i18n';
+
+// Academy unlock threshold - reduced from 5000 to 3000 for better retention
+const ACADEMY_PRESTIGE_THRESHOLD = 3000;
 
 export function Academy() {
   const { t } = useTranslation();
@@ -28,6 +32,9 @@ export function Academy() {
   const expeditions = useExpeditionStore((s) => s.expeditions);
 
   const activeExpeditions = expeditions.filter((e) => !e.collected).length;
+  
+  // Check if Academy is unlocked (prestige >= threshold)
+  const isAcademyUnlocked = historicalPrestige >= ACADEMY_PRESTIGE_THRESHOLD;
 
   // Handle NPC interaction - delegate to store
   const handleInteractWithNpc = (npcId: string) => {
@@ -106,18 +113,12 @@ export function Academy() {
           </Card>
         </div>
 
-        <Card className="border-white/10 p-3">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <Award className="w-4 h-4" style={{ color: '#FF2A5F' }} />
-              <span className="text-sm">{t('expedition.historical_prestige')}</span>
-            </div>
-            <span className="text-sm" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FF2A5F' }}>
-              {Math.round(historicalPrestige)} / 5000
-            </span>
-          </div>
-          <Progress value={(historicalPrestige / 5000) * 100} className="h-2" />
-        </Card>
+        {/* Academy Progress with Milestones */}
+        <AcademyProgress
+          currentPrestige={historicalPrestige}
+          targetPrestige={ACADEMY_PRESTIGE_THRESHOLD}
+          isUnlocked={isAcademyUnlocked}
+        />
 
         {/* Story System Button */}
         <Card 

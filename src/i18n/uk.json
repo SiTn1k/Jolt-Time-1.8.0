@@ -548,5 +548,62 @@
     "hero_unlocked": "Відкрито нового героя",
     "artifact_unlocked": "Відкрито новий артефакт",
     "region_unlocked": "Відкрито новий регіон"
+  },
+  "academy": {
+    "progress_title": "До Академії",
+    "milestone_reached": "Етап досягнуто!",
+    "locked_preview": "Що відкриється:",
+    "next_milestone": "Наступний:",
+    "remaining": "Залишилось:",
+    "prestige": "Престижу",
+    "prestige_short": "Престижу",
+    "unlocked": "АКАДЕМІЯ ВІДКРИТА!",
+    "unlocked_description": "Ласкаво просимо до Історичної Академії!",
+    "milestones_reached": "Досягнуті етапи:",
+    "invitation_title": "ЗАПРОШЕННЯ",
+    "invitation_body": "Історична Академія надіслала листа...",
+    "milestone_discovery": "Відкриття",
+    "milestone_expansion": "Розширення",
+    "milestone_advancement": "Просування",
+    "milestone_mastery": "Майстерність",
+    "milestone_academy": "АКАДЕМІЯ",
+    "feature_hero_speed": "Швидкість Героїв",
+    "feature_hero_speed_desc": "Герої повертаються швидше",
+    "feature_extra_slot": "Додатковий Слот",
+    "feature_extra_slot_desc": "Одночасно 3 експедиції",
+    "feature_legend_chance": "Шанс Легенд",
+    "feature_legend_chance_desc": "+5% легендарних артефактів",
+    "feature_museum_curator": "Куратор Музею",
+    "feature_museum_curator_desc": "Керуйте виставками"
+  },
+  "story_events": {
+    "academy_first_discovery": "Перше відкриття",
+    "academy_rising_fame": "Слава зростає",
+    "academy_invitation": "Запрошення"
+  },
+  "npc_hints": {
+    "academy_hint_1": "Чула легенди про Історичну Академію...",
+    "academy_hint_3": "Накопичуй Престиж — і ти там опинишся.",
+    "academy_hint_5": "Щоб туди потрапити, треба стати справжнім істориком."
+  },
+  "ad_reward": {
+    "xp_boost_title": "XP Буст",
+    "xp_boost_description": "x2 досвід героїв на 30 хв",
+    "currency_boost_title": "Карбованці x1.5",
+    "currency_boost_description": "x1.5 нагороди на 30 хв",
+    "offline_income_title": "Офлайн дохід x2",
+    "offline_income_description": "Подвойює офлайн заробіток",
+    "artifact_chance_title": "Шанс артефактів",
+    "artifact_chance_description": "+10% шанс знахідки на 30 хв",
+    "artifact_chance_p2_description": "+15% шанс знахідки на 30 хв",
+    "academy_currency_title": "Академічна валюта",
+    "academy_currency_description": "+50 Академічних монет",
+    "expedition_speed_title": "Швидкість експедицій",
+    "expedition_speed_description": "x1.5 швидкість на 30 хв",
+    "museum_bonus_title": "Бонус музею",
+    "museum_bonus_description": "x2 дохід музею на 1 год",
+    "watch_ad": "Переглянути рекламу",
+    "reward_ready": "Нагорода готова!",
+    "boost_active": "Активний буст"
   }
 }

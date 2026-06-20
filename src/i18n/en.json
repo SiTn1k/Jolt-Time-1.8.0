@@ -525,5 +525,62 @@
     "network_error": "Network error",
     "server_error": "Server error",
     "try_again_later": "Try again later"
+  },
+  "academy": {
+    "progress_title": "To the Academy",
+    "milestone_reached": "Milestone reached!",
+    "locked_preview": "What unlocks:",
+    "next_milestone": "Next:",
+    "remaining": "Remaining:",
+    "prestige": "Prestige",
+    "prestige_short": "Prestige",
+    "unlocked": "ACADEMY UNLOCKED!",
+    "unlocked_description": "Welcome to the Historical Academy!",
+    "milestones_reached": "Milestones reached:",
+    "invitation_title": "INVITATION",
+    "invitation_body": "The Historical Academy has sent a letter...",
+    "milestone_discovery": "Discovery",
+    "milestone_expansion": "Expansion",
+    "milestone_advancement": "Advancement",
+    "milestone_mastery": "Mastery",
+    "milestone_academy": "ACADEMY",
+    "feature_hero_speed": "Hero Speed",
+    "feature_hero_speed_desc": "Heroes return faster",
+    "feature_extra_slot": "Extra Slot",
+    "feature_extra_slot_desc": "3 expeditions at once",
+    "feature_legend_chance": "Legend Chance",
+    "feature_legend_chance_desc": "+5% legendary artifacts",
+    "feature_museum_curator": "Museum Curator",
+    "feature_museum_curator_desc": "Manage exhibitions"
+  },
+  "story_events": {
+    "academy_first_discovery": "First Discovery",
+    "academy_rising_fame": "Rising Fame",
+    "academy_invitation": "Invitation"
+  },
+  "npc_hints": {
+    "academy_hint_1": "I've heard legends about the Historical Academy...",
+    "academy_hint_3": "Accumulate Prestige — and you'll get there.",
+    "academy_hint_5": "To get there, you need to become a real historian."
+  },
+  "ad_reward": {
+    "xp_boost_title": "XP Boost",
+    "xp_boost_description": "x2 hero XP for 30 min",
+    "currency_boost_title": "Currency x1.5",
+    "currency_boost_description": "x1.5 rewards for 30 min",
+    "offline_income_title": "Offline Income x2",
+    "offline_income_description": "Doubles offline earnings",
+    "artifact_chance_title": "Artifact Chance",
+    "artifact_chance_description": "+10% find chance for 30 min",
+    "artifact_chance_p2_description": "+15% find chance for 30 min",
+    "academy_currency_title": "Academy Currency",
+    "academy_currency_description": "+50 Academy Coins",
+    "expedition_speed_title": "Expedition Speed",
+    "expedition_speed_description": "x1.5 speed for 30 min",
+    "museum_bonus_title": "Museum Bonus",
+    "museum_bonus_description": "x2 museum income for 1 hour",
+    "watch_ad": "Watch Ad",
+    "reward_ready": "Reward ready!",
+    "boost_active": "Boost active"
   }
 }
