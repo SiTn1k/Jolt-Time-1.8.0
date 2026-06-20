@@ -34,23 +34,26 @@ jobs:
         run: npm run build
         continue-on-error: false
 
-      - name: Install Supabase CLI
-        run: npm install -g supabase
-
-      - name: Link to Supabase project
-        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-
-      - name: Apply database migrations
-        run: supabase db push
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-
       - name: Deploy Edge Functions
-        run: supabase functions deploy
+        run: |
+          npm install -g supabase
+          
+          # List of functions to deploy
+          FUNCTIONS=(
+            "expedition-sync"
+            "expedition-rewards"
+            "daily-rewards"
+            "story-quests"
+            "validate-purchase"
+          )
+          
+          for func in "${FUNCTIONS[@]}"; do
+            echo "Deploying $func..."
+            supabase functions deploy $func --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          done
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           ADSGRAM_SECRET: ${{ secrets.ADSGRAM_SECRET }}
           RETENTION_BOT_USERNAME: ${{ secrets.RETENTION_BOT_USERNAME }}
