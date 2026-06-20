@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from '../i18n';
+import { motion, AnimatePresence } from 'motion/react';
 import { RotateCcw, Star, AlertTriangle, FlaskConical, Globe, BookOpen } from 'lucide-react';
 import { hapticImpact } from '../lib/telegram';
 
@@ -53,11 +54,19 @@ export function PrestigeButton({
     const wrongEpoch = epochId !== 'independence';
 
     return (
-      <div className="bg-gray-800/50 rounded-2xl p-4 border border-gray-700">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-gray-800/50 rounded-2xl p-4 border border-gray-700"
+      >
         <div className="flex items-center gap-3 mb-3">
-          <div className="p-2.5 bg-gray-700/50 rounded-xl">
+          <motion.div 
+            className="p-2.5 bg-gray-700/50 rounded-xl"
+            animate={{ rotate: [0, -5, 5, 0] }}
+            transition={{ repeat: Infinity, duration: 4 }}
+          >
             <RotateCcw className="w-6 h-6 text-gray-500" />
-          </div>
+          </motion.div>
           <div className="flex-1">
             <h3 className="text-white font-bold text-lg">{t('prestige.title')}</h3>
             <p className="text-gray-400 text-sm">{t('prestige.description')}</p>
@@ -72,9 +81,14 @@ export function PrestigeButton({
           </div>
           <ul className="text-xs text-gray-400 space-y-1">
             {missingLevel > 0 && (
-              <li className={level >= 960 ? 'text-green-400' : 'text-gray-400'}>
+              <motion.li 
+                className={level >= 960 ? 'text-green-400' : 'text-gray-400'}
+                initial={{ x: -10, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.1 }}
+              >
                 • Рівень {level}/960 (потрібно ще {missingLevel})
-              </li>
+              </motion.li>
             )}
             {wrongEpoch && (
               <li className="text-gray-400">
@@ -90,103 +104,86 @@ export function PrestigeButton({
         </div>
 
         {prestigeLevel > 0 && (
-          <div className="text-center text-sm text-gray-400">
+          <motion.div 
+            className="text-center text-sm text-gray-400"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
             Поточне переродження: <span className="text-yellow-400 font-bold">{prestigeLevel}</span> |
             Очки: <span className="text-purple-400 font-bold">{prestigePoints}</span>
-          </div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
     );
   }
 
   // Can prestige - show button
   return (
-    <>
-      <div className="bg-gradient-to-br from-yellow-900/30 to-orange-900/30 rounded-2xl p-4 border border-yellow-500/30">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-2.5 bg-yellow-500/20 rounded-xl">
-            <RotateCcw className="w-6 h-6 text-yellow-400" />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-white font-bold text-lg">{t('prestige.available')}</h3>
-            <p className="text-yellow-400/80 text-sm">{t('prestige.available_desc', { points: 10 })}</p>
-          </div>
-          {prestigeBadge}
-        </div>
-
-        <div className="bg-green-900/20 border border-green-500/30 rounded-xl p-3 mb-3">
-          <div className="text-sm text-green-400 font-medium mb-2">{t('prestige.requirements_met')}</div>
-          <div className="grid grid-cols-2 gap-2 text-xs text-gray-400">
-            <div className="text-green-400">✓ Рівень {level} (≥960)</div>
-            <div className="text-green-400">✓ Епоха: Незалежність</div>
-          </div>
-        </div>
-
-        <div className="bg-gray-800/50 rounded-xl p-3 mb-3">
-          <div className="text-xs text-gray-400 mb-2">{t('prestige.what_keeps')}</div>
-          <div className="grid grid-cols-2 gap-1 text-xs text-green-400">
-            <span>✓ Артефакти</span>
-            <span>✓ Дослідження</span>
-            <span>✓ Реферали</span>
-            <span>✓ Серія входів</span>
-          </div>
-          <div className="text-xs text-gray-400 mt-2 mb-1">{t('prestige.what_resets')}</div>
-          <div className="grid grid-cols-2 gap-1 text-xs text-red-400">
-            <span>✗ Рівень → 1</span>
-            <span>✗ Валюта → 0</span>
-            <span>✗ Генератори → 0</span>
-            <span>✗ Епоха → Трипілля</span>
-          </div>
-        </div>
-
-        <button
-          onClick={handlePrestige}
-          className="w-full py-3 rounded-xl font-bold text-lg bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-black shadow-lg shadow-yellow-900/30 active:scale-95 transition-all flex items-center justify-center gap-2"
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="bg-gradient-to-br from-yellow-900/30 to-purple-900/30 rounded-2xl p-4 border border-yellow-500/30"
+    >
+      <div className="flex items-center gap-3 mb-4">
+        <motion.div 
+          className="p-3 bg-yellow-500/20 rounded-xl"
+          animate={{ rotate: [0, 360] }}
+          transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
         >
-          <Star className="w-5 h-5" />
-          Переродитися
-        </button>
-
-        <div className="text-center text-xs text-gray-500 mt-2">
-          Наступне переродження: {prestigeLevel + 2} ★
+          <Star className="w-8 h-8 text-yellow-400" />
+        </motion.div>
+        <div className="flex-1">
+          <h3 className="text-white font-bold text-lg">{t('prestige.ready_title')}</h3>
+          <p className="text-yellow-400 text-sm">+{prestigePoints} {t('prestige.points')}</p>
         </div>
+        {prestigeBadge}
       </div>
 
-      {/* Confirmation Modal */}
-      {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm">
-          <div className="w-full max-w-sm mx-4 bg-gray-900 rounded-3xl overflow-hidden shadow-2xl border border-yellow-500/30">
-            <div className="p-6 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-yellow-500/20 rounded-full flex items-center justify-center">
-                <RotateCcw className="w-8 h-8 text-yellow-400" />
-              </div>
-              <h2 className="text-xl font-bold text-white mb-2">{t('prestige.confirm_title')}</h2>
-              <p className="text-gray-400 text-sm mb-4">
-                Ваш рівень, валюта та генератори будуть скинуті. Артефакти та дослідження збережуться.
-              </p>
-              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3 mb-4">
-                <div className="text-yellow-400 font-bold">{t('prestige.prestige_points', { points: 10 })}</div>
-                <div className="text-gray-400 text-xs">{t('prestige.total_level', { level: prestigeLevel + 1 })}</div>
-              </div>
-            </div>
-            <div className="p-4 border-t border-gray-700 flex gap-2">
+      <AnimatePresence mode="wait">
+        {showConfirm ? (
+          <motion.div
+            key="confirm"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="space-y-3"
+          >
+            <p className="text-center text-white text-sm">
+              {t('prestige.confirm_text')}
+            </p>
+            <div className="flex gap-2">
               <button
                 onClick={() => setShowConfirm(false)}
-                className="flex-1 py-3 rounded-xl bg-gray-700 text-white font-medium hover:bg-gray-600 transition-all"
+                className="flex-1 py-3 rounded-xl bg-gray-700 text-white font-medium"
               >
-                Скасувати
+                {t('prestige.cancel')}
               </button>
-              <button
+              <motion.button
                 onClick={confirmPrestige}
-                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold hover:from-yellow-400 hover:to-orange-400 transition-all"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-500 text-black font-bold"
               >
-                Переродитись
-              </button>
+                {t('prestige.confirm')}
+              </motion.button>
             </div>
-          </div>
-        </div>
-      )}
-    </>
+          </motion.div>
+        ) : (
+          <motion.button
+            key="button"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handlePrestige}
+            className="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-500 text-black font-bold text-lg"
+          >
+            {t('prestige.button')}
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
 

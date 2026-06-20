@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useExpeditionStore } from '../store';
-import { museumCollections, museumUpgrades, getReputationLevel, MUSEUM_ACHIEVEMENTS, LEGENDARY_EXHIBITIONS, getRankingTier, EXHIBITION_EVENTS } from '../museumData';
+import { museumCollections, museumUpgrades, getReputationLevel, MUSEUM_ACHIEVEMENTS, LEGENDARY_EXHIBITIONS, getRankingTier, EXHIBITION_EVENTS, type MuseumState, type MuseumAchievement, type MuseumExhibition } from '../museumData';
 import { leaderboardService, LeaderboardType, RankingMetric, LeaderboardEntry } from '../leaderboardService';
 import { motion } from 'motion/react';
 import { 
@@ -232,7 +232,7 @@ function ExhibitionsTab({
   expandExhibitionSlots,
   karbovanets,
 }: {
-  museumState: any;
+  museumState: MuseumState;
   artifacts: Artifact[];
   hourlyIncome: number;
   placeArtifactInExhibition: (artifactId: string, slotIndex: number) => boolean;
@@ -244,7 +244,7 @@ function ExhibitionsTab({
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
 
   const museumArtifacts = artifacts.filter((a) => a.status === 'museum');
-  const exhibitedIds = museumState.exhibitions.map((ex: any) => ex.artifactId).filter(Boolean);
+  const exhibitedIds = museumState.exhibitions.map((ex: MuseumExhibition) => ex.artifactId).filter(Boolean);
   const availableArtifacts = museumArtifacts.filter((a) => !exhibitedIds.includes(a.id));
 
   const expansionsCount = museumState.exhibitions.length - 3;
@@ -260,11 +260,11 @@ function ExhibitionsTab({
             <span className="text-sm">{t('museum.exhibition_slots')}</span>
           </div>
           <div className="text-sm" style={{ fontFamily: "'Exo 2', sans-serif", color: '#9747FF' }}>
-            {museumState.exhibitions.filter((ex: any) => ex.artifactId).length} / {museumState.exhibitions.length}
+            {museumState.exhibitions.filter((ex: MuseumExhibition) => ex.artifactId).length} / {museumState.exhibitions.length}
           </div>
         </div>
         <div className="flex gap-1 mt-2">
-          {museumState.exhibitions.map((exhibition: any, index: number) => (
+          {museumState.exhibitions.map((exhibition: MuseumExhibition, index: number) => (
             <div
               key={index}
               className={`flex-1 h-2 rounded ${
@@ -277,7 +277,7 @@ function ExhibitionsTab({
 
       {/* Exhibition Slots */}
       <div className="grid grid-cols-3 gap-3">
-        {museumState.exhibitions.map((exhibition: any, index: number) => {
+        {museumState.exhibitions.map((exhibition: MuseumExhibition, index: number) => {
           const artifact = artifacts.find((a) => a.id === exhibition.artifactId);
           const isEmpty = !exhibition.artifactId;
           const isSelected = selectedSlot === index;
@@ -417,7 +417,7 @@ function CollectionsTab({
   museumState,
   museumArtifacts,
 }: {
-  museumState: any;
+  museumState: MuseumState;
   museumArtifacts: Artifact[];
 }) {
   const { t } = useTranslation();
@@ -528,7 +528,7 @@ function UpgradesTab({
   karbovanets,
   purchaseMuseumUpgrade,
 }: {
-  museumState: any;
+  museumState: MuseumState;
   karbovanets: number;
   purchaseMuseumUpgrade: (upgradeId: string) => boolean;
 }) {
@@ -614,7 +614,7 @@ function StatsTab({
   hourlyIncome,
   exhibitedArtifacts,
 }: {
-  museumState: any;
+  museumState: MuseumState;
   hourlyIncome: number;
   exhibitedArtifacts: Artifact[];
 }) {
@@ -704,17 +704,17 @@ function StatsTab({
 }
 
 // Achievements Tab Component
-function AchievementsTab({ museumState, museumArtifacts }: { museumState: any; museumArtifacts: Artifact[] }) {
+function AchievementsTab({ museumState, museumArtifacts }: { museumState: MuseumState; museumArtifacts: Artifact[] }) {
   const { t } = useTranslation();
   const unlockedIds = museumState.achievements || [];
   
-  const getProgress = (achievement: any) => {
+  const getProgress = (achievement: MuseumAchievement) => {
     switch (achievement.requirement.type) {
       case 'visitors': return museumState.totalVisitorsAllTime || 0;
       case 'artifacts': return museumArtifacts.length;
       case 'collections': return museumState.completedCollections?.length || 0;
       case 'reputation': return museumState.reputation;
-      case 'exhibitions': return museumState.exhibitions?.filter((e: any) => e.artifactId).length || 0;
+      case 'exhibitions': return museumState.exhibitions?.filter((e) => e.artifactId).length || 0;
       case 'events': return museumState.eventParticipation?.length || 0;
       default: return 0;
     }
@@ -784,7 +784,7 @@ function AchievementsTab({ museumState, museumArtifacts }: { museumState: any; m
 }
 
 // Events Tab Component
-function EventsTab({ museumState }: { museumState: any }) {
+function EventsTab({ museumState }: { museumState: MuseumState }) {
   const { t } = useTranslation();
   const now = Date.now();
   const activeEvents = EXHIBITION_EVENTS.filter(e => 
@@ -943,7 +943,7 @@ function EventsTab({ museumState }: { museumState: any }) {
 }
 
 // Rankings Tab Component
-function RankingsTab({ museumState }: { museumState: any }) {
+function RankingsTab({ museumState }: { museumState: MuseumState }) {
   const [leaderboardType, setLeaderboardType] = useState<LeaderboardType>('global');
   const [metric, setMetric] = useState<RankingMetric>('reputation');
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
