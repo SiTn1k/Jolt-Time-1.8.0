@@ -120,6 +120,10 @@ interface GameState {
   // Story/Quest state
   storyState: StoryProgress;
 
+  // Fragment inventory state
+  heroFragments: Record<string, number>;  // heroId -> fragment count
+  artifactFragments: Record<string, number>;  // rarity -> fragment count
+
   // expeditions
   startExpedition: (regionId: string, heroIds: string[]) => boolean;
   collectExpedition: (expeditionId: string) => void;
@@ -158,6 +162,10 @@ interface GameState {
   addKarbovanets: (amount: number) => void;
   spendKarbovanets: (amount: number) => boolean;
   addHeroXP: (heroId: string, amount: number) => boolean;
+  addHeroFragment: (heroId: string, amount: number) => void;
+  addArtifactFragment: (rarity: string, amount: number) => void;
+  getHeroFragmentCount: (heroId: string) => number;
+  checkHeroUnlockable: (heroId: string) => boolean;
   pushToast: (message: string, color?: string) => void;
   dismissToast: (id: number) => void;
 
@@ -195,6 +203,10 @@ export const useExpeditionStore = create<GameState>()(
       
       // Story/Quest state
       storyState: initialStoryProgress,
+
+      // Fragment inventory state
+      heroFragments: {},
+      artifactFragments: { common: 0, rare: 0, epic: 0, legendary: 0 },
 
       // Anti-spam tracking for quest actions
       _lastQuestAction: 0,
@@ -246,6 +258,60 @@ export const useExpeditionStore = create<GameState>()(
         });
         
         return true;
+      },
+      
+      // Hero fragment actions
+      addHeroFragment: (heroId, amount) => {
+        if (amount <= 0) return;
+        
+        set((state) => {
+          const currentCount = state.heroFragments[heroId] || 0;
+          const newCount = currentCount + amount;
+          
+          // Check if hero becomes unlockable (need 50 fragments for now)
+          const HERO_FRAGMENT_THRESHOLD = 50;
+          if (newCount >= HERO_FRAGMENT_THRESHOLD) {
+            const hero = state.heroes.find(h => h.id === heroId);
+            if (hero && !hero.unlocked && hero.unlockCondition?.type === 'level') {
+              // Unlock the hero
+              const updatedHeroes = state.heroes.map(h => 
+                h.id === heroId ? { ...h, unlocked: true } : h
+              );
+              setTimeout(() => get().pushToast(`Герой ${hero.name} розблоковано!`, '#FFC72C'), 100);
+              return { 
+                heroes: updatedHeroes,
+                heroFragments: { ...state.heroFragments, [heroId]: newCount - HERO_FRAGMENT_THRESHOLD }
+              };
+            }
+          }
+          
+          return { heroFragments: { ...state.heroFragments, [heroId]: newCount } };
+        });
+      },
+      
+      addArtifactFragment: (rarity, amount) => {
+        if (amount <= 0) return;
+        
+        set((state) => {
+          const currentCount = state.artifactFragments[rarity] || 0;
+          return { artifactFragments: { ...state.artifactFragments, [rarity]: currentCount + amount } };
+        });
+      },
+      
+      getHeroFragmentCount: (heroId) => {
+        return get().heroFragments[heroId] || 0;
+      },
+      
+      checkHeroUnlockable: (heroId) => {
+        const state = get();
+        const hero = state.heroes.find(h => h.id === heroId);
+        if (!hero) return false;
+        if (hero.unlocked) return false;
+        
+        const fragmentCount = state.heroFragments[heroId] || 0;
+        const HERO_FRAGMENT_THRESHOLD = 50;
+        
+        return fragmentCount >= HERO_FRAGMENT_THRESHOLD;
       },
       
       // Story/Quest actions
@@ -360,9 +426,11 @@ export const useExpeditionStore = create<GameState>()(
               console.warn('Artifact reward not implemented:', reward.itemId);
               break;
             case 'hero_fragment':
-              // TODO: Implement hero fragment reward - itemId field exists but no grant logic
-              // Requires: hero fragment inventory, hero unlock via fragments
-              console.warn('Hero fragment reward not implemented:', reward.itemId);
+              // Grant hero fragment to the specified hero
+              if (reward.itemId) {
+                get().addHeroFragment(reward.itemId, amount);
+                get().pushToast(`+${amount} фрагмент героя`, '#FFC72C');
+              }
               break;
           }
         });

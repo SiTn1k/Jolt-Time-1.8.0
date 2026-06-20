@@ -25,6 +25,8 @@ export function DailyRewards() {
   const { syncToServer } = useAcademySync();
   
   const addKarbovanets = useExpeditionStore((s) => s.addKarbovanets);
+  const addArtifactFragment = useExpeditionStore((s) => s.addArtifactFragment);
+  const pushToast = useExpeditionStore((s) => s.pushToast);
   
   // Local state for daily rewards
   const [rewardState, setRewardState] = useState<DailyRewardState | null>(null);
@@ -85,7 +87,24 @@ export function DailyRewards() {
         case 'karbovanets':
           addKarbovanets(result.reward.amount);
           break;
-        // Other reward types would be handled similarly
+        case 'xp':
+          // XP handled separately if needed
+          break;
+        case 'artifact':
+          // Handle artifact fragment rewards from daily login
+          if (result.reward.itemId) {
+            const itemId = result.reward.itemId;
+            let rarity = 'common';
+            if (itemId.startsWith('rare')) rarity = 'rare';
+            else if (itemId.startsWith('epic')) rarity = 'epic';
+            else if (itemId.startsWith('legendary')) rarity = 'legendary';
+            addArtifactFragment(rarity, result.reward.amount);
+            pushToast(`+${result.reward.amount} ${rarity} фрагмент`, '#00E5FF');
+          }
+          break;
+        case 'boost':
+          // Boost rewards handled separately
+          break;
       }
       
       // Update local state
@@ -97,7 +116,7 @@ export function DailyRewards() {
     }
     
     setClaiming(false);
-  }, [claiming, claimedToday, rewardState, addKarbovanets, syncToServer]);
+  }, [claiming, claimedToday, rewardState, addKarbovanets, addArtifactFragment, pushToast, syncToServer]);
 
   const formatTime = (ms: number): string => {
     if (ms <= 0) return '00:00:00';
