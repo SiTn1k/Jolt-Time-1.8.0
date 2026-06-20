@@ -4,7 +4,44 @@ import { Rarity } from './data';
 export type StoryNpcRole = 'knyaz' | 'hetman' | 'researcher' | 'archaeologist' | 'historian' | 'guard';
 
 // NPC Relationship Level
-export type RelationshipLevel = 1 | 2 | 3 | 4 | 5;
+export type RelationshipLevel = 1 | 2 | 3 | 4 | 5 | 6;
+
+// Relationship Level Names
+export const RELATIONSHIP_NAMES: Record<RelationshipLevel, string> = {
+  1: 'Незнайомець',
+  2: 'Знайомий',
+  3: 'Друг',
+  4: 'Довірений',
+  5: 'Близький союзник',
+  6: 'Легендарний союзник',
+};
+
+// Trust points needed for each level
+export const TRUST_THRESHOLDS: Record<RelationshipLevel, number> = {
+  1: 0,
+  2: 30,
+  3: 80,
+  4: 150,
+  5: 300,
+  6: 500,
+};
+
+// Relationship rewards at each level
+export interface RelationshipReward {
+  karbovanets?: number;
+  reputation?: number;
+  heroFragment?: { heroId: string; amount: number };
+  artifactFragment?: { rarity: string; amount: number };
+}
+
+export const RELATIONSHIP_REWARDS: Record<RelationshipLevel, RelationshipReward> = {
+  1: {},
+  2: { karbovanets: 50 },
+  3: { karbovanets: 100, reputation: 10 },
+  4: { karbovanets: 200, reputation: 25, artifactFragment: { rarity: 'common', amount: 5 } },
+  5: { karbovanets: 500, reputation: 50, artifactFragment: { rarity: 'rare', amount: 3 } },
+  6: { karbovanets: 1000, reputation: 100, artifactFragment: { rarity: 'epic', amount: 2 }, heroFragment: { heroId: 'any', amount: 5 } },
+};
 
 // NPC Relationship Interface
 export interface NpcRelationship {

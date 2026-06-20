@@ -35,6 +35,8 @@ import {
   storyQuests,
   storyNpcs,
   RelationshipLevel,
+  RELATIONSHIP_REWARDS,
+  TRUST_THRESHOLDS,
 } from './storyData';
 import {
   QUEST_REWARD_MULTIPLIER,
@@ -497,39 +499,74 @@ export const useExpeditionStore = create<GameState>()(
       
       // Story/Quest actions
       interactWithNpc: (npcId) => {
-        set((state) => {
-          const current = state.storyState.npcRelationships[npcId] || {
-            npcId,
-            relationshipLevel: 1 as const,
-            trustPoints: 0,
-            completedQuests: [],
-            lastInteraction: Date.now(),
-          };
-          
-          const newTrust = Math.min(500, current.trustPoints + 5);
-          let newLevel = current.relationshipLevel;
-          
-          // Level up logic
-          if (newTrust >= 300 && current.relationshipLevel < 5) newLevel = 5;
-          else if (newTrust >= 150 && current.relationshipLevel < 4) newLevel = 4;
-          else if (newTrust >= 80 && current.relationshipLevel < 3) newLevel = 3;
-          else if (newTrust >= 30 && current.relationshipLevel < 2) newLevel = 2;
-          
-          return {
-            storyState: {
-              ...state.storyState,
-              npcRelationships: {
-                ...state.storyState.npcRelationships,
-                [npcId]: {
-                  ...current,
-                  trustPoints: newTrust,
-                  relationshipLevel: newLevel,
-                  lastInteraction: Date.now(),
-                },
+        const state = get();
+        const current = state.storyState.npcRelationships[npcId] || {
+          npcId,
+          relationshipLevel: 1 as RelationshipLevel,
+          trustPoints: 0,
+          completedQuests: [],
+          lastInteraction: Date.now(),
+        };
+        
+        // Daily interaction limit check (24 hours cooldown)
+        const DAY_MS = 24 * 60 * 60 * 1000;
+        const now = Date.now();
+        if (current.lastInteraction > 0 && (now - current.lastInteraction) < DAY_MS) {
+          const timeLeft = Math.ceil((DAY_MS - (now - current.lastInteraction)) / (60 * 60 * 1000));
+          get().pushToast(`Занадто часто! Почекайте ${timeLeft} год.`, '#FF2A5F');
+          return;
+        }
+        
+        const oldLevel = current.relationshipLevel;
+        const newTrust = Math.min(500, current.trustPoints + 5);
+        
+        // Calculate new level using TRUST_THRESHOLDS
+        let newLevel: RelationshipLevel = 1;
+        if (newTrust >= TRUST_THRESHOLDS[6]) newLevel = 6;
+        else if (newTrust >= TRUST_THRESHOLDS[5]) newLevel = 5;
+        else if (newTrust >= TRUST_THRESHOLDS[4]) newLevel = 4;
+        else if (newTrust >= TRUST_THRESHOLDS[3]) newLevel = 3;
+        else if (newTrust >= TRUST_THRESHOLDS[2]) newLevel = 2;
+        
+        set((st) => ({
+          storyState: {
+            ...st.storyState,
+            npcRelationships: {
+              ...st.storyState.npcRelationships,
+              [npcId]: {
+                ...current,
+                trustPoints: newTrust,
+                relationshipLevel: newLevel,
+                lastInteraction: now,
               },
             },
-          };
-        });
+          },
+        }));
+        
+        // Grant rewards on level up
+        if (newLevel > oldLevel) {
+          for (let lvl = oldLevel + 1; lvl <= newLevel; lvl++) {
+            const reward = RELATIONSHIP_REWARDS[lvl as RelationshipLevel];
+            if (!reward) continue;
+            
+            if (reward.karbovanets) {
+              set((st) => ({ karbovanets: st.karbovanets + reward.karbovanets! }));
+            }
+            if (reward.reputation) {
+              set((st) => ({ reputation: st.reputation + reward.reputation! }));
+            }
+            if (reward.artifactFragment) {
+              set((st) => ({ 
+                artifactFragments: { 
+                  ...st.artifactFragments, 
+                  [reward.artifactFragment!.rarity]: (st.artifactFragments[reward.artifactFragment!.rarity as keyof typeof st.artifactFragments] || 0) + reward.artifactFragment!.amount 
+                } 
+              }));
+            }
+          }
+          
+          get().pushToast(`Рівень довіри: ${newLevel}!`, '#FFC72C');
+        }
         
         // Track NPC interaction quest objective
         get().updateQuestObjective(`speak_${npcId}`, 1);
