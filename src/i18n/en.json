@@ -110,7 +110,9 @@
     "upgrade_to_level": "⬆️ Upgrade (Lvl {level})",
     "fragments": "{current}/{total} frag.",
     "max_level": "⭐ Max level",
-    "open_chest": "Open chest"
+    "open_chest": "Open chest",
+    "active": "Active",
+    "active_boosters": "Active boosters"
   },
   "ad": {
     "support_game": "Support the game!",
@@ -805,5 +807,67 @@
     "double_rewards": "• Double rewards",
     "incorrect_save": "• Incorrect save",
     "data_loss": "• Data loss"
+  },
+  "error": {
+    "telegram_stars_app_only": "Telegram Stars only available in Telegram app",
+    "login_telegram": "Login via Telegram to purchase",
+    "no_connection": "No server connection",
+    "supabase_not_connected": "Supabase not connected",
+    "create_bill_failed": "Failed to create bill",
+    "payment_failed": "Payment could not be completed",
+    "open_bill_failed": "Error opening bill"
+  },
+  "artifact": {
+    "legendary": "Legendary",
+    "epic": "Epic",
+    "rare": "Rare",
+    "common": "Common",
+    "secret": "Secret"
+  },
+  "booster_type": {
+    "currency": "currency",
+    "passive": "passive"
+  },
+  "shop": {
+    "telegram_stars_real_payment": "Telegram Stars — real payment",
+    "telegram_stars_desc": "Buy boosters with Telegram Stars in the app. Get Stars from @PremiumBot.",
+    "payment_note": "Payment via Telegram Stars. Refunds — @JoltTimebot team /paysupport"
+  },
+  "boosters_shop": {
+    "telegram_stars_real_payment": "Telegram Stars — real payment",
+    "telegram_stars_desc": "Buy boosters with Telegram Stars in the app. Get Stars from @PremiumBot.",
+    "payment_note": "Payment via Telegram Stars. Refunds — @JoltTimebot team /paysupport",
+    "xp_booster_x2": {
+      "name": "XP booster x2",
+      "description": "Double XP for 1 hour"
+    },
+    "currency_booster_x2": {
+      "name": "Currency booster x2",
+      "description": "Double currency for 1 hour"
+    },
+    "super_booster_x3": {
+      "name": "Super booster x3",
+      "description": "Triple XP and currency for 30 minutes"
+    },
+    "guaranteed_legendary": {
+      "name": "Guaranteed legendary",
+      "description": "Next roll will give legendary artifact"
+    },
+    "big_patron": {
+      "name": "Big Patron",
+      "description": "Offline income: 6hr → 9hr forever"
+    },
+    "professor_archaeology": {
+      "name": "Professor of Archaeology",
+      "description": "+30% XP forever + unique badge"
+    },
+    "secret_expedition": {
+      "name": "Secret Expedition",
+      "description": "3 sets of secret artifact fragments"
+    },
+    "support_developers": {
+      "name": "Developer Support",
+      "description": "Thank you! +5000 XP immediately"
+    }
   }
 }

@@ -211,15 +211,15 @@ function App() {
   const handleBuyBooster = useCallback(async (booster: { id: string; name: string; price: number }) => {
     const tg = getTelegramWebApp();
     if (!tg) {
-      setShowError('Telegram Stars доступний лише в додатку Telegram');
+      setShowError(tr('error.telegram_stars_app_only'));
       return;
     }
     if (!telegramId) {
-      setShowError('Авторизуйтесь через Telegram для покупки');
+      setShowError(tr('error.login_telegram'));
       return;
     }
     if (!supabase) {
-      setShowError('Немає підключення до сервера');
+      setShowError(tr('error.no_connection'));
       return;
     }
 
@@ -228,7 +228,7 @@ function App() {
 
     try {
       if (!supabase) {
-        setShowError('Supabase не підключений');
+        setShowError(tr('error.supabase_not_connected'));
         setPurchasingBooster(null);
         return;
       }
@@ -238,7 +238,7 @@ function App() {
       });
 
       if (error || !data?.invoice_url) {
-        const msg = data?.error ?? error?.message ?? 'Не вдалося створити рахунок';
+        const msg = data?.error ?? error?.message ?? tr('error.create_bill_failed');
         setShowError(msg);
         setPurchasingBooster(null);
         return;
@@ -253,12 +253,12 @@ function App() {
           setTimeout(() => refreshBoosters(), 2000);
         } else if (status === 'failed') {
           hapticNotification('error');
-          setShowError('Оплату не вдалося завершити');
+          setShowError(tr('error.payment_failed'));
         }
       });
     } catch (e) {
       console.error('handleBuyBooster error:', e);
-      setShowError('Помилка під час відкриття рахунку');
+      setShowError(tr('error.open_bill_failed'));
       setPurchasingBooster(null);
     }
   }, [telegramId, refreshBoosters]);
@@ -564,7 +564,7 @@ function App() {
                       </div>
                       {isCurrent && (
                         <span className="text-xs bg-yellow-500 text-black px-2 py-0.5 rounded-full font-medium">
-                          Активна
+                          {tr('app.active')}
                         </span>
                       )}
                     </button>
@@ -715,10 +715,10 @@ function App() {
                         artifact.rarity === 'epic' ? 'text-purple-400' :
                         artifact.rarity === 'rare' ? 'text-blue-400' : 'text-gray-400'
                       }`}>
-                        {artifact.rarity === 'secret' ? 'Секретний' :
-                         artifact.rarity === 'legendary' ? 'Легендарний' :
-                         artifact.rarity === 'epic' ? 'Епічний' :
-                         artifact.rarity === 'rare' ? 'Рідкісний' : 'Звичайний'}
+                        {artifact.rarity === 'secret' ? tr('artifact.secret') :
+                         artifact.rarity === 'legendary' ? tr('artifact.legendary') :
+                         artifact.rarity === 'epic' ? tr('artifact.epic') :
+                         artifact.rarity === 'rare' ? tr('artifact.rare') : tr('artifact.common')}
                         {isComplete && (
                           <span className="text-amber-400 ml-1">{tr('app.level', { level: artifactLevel })}</span>
                         )}
@@ -735,7 +735,7 @@ function App() {
                         <div className="text-xs text-green-400 mt-1">
                           +{((artifact.bonus.value - 1) * 100).toFixed(0)}%{' '}
                           {artifact.bonus.type === 'xp_multiplier' ? 'XP' :
-                           artifact.bonus.type === 'currency_multiplier' ? 'валюта' : 'пасивний'}
+                           artifact.bonus.type === 'currency_multiplier' ? tr('booster_type.currency') : tr('booster_type.passive')}
                         </div>
                       )}
                       {/* Artifact upgrade UI - show for completed artifacts level 1-3 */}
@@ -870,45 +870,45 @@ function App() {
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3 mb-4">
                 <div className="flex items-center gap-2 text-yellow-400 text-sm font-medium mb-1">
                   <Star className="w-4 h-4" />
-                  Telegram Stars — реальна оплата
+                  {tr('boosters_shop.telegram_stars_real_payment')}
                 </div>
                 <p className="text-xs text-gray-400">
-                  Купуйте бустери за Telegram Stars прямо в додатку. Stars придбайте у @PremiumBot.
+                  {tr('boosters_shop.telegram_stars_desc')}
                 </p>
               </div>
 
               <div className="space-y-3">
                 <BoosterCard
                   icon="⚡"
-                  name="XP бустер x2"
-                  description="Подвійний XP на 1 годину"
+                  name={tr('boosters_shop.xp_booster_x2.name')}
+                  description={tr('boosters_shop.xp_booster_x2.description')}
                   price={50}
                   loading={purchasingBooster === 'xp_boost_1h'}
-                  onBuy={() => handleBuyBooster({ id: 'xp_boost_1h', name: 'XP бустер x2', price: 50 })}
+                  onBuy={() => handleBuyBooster({ id: 'xp_boost_1h', name: tr('boosters_shop.xp_booster_x2.name'), price: 50 })}
                 />
                 <BoosterCard
                   icon="💰"
-                  name="Валютний бустер x2"
-                  description="Подвійна валюта на 1 годину"
+                  name={tr('boosters_shop.currency_booster_x2.name')}
+                  description={tr('boosters_shop.currency_booster_x2.description')}
                   price={50}
                   loading={purchasingBooster === 'currency_boost_1h'}
-                  onBuy={() => handleBuyBooster({ id: 'currency_boost_1h', name: 'Валютний бустер x2', price: 50 })}
+                  onBuy={() => handleBuyBooster({ id: 'currency_boost_1h', name: tr('boosters_shop.currency_booster_x2.name'), price: 50 })}
                 />
                 <BoosterCard
                   icon="🔥"
-                  name="Супер бустер x3"
-                  description="Потрійний XP та валюта на 30 хвилин"
+                  name={tr('boosters_shop.super_booster_x3.name')}
+                  description={tr('boosters_shop.super_booster_x3.description')}
                   price={100}
                   loading={purchasingBooster === 'super_boost_30m'}
-                  onBuy={() => handleBuyBooster({ id: 'super_boost_30m', name: 'Супер бустер x3', price: 100 })}
+                  onBuy={() => handleBuyBooster({ id: 'super_boost_30m', name: tr('boosters_shop.super_booster_x3.name'), price: 100 })}
                 />
                 <BoosterCard
                   icon="🎁"
-                  name="Гарантований легендарний"
-                  description="Наступний roll дасть легендарний артефакт"
+                  name={tr('boosters_shop.guaranteed_legendary.name')}
+                  description={tr('boosters_shop.guaranteed_legendary.description')}
                   price={200}
                   loading={purchasingBooster === 'legendary_gacha'}
-                  onBuy={() => handleBuyBooster({ id: 'legendary_gacha', name: 'Гарантований легендарний', price: 200 })}
+                  onBuy={() => handleBuyBooster({ id: 'legendary_gacha', name: tr('boosters_shop.guaranteed_legendary.name'), price: 200 })}
                 />
 
                 {/* Phase 2: New Prestige-related products */}
@@ -918,41 +918,41 @@ function App() {
 
                 <BoosterCard
                   icon="🏛️"
-                  name="Великий Меценат"
-                  description="Офлайн дохід: 6год → 9год назавжди"
+                  name={tr('boosters_shop.big_patron.name')}
+                  description={tr('boosters_shop.big_patron.description')}
                   price={25}
                   loading={purchasingBooster === 'great_patron'}
-                  onBuy={() => handleBuyBooster({ id: 'great_patron', name: 'Великий Меценат', price: 25 })}
+                  onBuy={() => handleBuyBooster({ id: 'great_patron', name: tr('boosters_shop.big_patron.name'), price: 25 })}
                 />
                 <BoosterCard
                   icon="📚"
-                  name="Професор Археології"
-                  description="+30% XP назавжди + унікальний бейдж"
+                  name={tr('boosters_shop.professor_archaeology.name')}
+                  description={tr('boosters_shop.professor_archaeology.description')}
                   price={39}
                   loading={purchasingBooster === 'professor'}
-                  onBuy={() => handleBuyBooster({ id: 'professor', name: 'Професор Археології', price: 39 })}
+                  onBuy={() => handleBuyBooster({ id: 'professor', name: tr('boosters_shop.professor_archaeology.name'), price: 39 })}
                 />
                 <BoosterCard
                   icon="🗺️"
-                  name="Секретна Експедиція"
-                  description="3 набори фрагментів секретних артефактів"
+                  name={tr('boosters_shop.secret_expedition.name')}
+                  description={tr('boosters_shop.secret_expedition.description')}
                   price={45}
                   loading={purchasingBooster === 'secret_expedition'}
-                  onBuy={() => handleBuyBooster({ id: 'secret_expedition', name: 'Секретна Експедиція', price: 45 })}
+                  onBuy={() => handleBuyBooster({ id: 'secret_expedition', name: tr('boosters_shop.secret_expedition.name'), price: 45 })}
                 />
                 <BoosterCard
                   icon="🏆"
-                  name="Підтримка розробників"
-                  description="Дякуємо! +5000 XP одразу"
+                  name={tr('boosters_shop.support_developers.name')}
+                  description={tr('boosters_shop.support_developers.description')}
                   price={500}
                   loading={purchasingBooster === 'support_dev'}
-                  onBuy={() => handleBuyBooster({ id: 'support_dev', name: 'Підтримка', price: 500 })}
+                  onBuy={() => handleBuyBooster({ id: 'support_dev', name: tr('boosters_shop.support_developers.name'), price: 500 })}
                 />
               </div>
 
               <div className="mt-4 p-3 bg-gray-800/60 rounded-xl">
                 <p className="text-xs text-gray-500 text-center">
-                  Оплата через Telegram Stars. Рефанди — @JoltTimebot команда /paysupport
+                  {tr('boosters_shop.payment_note')}
                 </p>
               </div>
             </div>
@@ -1120,7 +1120,7 @@ function App() {
                     </div>
                     {isCurrent && (
                       <span className="text-xs bg-yellow-500 text-black px-2 py-0.5 rounded-full font-medium">
-                        Активна
+                        {tr('app.active')}
                       </span>
                     )}
                   </button>

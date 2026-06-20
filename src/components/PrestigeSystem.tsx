@@ -291,7 +291,7 @@ export function MuseumLaboratory({
                 <div className="text-white font-medium text-sm">{upgrade.name}</div>
                 <div className="text-xs text-gray-400">{upgrade.description}</div>
                 <div className="text-xs text-purple-400 mt-1">
-                  {upgrade.effect(currentLevel)} {currentLevel >= upgrade.maxLevel ? '(МАКС)' : `(${currentLevel}/${upgrade.maxLevel})`}
+                  {upgrade.effect(currentLevel)} {currentLevel >= upgrade.maxLevel ? t('prestige.max') : `(${currentLevel}/${upgrade.maxLevel})`}
                 </div>
               </div>
               <button

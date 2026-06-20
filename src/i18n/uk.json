@@ -110,7 +110,9 @@
     "upgrade_to_level": "⬆️ Покращити (Рів.{level})",
     "fragments": "{current}/{total} фраг.",
     "max_level": "⭐ Макс. рівень",
-    "open_chest": "Відкрити скриню"
+    "open_chest": "Відкрити скриню",
+    "active": "Активна",
+    "active_boosters": "Активні бустери"
   },
   "ad": {
     "support_game": "Підтримай гру!",
@@ -920,5 +922,67 @@
     "double_rewards": "• Подвоєння нагород",
     "incorrect_save": "• Неправильного збереження",
     "data_loss": "• Втрати даних"
+  },
+  "error": {
+    "telegram_stars_app_only": "Telegram Stars доступний лише в додатку Telegram",
+    "login_telegram": "Авторизуйтесь через Telegram для покупки",
+    "no_connection": "Немає підключення до сервера",
+    "supabase_not_connected": "Supabase не підключений",
+    "create_bill_failed": "Не вдалося створити рахунок",
+    "payment_failed": "Оплату не вдалося завершити",
+    "open_bill_failed": "Помилка відкриття рахунку"
+  },
+  "artifact": {
+    "legendary": "Легендарний",
+    "epic": "Епічний",
+    "rare": "Рідкісний",
+    "common": "Звичайний",
+    "secret": "Секретний"
+  },
+  "booster_type": {
+    "currency": "валюта",
+    "passive": "пасивний"
+  },
+  "shop": {
+    "telegram_stars_real_payment": "Telegram Stars — реальна оплата",
+    "telegram_stars_desc": "Купуйте бустери за Telegram Stars прямо в додатку. Stars придбайте у @PremiumBot.",
+    "payment_note": "Оплата через Telegram Stars. Рефанди — @JoltTimebot команда /paysupport"
+  },
+  "boosters_shop": {
+    "telegram_stars_real_payment": "Telegram Stars — реальна оплата",
+    "telegram_stars_desc": "Купуйте бустери за Telegram Stars прямо в додатку. Stars придбайте у @PremiumBot.",
+    "payment_note": "Оплата через Telegram Stars. Рефанди — @JoltTimebot команда /paysupport",
+    "xp_booster_x2": {
+      "name": "XP бустер x2",
+      "description": "Подвійний XP на 1 годину"
+    },
+    "currency_booster_x2": {
+      "name": "Валютний бустер x2",
+      "description": "Подвійна валюта на 1 годину"
+    },
+    "super_booster_x3": {
+      "name": "Супер бустер x3",
+      "description": "Потрійний XP та валюта на 30 хвилин"
+    },
+    "guaranteed_legendary": {
+      "name": "Гарантований легендарний",
+      "description": "Наступний roll дасть легендарний артефакт"
+    },
+    "big_patron": {
+      "name": "Великий Меценат",
+      "description": "Офлайн дохід: 6год → 9год назавжди"
+    },
+    "professor_archaeology": {
+      "name": "Професор Археології",
+      "description": "+30% XP назавжди + унікальний бейдж"
+    },
+    "secret_expedition": {
+      "name": "Секретна Експедиція",
+      "description": "3 набори фрагментів секретних артефактів"
+    },
+    "support_developers": {
+      "name": "Підтримка розробників",
+      "description": "Дякуємо! +5000 XP одразу"
+    }
   }
 }
