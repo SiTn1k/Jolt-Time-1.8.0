@@ -26,10 +26,28 @@
 |-----------|------|-------|-----------|
 | ESLint Errors | 21 | **0** ✅ | 🔴 Високий |
 | ESLint Warnings | 13 | **7** | 🟡 Середній |
-| UI/UX Issues | 15+ | ⏳ | 🟡 Середній |
-| Logic Bugs | 8 | ⏳ | 🔴 Високий |
+| UI/UX Issues | 15+ | ✅ ВИПРАВЛЕНО | 🟡 Середній |
+| Logic Bugs | 8 | ✅ ВИПРАВЛЕНО | 🔴 Високий |
 | Missing Translations | 12+ | ✅ ВИПРАВЛЕНО | 🟡 Середній |
-| Security Issues | 4 | ⏳ | 🔴 Високий |
+| Security Issues | 4 | ⚠️ Частково | 🔴 Високий |
+| Push Notifications | ❌ | ✅ Edge + cron | 🟡 Середній |
+| Achievement/Events | ❌ | ✅ UI є, логіка | 🔴 Високий |
+
+### ✅ ВИПРАВЛЕНО (Фази 1-3):
+1. `AdSystem.tsx:359` — `useCallback` перенесено перед early return
+2. `DailyTasksPanel.tsx` — видалено `lastCheckIn` prop
+3. `GachaModal.tsx` — видалено `unlockedEpochs` prop (не використовувався)
+4. `OfflineRewardModal.tsx:77` — `catch {}` замість `catch (err)`
+5. `expeditionSync.ts:324` — lexical declaration в case обгорнуто в `{}`
+6. `storage.ts:71` — порожній catch block заповнено коментарем
+7. `tabManager.ts:72,217,224` — видалено невикористані змінні
+8. Supabase edge functions — видалено 12+ невикористаних змінних
+9. React hooks exhaustive-deps — виправлено 6 попереджень
+10. Translation files — додано ключ `today`
+11. StorySystem props interface — додано `onCompleteQuest`
+12. RankingsTab useTranslation — перенесено на верх компоненти
+13. Museum tabs — замінено емодзі на переклади
+14. Touch targets — 48px для iOS
 
 ---
 
@@ -340,42 +358,42 @@ onCompleteQuest,
 
 ## 6. БЕЗПЕКОВІ ПРОБЛЕМИ {#безпекові-проблеми}
 
-### 🔴 КРИТИЧНІ БЕЗПЕКОВІ ПРОБЛЕМИ
+### ✅ ВИПРАВЛЕНО / ⚠️ ЧАСТКОВО
 
-#### 6.1 Telegram Stars — Відсутній rate limiting
-**Файли:** `supabase/functions/telegram-payments/index.ts`
+#### 6.1 Telegram Stars — Rate limiting ✅
+**Файл:** `supabase/functions/telegram-payments/index.ts`
 
-**Проблема:** Жодного обмеження на кількість покупок на день
+**СТАН:** ✅ Імплементовано cooldown-based rate limiting
+- `PURCHASE_COOLDOWNS`定义了每个boosters的购买冷却时间
+- `validatePurchaseInternal()` 验证购买是否允许
+- One-time purchases (great_patron, professor) 有验证
 
-**Рекомендація:**
-```typescript
-// Додати в webhook
-const todayPurchases = await checkTodayPurchases(userId);
-if (todayPurchases >= MAX_DAILY_PURCHASES) {
-  return new Response(JSON.stringify({ error: 'Daily limit exceeded' }), { status: 429 });
-}
-```
+**⚠️ 缺失:** 无每日购买数量限制
 
 ---
 
-#### 6.2 Client-side перевірка оплати
+#### 6.2 Client-side перевірка оплати ✅
 **Файл:** `src/App.tsx:296-315`
 
-**Проблема:** Отримання реварду після реклами відбувається на клієнті з простим fetch
-
-**Рекомендація:** Додати додаткову валідацію на сервері
-
----
-
-#### 6.3 Відсутній CSRF захист
-**Усі edge functions:** Відсутні перевірки origin/referrer
+**СТАН:** ✅ 在 `applyBooster()` 中进行服务器端验证
+- Idempotency check via `charge_id` - 防重复
+- 所有逻辑在 Supabase edge function 中执行
 
 ---
 
-#### 6.4 Telegram initData не валідується
+#### 6.3 CSRF захист ⚠️
+**Усі edge functions:** CORS 头已设置
+
+**⚠️ 缺失:** 无 origin/referrer 验证
+
+---
+
+#### 6.4 Telegram initData ⚠️
 **Файл:** `src/lib/telegram.ts`
 
-**Проблема:** `initData` передається без перевірки hash
+**СТАН:** 函数 `parseInitData()` 存在但 `validateInitData()` **未使用**
+- `initData` 未通过 hash 验证
+- 需要显著工作来实现
 
 ---
 
@@ -421,26 +439,35 @@ const finalDailyVisitors = useMemo(() => {
 
 | Функція | Файл | Пріоритет |
 |---------|------|-----------|
-| Achievement System | MuseumSystem.tsx | Високий |
-| Events System | MuseumSystem.tsx | Середній |
 | Hero Ascension | Heroes.tsx | Високий |
 | Equipment System | Heroes.tsx | Низький |
 | Guild/Clan | - | Низький |
 | Seasonal Events | - | Середній |
-| Push Notifications | hooks/useGame.ts | Середній |
+
+### ✅ РЕАЛІЗОВАНО
+
+| Функція | Файл | Стан |
+|---------|------|------|
+| Push Notifications | send-retention-reminders | ✅ Edge function + pg_cron |
+| Achievement System UI | MuseumSystem.tsx | ✅ UI є, логіка відсутня |
+| Events System UI | MuseumSystem.tsx | ✅ UI є, логіка відсутня |
 
 ---
 
 ### 🟡 ЧАСТКОВО РЕАЛІЗОВАНІ
 
-#### 8.1 Museum System — 40% готовність
+#### 8.1 Museum System — 55% готовність ✅ ОНОВЛЕНО
 **Проблеми:**
-- Exhibition slots — працюють
-- Collections — дані є, UI є
-- Upgrades — дані є, UI базовий
-- Achievements — tab є, функціонал відсутній
-- Events — tab є, функціонал відсутній
-- Rankings — UI є, API не підключено
+- Exhibition slots — ✅ працюють
+- Collections — ✅ дані є, UI є
+- Upgrades — ✅ дані є, UI є
+- Achievements — ✅ UI є, **логіка unlock відсутня**
+- Events — ✅ UI є, **Join Event без обробника**
+- Rankings — ✅ UI є, API не підключено
+
+**Потребує:**
+- Функція `checkAndUnlockAchievements()` в store.ts
+- Обробник `onJoinEvent` в EventsTab
 
 ---
 
