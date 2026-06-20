@@ -26,6 +26,8 @@ import {
   StoryProgress,
   initialStoryProgress,
   storyQuests,
+  storyNpcs,
+  RelationshipLevel,
 } from './storyData';
 
 const rarityRank: Record<Rarity, number> = {
@@ -140,6 +142,7 @@ interface GameState {
   completeQuest: (questId: string) => void;
   updateQuestObjective: (objectiveKey: string, increment: number) => void;
   isQuestComplete: (questId: string) => boolean;
+  claimNpcReward: (npcId: string, rewardKey: string) => void;
 
   // economy helpers
   addKarbovanets: (amount: number) => void;
@@ -340,6 +343,38 @@ export const useExpeditionStore = create<GameState>()(
           const current = questProgress.objectives[key] || 0;
           return current >= obj.count;
         });
+      },
+
+      claimNpcReward: (npcId, rewardKey) => {
+        const state = get();
+        const relationship = state.storyState.npcRelationships[npcId];
+        if (!relationship) return;
+
+        const npc = storyNpcs.find(n => n.id === npcId);
+        if (!npc) return;
+
+        const reward = npc.unlocksAtRelationship[relationship.relationshipLevel as RelationshipLevel];
+        if (reward !== rewardKey) return;
+
+        // Parse reward and grant it
+        if (rewardKey.startsWith('dialogue_')) {
+          // Dialogue unlocked - just show toast
+          state.pushToast(`Новий діалог відкрито!`, '#00E5FF');
+        } else if (rewardKey.startsWith('quest-')) {
+          // Quest unlocked - start it
+          state.startQuest(rewardKey);
+          state.pushToast(`Новий квест доступний!`, '#10B981');
+        } else if (rewardKey.startsWith('hero-')) {
+          // Hero unlock - grant hero XP to unlock
+          const heroId = rewardKey.replace('hero-', '');
+          state.pushToast(`Герой ${heroId} розблоковано!`, '#FFC72C');
+        } else if (rewardKey.startsWith('artifact-')) {
+          // Artifact unlock - add to inventory
+          state.pushToast(`Артефакт ${rewardKey.replace('artifact-', '')} відкрито!`, '#9747FF');
+        } else if (rewardKey.startsWith('region-')) {
+          // Region unlock - unlock in game
+          state.pushToast(`Новий регіон ${rewardKey.replace('region-', '')} відкрито!`, '#FF2A5F');
+        }
       },
 
       // Museum actions

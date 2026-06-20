@@ -481,5 +481,59 @@
     "network_error": "Помилка мережі",
     "server_error": "Помилка сервера",
     "try_again_later": "Спробуйте пізніше"
+  },
+  "buildings": {
+    "title": "Будівлі",
+    "subtitle": "Розвивайте свою Академію",
+    "total_level": "Всього рівнів",
+    "currency": "Карбованці",
+    "level": "Рівень",
+    "current_bonus": "Поточний бонус",
+    "upgrading": "Покращення...",
+    "collect": "Забрати",
+    "next_level": "Наступний рівень",
+    "bonus": "Бонус",
+    "upgrade": "Покращити",
+    "not_enough": "Недостатньо"
+  },
+  "leaderboard": {
+    "title": "Рейтинг",
+    "global": "Глобальний",
+    "weekly": "Тижневий",
+    "friends": "Друзі",
+    "rank": "Місце",
+    "player": "Гравець",
+    "score": "Очки",
+    "prestige": "Престиж",
+    "reputation": "Репутація",
+    "artifacts": "Артефакти",
+    "hero_power": "Сила героїв",
+    "empty": "Немає даних"
+  },
+  "events": {
+    "title": "Події",
+    "active": "Активні",
+    "upcoming": "Майбутні",
+    "completed": "Завершені",
+    "participate": "Узяти участь",
+    "progress": "Прогрес",
+    "rewards": "Нагороди",
+    "time_left": "Залишилось"
+  },
+  "daily_rewards": {
+    "title": "Щоденні нагороди",
+    "claim": "Забрати",
+    "claimed": "Забрано",
+    "streak": "Серія",
+    "day": "День",
+    "coming_back": "Повертайся завтра!"
+  },
+  "npc_rewards": {
+    "title": "Нагороди NPC",
+    "dialogue_unlocked": "Відкрито новий діалог",
+    "quest_unlocked": "Відкрито новий квест",
+    "hero_unlocked": "Відкрито нового героя",
+    "artifact_unlocked": "Відкрито новий артефакт",
+    "region_unlocked": "Відкрито новий регіон"
   }
 }

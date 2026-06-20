@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useExpeditionStore } from '../store';
-import { museumCollections, museumUpgrades, getReputationLevel, MUSEUM_ACHIEVEMENTS, LEGENDARY_EXHIBITIONS, getRankingTier, EXHIBITION_EVENTS } from '../museumData';
+import { museumCollections, museumUpgrades, getReputationLevel, MUSEUM_ACHIEVEMENTS, LEGENDARY_EXHIBITIONS, RANKING_TIERS, getRankingTier, EXHIBITION_EVENTS } from '../museumData';
 import { leaderboardService, LeaderboardType, RankingMetric, LeaderboardEntry } from '../leaderboardService';
 import { motion } from 'motion/react';
 import { 
@@ -944,128 +944,122 @@ function EventsTab({ museumState }: { museumState: any }) {
 
 // Rankings Tab Component
 function RankingsTab({ museumState }: { museumState: any }) {
-  const [leaderboardType, setLeaderboardType] = useState<LeaderboardType>('global');
-  const [metric, setMetric] = useState<RankingMetric>('reputation');
-  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
-  const [userRank, setUserRank] = useState<LeaderboardEntry | undefined>();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const loadLeaderboard = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    const result = await leaderboardService.getLeaderboard(leaderboardType, metric, 50);
-    if (result.entries.length === 0) {
-      setError('No data available');
-    } else {
-      setEntries(result.entries);
-      setUserRank(result.userRank);
-    }
-    setLoading(false);
-  }, [leaderboardType, metric]);
-
-  useEffect(() => { loadLeaderboard(); }, [loadLeaderboard]);
-
+  useTranslation();
   const currentTier = getRankingTier(museumState.reputation);
-
-  const getScore = (entry: LeaderboardEntry): number => {
-    switch (metric) {
-      case 'prestige': return entry.prestige;
-      case 'reputation': return entry.reputation;
-      case 'artifacts': return entry.artifacts;
-      case 'hero_power': return entry.hero_power;
-      default: return entry.reputation;
-    }
-  };
-
-  const metricLabels: Record<RankingMetric, string> = {
-    prestige: 'Prestige',
-    reputation: 'Reputation',
-    artifacts: 'Artifacts',
-    hero_power: 'Hero Power',
-  };
+  
+  // Simulated rankings - in production this would come from Supabase
+  const mockRankings = [
+    { rank: 1, username: 'MuseumMaster', score: 98500, visitors: 850000, collections: 8 },
+    { rank: 2, username: 'HistoryHunter', score: 72000, visitors: 620000, collections: 7 },
+    { rank: 3, username: 'ArtifactKing', score: 55000, visitors: 480000, collections: 6 },
+    { rank: 4, username: 'CuratorPro', score: 42000, visitors: 380000, collections: 6 },
+    { rank: 5, username: 'Archaeologist', score: 35000, visitors: 310000, collections: 5 },
+    { rank: 6, username: 'Collector99', score: 28000, visitors: 250000, collections: 5 },
+    { rank: 7, username: 'TimeKeeper', score: 22000, visitors: 195000, collections: 4 },
+    { rank: 8, username: 'ExplorerUA', score: 18000, visitors: 160000, collections: 4 },
+    { rank: 9, username: 'HeritageGurd', score: 14500, visitors: 130000, collections: 4 },
+    { rank: 10, username: 'MuseumFan', score: 12000, visitors: 105000, collections: 3 },
+  ];
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        {(['global', 'weekly'] as LeaderboardType[]).map((type) => (
-          <button key={type} onClick={() => setLeaderboardType(type)}
-            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${leaderboardType === type ? 'bg-[#FFC72C] text-[#0D1117]' : 'bg-white/10 text-gray-300'}`}>
-            {type === 'global' ? 'Global' : 'Weekly'}
-          </button>
-        ))}
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {(Object.keys(metricLabels) as RankingMetric[]).map((m) => (
-          <button key={m} onClick={() => setMetric(m)}
-            className={`py-1 px-2 rounded text-xs transition-all ${metric === m ? 'bg-[#9747FF] text-white' : 'bg-white/5 text-gray-400'}`}>
-            {metricLabels[m]}
-          </button>
-        ))}
-      </div>
-      {userRank ? (
-        <Card className="border-[#FFC72C]/30 p-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center text-xl" style={{ backgroundColor: currentTier.color + '30' }}>
-              {currentTier.icon}
+      {/* Current Player */}
+      <Card className="border-[#FFC72C]/30 p-4">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl" style={{ backgroundColor: `${currentTier.color}30` }}>
+            {currentTier.icon}
+          </div>
+          <div>
+            <div className="text-xs text-muted-foreground">Your Rank</div>
+            <div className="text-2xl font-bold" style={{ color: currentTier.color }}>
+              #{mockRankings.length + 1}
             </div>
-            <div>
-              <div className="text-xs text-muted-foreground">Your Rank</div>
-              <div className="text-xl font-bold" style={{ color: currentTier.color }}>#{userRank.rank}</div>
-            </div>
-            <div className="ml-auto text-right">
-              <div className="text-xs text-muted-foreground">{metricLabels[metric]}</div>
-              <div className="text-lg font-bold" style={{ fontFamily: "'Exo 2', sans-serif" }}>{getScore(userRank).toLocaleString()}</div>
+            <div className="text-sm" style={{ color: currentTier.color }}>
+              {currentTier.icon} {currentTier.name}
             </div>
           </div>
-        </Card>
-      ) : (
-        <Card className="border-white/10 p-4 text-center">
-          <p className="text-sm text-muted-foreground">Play more to enter rankings!</p>
-        </Card>
-      )}
-      <button onClick={loadLeaderboard} disabled={loading}
-        className="w-full py-2 rounded-lg bg-white/10 text-sm flex items-center justify-center gap-2 disabled:opacity-50">
-        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-        Refresh
-      </button>
-      {error && (
-        <Card className="border-red-500/30 p-4 text-center">
-          <p className="text-sm text-red-400">{error}</p>
-        </Card>
-      )}
-      {!error && entries.length > 0 && (
-        <Card className="border-white/10 p-4">
-          <h3 className="text-sm font-medium mb-3">Top Players</h3>
-          <div className="space-y-2">
-            {entries.map((entry) => {
-              const playerTier = getRankingTier(getScore(entry));
-              return (
-                <div key={entry.telegram_id}
-                  className={`flex items-center gap-3 p-2 rounded-lg ${entry.rank <= 3 ? 'bg-[#FFC72C]/5' : ''} ${userRank?.telegram_id === entry.telegram_id ? 'bg-[#9747FF]/10 border border-[#9747FF]/30' : ''}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                    entry.rank === 1 ? 'bg-[#FFD700]/20 text-[#FFD700]' :
-                    entry.rank === 2 ? 'bg-[#C0C0C0]/20 text-[#C0C0C0]' :
-                    entry.rank === 3 ? 'bg-[#CD7F32]/20 text-[#CD7F32]' : 'bg-white/10'}`}>
-                    {entry.rank}
+          <div className="ml-auto text-right">
+            <div className="text-xs text-muted-foreground">Score</div>
+            <div className="text-lg font-bold" style={{ fontFamily: "'Exo 2', sans-serif" }}>
+              {museumState.reputation.toLocaleString()}
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Tier Progress */}
+      <Card className="border-white/10 p-4">
+        <h3 className="text-sm font-medium mb-3">🏆 Ranking Tiers</h3>
+        <div className="space-y-2">
+          {RANKING_TIERS.map((tier, i) => {
+            const isCurrent = tier.name === currentTier.name;
+            const isAchieved = museumState.reputation >= tier.minScore;
+            
+            return (
+              <div
+                key={i}
+                className={`flex items-center gap-3 p-2 rounded-lg ${
+                  isCurrent ? 'bg-[#FFC72C]/10 border border-[#FFC72C]/30' : ''
+                }`}
+              >
+                <span className="text-xl">{tier.icon}</span>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className={`text-sm ${isAchieved ? '' : 'text-gray-500'}`}>
+                      {tier.name}
+                    </span>
+                    {isCurrent && <span className="text-xs" style={{ color: '#FFC72C' }}>You</span>}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">{entry.username}</span>
-                      <span className="text-xs">{playerTier.icon}</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground">{entry.artifacts} artifacts - {entry.prestige} prestige</div>
+                  <div className="text-xs text-muted-foreground">{tier.minScore.toLocaleString()} rep</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      {/* Leaderboard */}
+      <Card className="border-white/10 p-4">
+        <h3 className="text-sm font-medium mb-3">📊 Top Players</h3>
+        <div className="space-y-2">
+          {mockRankings.map((player) => {
+            const playerTier = getRankingTier(player.score);
+            
+            return (
+              <div
+                key={player.rank}
+                className={`flex items-center gap-3 p-2 rounded-lg ${
+                  player.rank <= 3 ? `bg-${player.rank === 1 ? '[#FFD700]' : player.rank === 2 ? '[#C0C0C0]' : '[#CD7F32]'}/10` : ''
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                  player.rank === 1 ? 'bg-[#FFD700]/20 text-[#FFD700]' :
+                  player.rank === 2 ? 'bg-[#C0C0C0]/20 text-[#C0C0C0]' :
+                  player.rank === 3 ? 'bg-[#CD7F32]/20 text-[#CD7F32]' :
+                  'bg-white/10'
+                }`}>
+                  {player.rank}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">{player.username}</span>
+                    <span className="text-xs">{playerTier.icon}</span>
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm font-medium" style={{ color: playerTier.color }}>{getScore(entry).toLocaleString()}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {player.visitors.toLocaleString()} visitors • {player.collections} collections
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </Card>
-      )}
+                <div className="text-right">
+                  <div className="text-sm font-medium" style={{ color: playerTier.color }}>
+                    {player.score.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-muted-foreground">rep</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
     </div>
   );
 }
-

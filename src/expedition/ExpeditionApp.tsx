@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Building2, Map, Users, FlaskConical, Landmark, Shield } from 'lucide-react';
+import { Building2, Map, Users, FlaskConical, Landmark, Shield, HardHat } from 'lucide-react';
 import { useExpeditionStore } from './store';
 import { useAcademySync } from './expeditionSync';
 import { Academy } from './screens/Academy';
@@ -9,8 +9,9 @@ import { Heroes } from './screens/Heroes';
 import { Laboratory } from './screens/Laboratory';
 import { Museum } from './screens/Museum';
 import { Treasury } from './screens/Treasury';
+import { Buildings } from './screens/Buildings';
 
-type ScreenId = 'academy' | 'map' | 'heroes' | 'laboratory' | 'museum' | 'treasury';
+type ScreenId = 'academy' | 'map' | 'heroes' | 'laboratory' | 'museum' | 'treasury' | 'buildings';
 
 const navigation: { id: ScreenId; name: string; icon: typeof Map }[] = [
   { id: 'academy', name: 'Академія', icon: Building2 },
@@ -19,6 +20,7 @@ const navigation: { id: ScreenId; name: string; icon: typeof Map }[] = [
   { id: 'laboratory', name: 'Лаб', icon: FlaskConical },
   { id: 'museum', name: 'Музей', icon: Landmark },
   { id: 'treasury', name: 'Скарб', icon: Shield },
+  { id: 'buildings', name: 'Будівлі', icon: HardHat },
 ];
 
 function ToastStack() {
@@ -93,10 +95,11 @@ export function ExpeditionApp() {
         {screen === 'laboratory' && <Laboratory />}
         {screen === 'museum' && <Museum />}
         {screen === 'treasury' && <Treasury />}
+        {screen === 'buildings' && <Buildings />}
       </div>
 
       <nav className="bg-[#161B22] border-t border-white/10 shrink-0">
-        <div className="grid grid-cols-6 h-16">
+        <div className="grid grid-cols-7 h-16">
           {navigation.map((item) => {
             const isActive = screen === item.id;
             const Icon = item.icon;

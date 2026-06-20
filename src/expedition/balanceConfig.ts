@@ -16,8 +16,8 @@ export const PROGRESSION_TARGETS = {
     reputation: 500,
     artifacts: 5,
     collections: 0,
-    heroesRank: 1, // novice
-    expeditionRegions: 1, // Trypillia only
+    heroesRank: 1,
+    expeditionRegions: 1,
     museumLevel: 1,
     buildingLevels: 1,
   },
@@ -28,8 +28,8 @@ export const PROGRESSION_TARGETS = {
     reputation: 1500,
     artifacts: 15,
     collections: 1,
-    heroesRank: 2, // adept
-    expeditionRegions: 2, // +Scythia
+    heroesRank: 2,
+    expeditionRegions: 2,
     museumLevel: 2,
     buildingLevels: 2,
   },
@@ -40,8 +40,8 @@ export const PROGRESSION_TARGETS = {
     reputation: 5000,
     artifacts: 40,
     collections: 3,
-    heroesRank: 3, // expert
-    expeditionRegions: 3, // +Kyiv Rus
+    heroesRank: 3,
+    expeditionRegions: 3,
     museumLevel: 3,
     buildingLevels: 3,
   },
@@ -52,8 +52,8 @@ export const PROGRESSION_TARGETS = {
     reputation: 15000,
     artifacts: 80,
     collections: 5,
-    heroesRank: 4, // master
-    expeditionRegions: 4, // +Zaporizhzhia
+    heroesRank: 4,
+    expeditionRegions: 4,
     museumLevel: 5,
     buildingLevels: 5,
   },
@@ -64,12 +64,31 @@ export const PROGRESSION_TARGETS = {
     reputation: 50000,
     artifacts: 200,
     collections: 8,
-    heroesRank: 5, // legend
-    expeditionRegions: 5, // All regions
+    heroesRank: 5,
+    expeditionRegions: 5,
     museumLevel: 8,
     buildingLevels: 8,
   },
 };
+
+// ═══════════════════════════════════════════════════════════════════════
+// BALANCE FIXES: Remove progression walls
+// ═══════════════════════════════════════════════════════════════════════
+
+// Quest rewards - increased by 50% to prevent currency wall
+export const QUEST_REWARD_MULTIPLIER = 1.5;
+
+// Expedition rewards - increased to encourage active play
+export const EXPEDITION_REWARD_MULTIPLIER = 1.25;
+
+// Museum income - increased by 30% to make museum worthwhile
+export const MUSEUM_INCOME_MULTIPLIER = 1.3;
+
+// Building costs - reduced by 20% to speed up progression
+export const BUILDING_COST_MULTIPLIER = 0.8;
+
+// Stars pricing - value increases
+export const STARS_VALUE_MULTIPLIER = 1.2;
 
 // ═══════════════════════════════════════════════════════════════════════
 // EXPEDITION BALANCE
