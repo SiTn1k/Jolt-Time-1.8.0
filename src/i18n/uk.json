@@ -633,14 +633,13 @@
   "buildings": {
     "title": "Будівлі",
     "subtitle": "Розвивайте свою Академію",
-    "total_level": "Всього рівнів",
-    "currency": "Карбованці",
+    "total_levels": "Всього рівнів",
+    "karbovanets": "Карбованці",
     "level": "Рівень",
-    "current_bonus": "Поточний бонус",
+    "bonus": "Бонус",
     "upgrading": "Покращення...",
     "collect": "Забрати",
     "next_level": "Наступний рівень",
-    "bonus": "Бонус",
     "upgrade": "Покращити",
     "not_enough": "Недостатньо"
   },
@@ -701,7 +700,8 @@
     "p2_prestige_milestone": "Дослідник",
     "p3_prestige_milestone": "Майстер",
     "p4_prestige_milestone": "Експерт",
-    "prestige": "Престиж"
+    "prestige": "Престиж",
+    "academy_unlock": "Академія Відкрита!"
   },
   "teaser": {
     "academy_subtitle": "Академія відкриється на престижі 50",
@@ -748,6 +748,43 @@
   "heroes": {
     "artifact": "Артефакт",
     "speed": "Швидкість",
-    "biography": "Біографія"
+    "biography": "Біографія",
+    "spec_archaeologist": "Археолог",
+    "spec_diplomat": "Дипломат",
+    "spec_warrior": "Воїн",
+    "spec_scholar": "Вчений",
+    "success": "Успіх",
+    "no_available": "Герої недоступні"
+  },
+  "treasury": {
+    "title": "Скарбниця академії",
+    "subtitle": "Фінанси та нагороди",
+    "karbovanets_reserves": "Резерви карбованців",
+    "museum_income_active": "Пасивний дохід з музею активний",
+    "prestige": "Престиж",
+    "reputation": "Репутація",
+    "historical_bonds": "Історичні облігації",
+    "heritage_fund": "Фонд національної спадщини",
+    "investment_opportunity": "Доступна інвестиційна можливість",
+    "bond_denomination": "Номінал облігації",
+    "karb": "карб.",
+    "redemption_info": "Погашення: 4с · Річний дохід: 12%",
+    "buy_bond": "Придбати облігацію",
+    "premium_account": "Преміум-акаунт",
+    "premium_active": "Преміум активний",
+    "upgrade_to_premium": "Покращити до преміум",
+    "premium_bonus_income": "+25% дохід карбованців",
+    "premium_bonus_success": "+15% шанс успіху експедицій",
+    "premium_bonus_restoration": "-30% час реставрації",
+    "premium_bonus_legendary": "Ексклюзивні легендарні артефакти",
+    "activate_premium": "Активувати за 5000 карб.",
+    "reward_exchange": "Обмін нагород",
+    "vouchers_available": "ваучерів доступно",
+    "description": "Скарбниця академії — система фінансування історичних досліджень. Усі операції підтримують освітні ініціативи та збереження культурної спадщини.",
+    "not_enough_karbovanets": "Недостатньо карбованців для облігації",
+    "bond_redeemed": "Облігація погашена: +{{amount}} карб.",
+    "bond_purchased": "Облігацію придбано на {{amount}} карб. (дохід 12%)",
+    "premium_activated": "Преміум активовано!",
+    "need_karbovanets": "Потрібно 5000 карбованців"
   }
 }

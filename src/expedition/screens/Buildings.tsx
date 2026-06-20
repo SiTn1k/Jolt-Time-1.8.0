@@ -6,6 +6,7 @@ import {
   Building2, Clock, Coins, ChevronRight, Check, Zap,
   TrendingUp, Users, FlaskConical, Landmark, BookOpen, Vault
 } from 'lucide-react';
+import { useTranslation } from '../../i18n';
 
 const buildingIcons: Record<string, React.ReactNode> = {
   'building-1': <Zap className="w-6 h-6" />,
@@ -47,6 +48,7 @@ function formatNumber(num: number): string {
 }
 
 export function Buildings() {
+  const { t } = useTranslation();
   const [now, setNow] = useState(Date.now());
 
   const karbovanets = useExpeditionStore((s) => s.karbovanets);
@@ -73,23 +75,23 @@ export function Buildings() {
         </div>
         <div>
           <h1 className="text-xl font-bold" style={{ fontFamily: "'Exo 2', sans-serif" }}>
-            Будівлі
+            {t('buildings.title')}
           </h1>
           <p className="text-xs text-muted-foreground">
-            Розвивайте свою Академію
+            {t('buildings.subtitle')}
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mb-6">
         <Card className="border-white/10 p-3">
-          <div className="text-xs text-muted-foreground mb-1">Всього рівнів</div>
+          <div className="text-xs text-muted-foreground mb-1">{t('buildings.total_levels')}</div>
           <div className="text-2xl font-bold" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>
             {totalLevels}
           </div>
         </Card>
         <Card className="border-white/10 p-3">
-          <div className="text-xs text-muted-foreground mb-1">Карбованці</div>
+          <div className="text-xs text-muted-foreground mb-1">{t('buildings.karbovanets')}</div>
           <div className="text-2xl font-bold" style={{ fontFamily: "'Exo 2', sans-serif", color: '#10B981' }}>
             {formatNumber(karbovanets)}
           </div>
@@ -127,14 +129,14 @@ export function Buildings() {
                     <h3 className="text-sm font-medium">{building.name}</h3>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge style={{ backgroundColor: color, color: '#0D1117', fontSize: '10px' }}>
-                        Рівень {currentLevel}
+                        {t('buildings.level')} {currentLevel}
                       </Badge>
                     </div>
                   </div>
                 </div>
                 
                 <div className="text-right">
-                  <div className="text-xs text-muted-foreground">Бонус</div>
+                  <div className="text-xs text-muted-foreground">{t('buildings.bonus')}</div>
                   <div className="text-sm font-medium" style={{ color }}>
                     {building.bonus}
                   </div>
@@ -150,7 +152,7 @@ export function Buildings() {
                   <div className="flex items-center justify-between text-xs mb-1">
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" style={{ color }} />
-                      Покращення...
+                      {t('buildings.upgrading')}
                     </span>
                     <span style={{ color }}>
                       {formatTime(timeRemaining)}
@@ -165,7 +167,7 @@ export function Buildings() {
                       style={{ backgroundColor: '#10B981', color: '#fff' }}
                     >
                       <Check className="w-4 h-4" />
-                      Забрати
+                      {t('buildings.collect')}
                     </button>
                   )}
                 </div>
@@ -174,7 +176,7 @@ export function Buildings() {
                   <div className="bg-white/5 rounded-lg p-3 mb-3">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs text-muted-foreground">
-                        Наступний рівень {nextLevel}
+                        {t('buildings.next_level')} {nextLevel}
                       </span>
                       <Badge variant="outline" style={{ borderColor: color, color }}>
                         {building.bonus}
@@ -207,13 +209,13 @@ export function Buildings() {
                     {canAfford ? (
                       <>
                         <TrendingUp className="w-4 h-4" />
-                        Покращити
+                        {t('buildings.upgrade')}
                         <ChevronRight className="w-4 h-4" />
                       </>
                     ) : (
                       <>
                         <Coins className="w-4 h-4" />
-                        Недостатньо
+                        {t('buildings.not_enough')}
                       </>
                     )}
                   </button>

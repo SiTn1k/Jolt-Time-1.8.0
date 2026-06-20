@@ -23,10 +23,10 @@ const rankColors: Record<HeroRank, string> = {
 };
 
 const specLabels: Record<HeroSpecialization, string> = {
-  archaeologist: 'Археолог',
-  diplomat: 'Дипломат',
-  warrior: 'Воїн',
-  scholar: 'Вчений',
+  archaeologist: 'heroes.spec_archaeologist',
+  diplomat: 'heroes.spec_diplomat',
+  warrior: 'heroes.spec_warrior',
+  scholar: 'heroes.spec_scholar',
 };
 
 const heroStats = [
@@ -55,7 +55,7 @@ export function Heroes() {
   const selectedHero = heroes.find((h) => h.id === selectedId) || heroes[0];
 
   if (!selectedHero) {
-    return <div className="p-4 text-muted-foreground">No heroes available</div>;
+    return <div className="p-4 text-muted-foreground">{t('heroes.no_available')}</div>;
   }
 
   const heroRank = getRank(selectedHero.experience);
@@ -132,7 +132,7 @@ export function Heroes() {
             <div className="flex items-center gap-4 mb-3 text-xs">
               <div className="flex items-center gap-1" style={{ color: '#FFC72C' }}>
                 <Sword className="w-3 h-3" />
-                <span>{specLabels[selectedHero.specialization]}</span>
+                <span>{t(specLabels[selectedHero.specialization])}</span>
               </div>
             </div>
             
@@ -164,7 +164,7 @@ export function Heroes() {
               <div className="text-center p-2 rounded" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
                 <Zap className="w-4 h-4 mx-auto mb-1" style={{ color: '#10B981' }} />
                 <div className="text-lg font-bold" style={{ color: '#10B981' }}>+{selectedHero.successBonus}%</div>
-                <div className="text-[10px] text-muted-foreground">Success</div>
+                <div className="text-[10px] text-muted-foreground">{t('heroes.success')}</div>
               </div>
             </div>
             
