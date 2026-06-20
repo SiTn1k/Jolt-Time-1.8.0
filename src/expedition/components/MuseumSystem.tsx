@@ -135,7 +135,7 @@ export function MuseumSystem({ isOpen, onClose }: MuseumSystemProps) {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl whitespace-nowrap transition-all text-sm ${
+              className={`flex items-center gap-2 px-4 py-3 min-h-[48px] rounded-xl whitespace-nowrap transition-all text-sm ${
                 activeTab === tab.id
                   ? 'bg-[#9747FF] text-white'
                   : 'bg-white/10 text-gray-300 hover:bg-white/20'

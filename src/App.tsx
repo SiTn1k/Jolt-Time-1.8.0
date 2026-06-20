@@ -1231,7 +1231,7 @@ function TabButton({ active, onClick, icon, label, badge }: {
 }) {
   return (
     <button
-      className={`flex-1 min-w-[60px] py-2 flex flex-col items-center gap-0.5 relative transition-colors touch-manipulation ${
+      className={`flex-1 min-w-[60px] py-3 min-h-[48px] flex flex-col items-center gap-0.5 relative transition-colors touch-manipulation ${
         active ? 'text-yellow-400 bg-gray-800/50' : 'text-gray-400'
       }`}
       onClick={onClick}
