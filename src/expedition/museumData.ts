@@ -32,6 +32,9 @@ export interface MuseumBonus {
   visitorBonus: number;       // Percentage visitor bonus
   incomeBonus: number;         // Percentage income bonus
   karbovanetsBonus: number;   // Flat karbovanets bonus on completion
+  xpBonus?: number;            // XP multiplier bonus (e.g., 5 = +5%)
+  expeditionSpeedBonus?: number; // Expedition speed bonus (e.g., 10 = +10%)
+  npcTrustBonus?: number;      // NPC relationship bonus (e.g., 2 = +2 levels)
   uniqueBonus?: string;        // Special unique bonus
 }
 
@@ -48,6 +51,7 @@ export const museumCollections: Collection[] = [
       visitorBonus: 10,
       incomeBonus: 5,
       karbovanetsBonus: 1000,
+      xpBonus: 2,
     },
     icon: '🏺',
     tier: 1,
@@ -63,6 +67,8 @@ export const museumCollections: Collection[] = [
       visitorBonus: 15,
       incomeBonus: 8,
       karbovanetsBonus: 2000,
+      xpBonus: 3,
+      expeditionSpeedBonus: 2,
     },
     icon: '⚔️',
     tier: 1,
@@ -78,6 +84,8 @@ export const museumCollections: Collection[] = [
       visitorBonus: 20,
       incomeBonus: 12,
       karbovanetsBonus: 3500,
+      xpBonus: 5,
+      npcTrustBonus: 1,
     },
     icon: '⛪',
     tier: 1,
@@ -93,6 +101,9 @@ export const museumCollections: Collection[] = [
       visitorBonus: 25,
       incomeBonus: 15,
       karbovanetsBonus: 5000,
+      xpBonus: 5,
+      expeditionSpeedBonus: 5,
+      npcTrustBonus: 1,
     },
     icon: '🗡️',
     tier: 1,
@@ -124,6 +135,8 @@ export const museumCollections: Collection[] = [
       visitorBonus: 50,
       incomeBonus: 30,
       karbovanetsBonus: 25000,
+      xpBonus: 10,
+      npcTrustBonus: 2,
       uniqueBonus: 'golden_exhibits',
     },
     icon: '👑',
@@ -140,6 +153,8 @@ export const museumCollections: Collection[] = [
       visitorBonus: 40,
       incomeBonus: 25,
       karbovanetsBonus: 20000,
+      xpBonus: 8,
+      expeditionSpeedBonus: 15,
       uniqueBonus: 'expedition_speed',
     },
     icon: '⚔️',
@@ -157,6 +172,9 @@ export const museumCollections: Collection[] = [
       visitorBonus: 100,
       incomeBonus: 75,
       karbovanetsBonus: 100000,
+      xpBonus: 20,
+      expeditionSpeedBonus: 20,
+      npcTrustBonus: 5,
       uniqueBonus: 'legendary_status',
     },
     icon: '🌟',
@@ -568,9 +586,24 @@ export function calculateMuseumIncome(museumState: MuseumState, exhibitedArtifac
   const baseIncome = Math.floor(exhibitedArtifactValue / 100);
   const repLevel = getReputationLevel(museumState.reputation);
   const restorationBonus = 1 + (museumState.upgrades.restoration_wing * museumUpgrades[3].effects.find(e => e.type === 'income')!.value / 100);
-  const collectionBonus = 1 + (museumState.completedCollections.length * 5 / 100);
+  // Use actual collection bonuses from completedCollections
+  const collectionIncomeBonus = getCollectionIncomeBonus(museumState.completedCollections || []);
+  const collectionBonus = 1 + (collectionIncomeBonus / 100);
   const income = Math.floor(baseIncome * repLevel.incomeMultiplier * restorationBonus * collectionBonus * MUSEUM_INCOME_MULTIPLIER);
   return Math.max(10, income);
+}
+
+/**
+ * Calculate total income bonus percentage from completed collections
+ */
+export function getCollectionIncomeBonus(completedCollectionIds: string[]): number {
+  let total = 0;
+  for (const collection of museumCollections) {
+    if (completedCollectionIds.includes(collection.id)) {
+      total += collection.bonus.incomeBonus;
+    }
+  }
+  return total;
 }
 
 export function getUpgradeCost(upgrade: MuseumUpgrade, currentLevel: number): number {
@@ -617,3 +650,33 @@ export const initialMuseumState: MuseumState = {
   eventParticipation: [],
   lastDailyReward: 0,
 };
+
+
+/**
+ * Calculate total museum bonuses from all completed collections
+ */
+export function calcTotalMuseumBonus(completedCollectionIds: string[]): MuseumBonus {
+  let total: MuseumBonus = {
+    reputationBonus: 0,
+    visitorBonus: 0,
+    incomeBonus: 0,
+    karbovanetsBonus: 0,
+    xpBonus: 0,
+    expeditionSpeedBonus: 0,
+    npcTrustBonus: 0,
+  };
+
+  for (const collection of museumCollections) {
+    if (completedCollectionIds.includes(collection.id)) {
+      total.reputationBonus += collection.bonus.reputationBonus;
+      total.visitorBonus += collection.bonus.visitorBonus;
+      total.incomeBonus += collection.bonus.incomeBonus;
+      total.karbovanetsBonus += collection.bonus.karbovanetsBonus;
+      if (collection.bonus.xpBonus) total.xpBonus! += collection.bonus.xpBonus;
+      if (collection.bonus.expeditionSpeedBonus) total.expeditionSpeedBonus! += collection.bonus.expeditionSpeedBonus;
+      if (collection.bonus.npcTrustBonus) total.npcTrustBonus! += collection.bonus.npcTrustBonus;
+    }
+  }
+
+  return total;
+}
