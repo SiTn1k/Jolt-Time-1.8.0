@@ -32,16 +32,56 @@ export interface RelationshipReward {
   reputation?: number;
   heroFragment?: { heroId: string; amount: number };
   artifactFragment?: { rarity: string; amount: number };
+  // Bonus system per trust level
+  xpBonus?: number;                 // +% XP bonus (Level 1+)
+  museumIncomeBonus?: number;        // +% museum income (Level 2+)
+  expeditionSpeedBonus?: number;    // -% expedition time (Level 3+)
+  artifactChanceBonus?: number;     // +% artifact chance (Level 4+)
+  heroUnlock?: string;              // Hero ID to unlock (Level 5+)
+  collectionUnlock?: string;         // Collection ID to unlock (Level 5+)
 }
 
 export const RELATIONSHIP_REWARDS: Record<RelationshipLevel, RelationshipReward> = {
-  1: {},
-  2: { karbovanets: 50 },
-  3: { karbovanets: 100, reputation: 10 },
-  4: { karbovanets: 200, reputation: 25, artifactFragment: { rarity: 'common', amount: 5 } },
-  5: { karbovanets: 500, reputation: 50, artifactFragment: { rarity: 'rare', amount: 3 } },
+  1: { xpBonus: 5 },                              // +5% XP
+  2: { xpBonus: 5, museumIncomeBonus: 5 },         // +5% XP, +5% museum income
+  3: { xpBonus: 5, museumIncomeBonus: 5, expeditionSpeedBonus: 10 }, // +5% XP, +5% income, -10% time
+  4: { xpBonus: 5, museumIncomeBonus: 5, expeditionSpeedBonus: 10, artifactChanceBonus: 10 }, // +10% artifacts
+  5: { karbovanets: 500, reputation: 50, artifactFragment: { rarity: 'rare', amount: 3 }, heroUnlock: 'auto', collectionUnlock: 'auto' }, // Unlock hero/collection
   6: { karbovanets: 1000, reputation: 100, artifactFragment: { rarity: 'epic', amount: 2 }, heroFragment: { heroId: 'any', amount: 5 } }, // Awarded to random locked hero (store handles selection)
 };
+
+/**
+ * Calculate total NPC trust bonuses based on all NPC relationships
+ * Returns aggregated bonuses from all NPCs at various trust levels
+ */
+export function calcNpcTrustBonuses(npcRelationships: Record<string, { relationshipLevel: RelationshipLevel }>): {
+  totalXpBonus: number;
+  totalMuseumIncomeBonus: number;
+  totalExpeditionSpeedBonus: number;
+  totalArtifactChanceBonus: number;
+} {
+  let totalXpBonus = 0;
+  let totalMuseumIncomeBonus = 0;
+  let totalExpeditionSpeedBonus = 0;
+  let totalArtifactChanceBonus = 0;
+
+  for (const npcId in npcRelationships) {
+    const level = npcRelationships[npcId].relationshipLevel;
+    const rewards = RELATIONSHIP_REWARDS[level];
+    if (rewards.xpBonus) totalXpBonus += rewards.xpBonus;
+    if (rewards.museumIncomeBonus) totalMuseumIncomeBonus += rewards.museumIncomeBonus;
+    if (rewards.expeditionSpeedBonus) totalExpeditionSpeedBonus += rewards.expeditionSpeedBonus;
+    if (rewards.artifactChanceBonus) totalArtifactChanceBonus += rewards.artifactChanceBonus;
+  }
+
+  // Cap each bonus at 25% max
+  return {
+    totalXpBonus: Math.min(totalXpBonus, 25),
+    totalMuseumIncomeBonus: Math.min(totalMuseumIncomeBonus, 25),
+    totalExpeditionSpeedBonus: Math.min(totalExpeditionSpeedBonus, 25),
+    totalArtifactChanceBonus: Math.min(totalArtifactChanceBonus, 25),
+  };
+}
 
 // ═══════════════════════════════════════════════════════════════════════
 // STORY ARC SYSTEM - For long-term content (up to 20 arcs)

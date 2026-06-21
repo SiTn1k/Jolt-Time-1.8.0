@@ -28,6 +28,7 @@ import {
   MUSEUM_ACHIEVEMENTS,
   calculateCollectionProgress,
   isCollectionComplete,
+  calcTotalMuseumBonus,
 } from './museumData';
 import {
   StoryProgress,
@@ -39,6 +40,7 @@ import {
   TRUST_THRESHOLDS,
   STORY_ARCS,
   checkArcRequirements,
+  calcNpcTrustBonuses,
 } from './storyData';
 import {
   QUEST_REWARD_MULTIPLIER,
@@ -67,9 +69,11 @@ export function restorationSeconds(artifact: Artifact): number {
   return 8 + rarityRank[artifact.rarity] * 6;
 }
 
-function pickArtifact(region: Region): { name: string; rarity: Rarity } {
+function pickArtifact(region: Region, artifactBonus: number = 0): { name: string; rarity: Rarity } {
   const name = region.artifacts[Math.floor(Math.random() * region.artifacts.length)];
-  const roll = Math.random();
+  // Apply artifact bonus to rarity chance (each % shifts the roll threshold)
+  const bonusShift = artifactBonus / 100;
+  const roll = Math.random() - bonusShift;
   let rarity: Rarity = 'common';
   const diff = region.difficulty;
   if (roll > 0.92) rarity = 'legendary';
@@ -1074,8 +1078,11 @@ export const useExpeditionStore = create<GameState>()(
         const exhibitedArtifacts = museumArtifacts.filter(a => exhibitedArtifactIds.includes(a.id));
         const totalValue = exhibitedArtifacts.reduce((sum, a) => sum + a.value, 0);
         
-        // Calculate income
-        const income = calculateMuseumIncome(museumState, totalValue);
+        // Get NPC trust bonus for museum income
+        const npcBonuses = calcNpcTrustBonuses(s.npcRelationships || {});
+        
+        // Calculate income with NPC bonus
+        const income = calculateMuseumIncome(museumState, totalValue, npcBonuses.totalMuseumIncomeBonus);
         
         if (income > 0) {
           set((state) => ({
@@ -1358,20 +1365,58 @@ export const useExpeditionStore = create<GameState>()(
           return false;
         }
         const teamHeroes = s.heroes.filter((h) => heroIds.includes(h.id));
-        // Bonus to success based on team attributes
-        const teamBonus = Math.min(
-          25,
+
+        // ====== HERO BONUSES ======
+        // Hero success bonus based on exploration + leadership (max 15%)
+        const heroSuccessBonus = Math.min(
+          15,
           Math.round(
             teamHeroes.reduce(
-              (sum, h) => sum + (h.exploration + h.leadership) / 40,
+              (sum, h) => sum + (h.exploration + h.leadership) / 50,
               0,
             ),
           ),
         );
-        const successChance = Math.min(98, region.successChance + teamBonus);
-        const dur = expeditionSeconds(region);
+        // Hero speed bonus (sum of hero.speedBonus, max 20%)
+        const heroSpeedBonus = Math.min(
+          20,
+          teamHeroes.reduce((sum, h) => sum + h.speedBonus, 0),
+        );
+        // Hero artifact chance bonus (max 15%)
+        const heroArtifactBonus = Math.min(
+          15,
+          teamHeroes.reduce((sum, h) => sum + h.artifactBonus, 0),
+        );
+
+        // ====== NPC TRUST BONUSES ======
+        const npcBonuses = calcNpcTrustBonuses(s.npcRelationships || {});
+
+        // ====== MUSEUM BONUSES ======
+        const museumBonuses = calcTotalMuseumBonus(
+          s.museumState.completedCollections || [],
+        );
+
+        // ====== TOTAL EXPEDITION CALCULATIONS ======
+        // Success chance: region base + hero + NPC (cap at 98%)
+        const successChance = Math.min(
+          98,
+          region.successChance + heroSuccessBonus,
+        );
+
+        // Duration: reduced by hero speed + NPC speed + museum speed (max 40% reduction)
+        const baseDuration = expeditionSeconds(region);
+        const totalSpeedReduction = Math.min(
+          40,
+          heroSpeedBonus + npcBonuses.totalExpeditionSpeedBonus + (museumBonuses.expeditionSpeedBonus || 0),
+        );
+        const dur = Math.max(1, Math.floor(baseDuration * (1 - totalSpeedReduction / 100)));
+
+        // Artifact rarity bonus
+        const totalArtifactChanceBonus =
+          heroArtifactBonus + npcBonuses.totalArtifactChanceBonus;
+
         const now = Date.now();
-        const { name, rarity } = pickArtifact(region);
+        const { name, rarity } = pickArtifact(region, totalArtifactChanceBonus);
         const reward = Math.round(
           (region.difficulty * 600 + 400) * (0.8 + Math.random() * 0.6),
         );

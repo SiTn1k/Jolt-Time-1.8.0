@@ -698,14 +698,16 @@ export function calculateDailyVisitors(museumState: MuseumState, exhibitedArtifa
   return Math.max(50, visitors);
 }
 
-export function calculateMuseumIncome(museumState: MuseumState, exhibitedArtifactValue: number): number {
+export function calculateMuseumIncome(museumState: MuseumState, exhibitedArtifactValue: number, npcIncomeBonus: number = 0): number {
   const baseIncome = Math.floor(exhibitedArtifactValue / 100);
   const repLevel = getReputationLevel(museumState.reputation);
   const restorationBonus = 1 + (museumState.upgrades.restoration_wing * museumUpgrades[3].effects.find(e => e.type === 'income')!.value / 100);
   // Use actual collection bonuses from completedCollections
   const collectionIncomeBonus = getCollectionIncomeBonus(museumState.completedCollections || []);
   const collectionBonus = 1 + (collectionIncomeBonus / 100);
-  const income = Math.floor(baseIncome * repLevel.incomeMultiplier * restorationBonus * collectionBonus * MUSEUM_INCOME_MULTIPLIER);
+  // Add NPC trust income bonus (max 25%)
+  const npcBonus = 1 + (Math.min(npcIncomeBonus, 25) / 100);
+  const income = Math.floor(baseIncome * repLevel.incomeMultiplier * restorationBonus * collectionBonus * npcBonus * MUSEUM_INCOME_MULTIPLIER);
   return Math.max(10, income);
 }
 
