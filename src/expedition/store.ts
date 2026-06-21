@@ -1527,7 +1527,16 @@ export const useExpeditionStore = create<GameState>()(
             const artifactId = rewards.artifactId as string | null;
 
             set((st) => {
-              const gainedXp = (rewards.xp as number) || 100;
+              // Calculate XP with hero level bonuses
+              const baseXp = (rewards.xp as number) || 100;
+              const levelBonuses = exp.heroes.map(hId => {
+                const hero = st.heroes.find(h => h.id === hId);
+                if (!hero) return { xpBonus: 0, successBonus: 0 };
+                return getLevelBonus(hero.level);
+              });
+              const xpMultiplier = 1 + (levelBonuses.reduce((sum, b) => sum + b.xpBonus, 0) / 100);
+              const gainedXp = Math.floor(baseXp * xpMultiplier);
+              
               const heroes = st.heroes.map((h) => {
                 if (!exp.heroes.includes(h.id)) return h;
                 const newXP = h.experience + gainedXp;
