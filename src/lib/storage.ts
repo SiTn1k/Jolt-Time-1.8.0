@@ -581,3 +581,48 @@ export async function fetchActiveBoosters(telegramId: number): Promise<ActiveBoo
 export function calculateOfflineCap(prestigeLevel: number): number {
   return prestigeLevel > 0 ? OFFLINE_CAP_PRESTIGE_1 : OFFLINE_CAP_PRESTIGE_0;
 }
+
+// =====================================================
+// SERVER TIME - Prevent client clock manipulation
+// =====================================================
+
+const serverTimeCache = {
+  time: 0,
+  fetchedAt: 0,
+  ttl: 30000, // 30 seconds cache
+};
+
+export async function getServerTime(): Promise<number> {
+  const now = Date.now();
+  
+  // Return cached value if still valid
+  if (now - serverTimeCache.fetchedAt < serverTimeCache.ttl && serverTimeCache.time > 0) {
+    return serverTimeCache.time;
+  }
+
+  if (!supabase) return now;
+
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-server-time`
+    );
+    
+    if (!response.ok) {
+      console.error('Server time fetch failed:', response.status);
+      return serverTimeCache.time > 0 ? serverTimeCache.time : now;
+    }
+
+    const data = await response.json();
+    
+    if (data.server_time && typeof data.server_time === 'number') {
+      serverTimeCache.time = data.server_time;
+      serverTimeCache.fetchedAt = now;
+      return data.server_time;
+    }
+    
+    return serverTimeCache.time > 0 ? serverTimeCache.time : now;
+  } catch (error) {
+    console.error('Failed to get server time:', error);
+    return serverTimeCache.time > 0 ? serverTimeCache.time : now;
+  }
+}

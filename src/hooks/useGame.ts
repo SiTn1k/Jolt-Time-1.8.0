@@ -24,6 +24,7 @@ import {
   getLeaderboard,
   getUserRank,
   fetchActiveBoosters,
+  getServerTime,
 } from '../lib/storage';
 import { hapticNotification, hapticImpact, getRawInitData } from '../lib/telegram';
 import type { ActiveBoosters } from '../types/game';
@@ -366,11 +367,16 @@ export function useGame() {
       if (saved) {
         const passiveXp = calculatePassiveXp(saved.ownedGenerators, saved.unlockedEpochs);
 
-        // Compute offline gains using server-based timestamp
-        // lastSavedAt comes from server's last_saved_at column during hydration
-        // We use lastOnlineAt (server timestamp) instead of Date.now() (device time)
-        // to prevent device clock manipulation exploits
-        const serverNow = saved.lastOnlineAt || Date.now();
+        // SECURITY: Get trusted server timestamp to prevent client clock manipulation
+        // The saved.lastSavedAt is the last server timestamp when state was saved
+        let serverNow: number;
+        try {
+          serverNow = await getServerTime();
+        } catch {
+          // Fallback to saved timestamp if server time unavailable
+          serverNow = saved.lastOnlineAt || saved.lastSavedAt || Date.now();
+        }
+
         const offlineMs = Math.max(0, serverNow - saved.lastSavedAt);
         // 6 hours offline cap - after 6 hours, no more rewards
         // This is the SAME for all prestige levels to keep economy balanced
@@ -432,6 +438,7 @@ export function useGame() {
           setShowDailyRewards(true);
         }
 
+        // Use server time for timestamps
         setState({
           ...saved,
           xp: saved.xp + offlineXp,
@@ -439,7 +446,8 @@ export function useGame() {
           currency: saved.currency + offlineCurrency,
           totalCurrencyEarned: saved.totalCurrencyEarned + offlineCurrency,
           passiveXpPerSecond: passiveXp,
-          lastSavedAt: Date.now(),
+          lastSavedAt: serverNow,
+          lastOnlineAt: serverNow,
           dailyStreak: newStreak,
           bestStreak: newBestStreak,
           lastLoginDate: newLastLoginDate,
