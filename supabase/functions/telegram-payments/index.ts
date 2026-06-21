@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { createHmac } from "node:crypto";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,6 +12,93 @@ const BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const TG_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
+
+// =====================================================
+// SECURITY: Rate limiting (in-memory, reset on cold start)
+// =====================================================
+const rateLimitStore = new Map<number, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 5; // 5 requests per minute per user
+
+function checkRateLimit(telegramId: number): { allowed: boolean; remaining: number; retryAfter?: number } {
+  const now = Date.now();
+  const record = rateLimitStore.get(telegramId);
+  
+  if (!record || now > record.resetAt) {
+    rateLimitStore.set(telegramId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS - 1 };
+  }
+  
+  if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
+    const retryAfter = Math.ceil((record.resetAt - now) / 1000);
+    return { allowed: false, remaining: 0, retryAfter };
+  }
+  
+  record.count++;
+  return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS - record.count };
+}
+
+// =====================================================
+// SECURITY: HMAC-SHA256 initData validation
+// =====================================================
+function validateInitData(initData: string): { success: true; telegram_id: number } | { success: false; error: string } {
+  if (!BOT_TOKEN) {
+    console.error("SECURITY: TELEGRAM_BOT_TOKEN not configured!");
+    return { success: false, error: "Server misconfiguration" };
+  }
+
+  const params = new URLSearchParams(initData);
+  const hash = params.get("hash");
+  if (!hash) {
+    return { success: false, error: "Missing hash" };
+  }
+
+  // Check auth_date freshness
+  const authDateStr = params.get("auth_date");
+  if (!authDateStr) {
+    return { success: false, error: "Missing auth_date" };
+  }
+  const authDate = parseInt(authDateStr, 10);
+  const ageSeconds = Math.floor(Date.now() / 1000) - authDate;
+  if (isNaN(authDate) || ageSeconds > 86400 || ageSeconds < 0) {
+    return { success: false, error: "initData expired or invalid" };
+  }
+
+  // Build data_check_string
+  const keys = [...params.keys()].filter(k => k !== "hash").sort();
+  const dataCheckString = keys.map(k => `${k}=${params.get(k)}`).join("\n");
+
+  // HMAC-SHA256
+  const secretKey = createHmac("sha256", "WebAppData").update(BOT_TOKEN).digest();
+  const computedHash = createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
+
+  if (computedHash !== hash) {
+    return { success: false, error: "HMAC validation failed" };
+  }
+
+  // Extract user.id
+  const userStr = params.get("user");
+  if (userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      if (user.id) {
+        return { success: true, telegram_id: user.id };
+      }
+      return { success: false, error: "Missing user.id in initData" };
+    } catch {
+      return { success: false, error: "Invalid user JSON" };
+    }
+  }
+
+  return { success: false, error: "No user in initData" };
+}
+
+// =====================================================
+// SECURITY: Logging helper
+// =====================================================
+function logPaymentAttempt(action: string, telegramId: number | undefined, details: Record<string, unknown>): void {
+  console.log(`[PAYMENT] action=${action}, telegram_id=${telegramId ?? 'unknown'}, ${JSON.stringify(details)}`);
+}
 
 interface BoosterDef {
   title: string;
@@ -338,23 +426,56 @@ Deno.serve(async (req: Request) => {
     }
 
     // ─── Mini App API ─────────────────────────────────────────────────────────
-    const { action, booster_id, telegram_id } = body as {
+    const { action, booster_id, initData } = body as {
       action: string;
       booster_id?: string;
-      telegram_id?: number;
+      initData?: string;
     };
+
+    // =====================================================
+    // SECURITY: Validate initData for all Mini App actions
+    // =====================================================
+    if (!initData) {
+      logPaymentAttempt(action, undefined, { error: "Missing initData" });
+      return json({ error: "Missing initData for validation" }, 403);
+    }
+
+    const validated = validateInitData(initData);
+    if (!validated.success) {
+      logPaymentAttempt(action, undefined, { error: validated.error });
+      return json({ error: validated.error || "Invalid initData" }, 403);
+    }
+
+    const telegram_id = validated.telegram_id;
+
+    // =====================================================
+    // SECURITY: Rate limiting for all actions
+    // =====================================================
+    const rateCheck = checkRateLimit(telegram_id);
+    if (!rateCheck.allowed) {
+      logPaymentAttempt(action, telegram_id, { error: "Rate limit exceeded", retryAfter: rateCheck.retryAfter });
+      return json({ 
+        error: "Rate limit exceeded. Try again later.", 
+        retry_after: rateCheck.retryAfter 
+      }, 429);
+    }
+
+    // Log payment attempt
+    logPaymentAttempt(action, telegram_id, { booster_id: booster_id ?? 'none' });
 
     // Create invoice link (Stars payment)
     if (action === "create_invoice") {
       if (!BOT_TOKEN) {
+        logPaymentAttempt(action, telegram_id, { error: "Bot token not configured" });
         return json({ error: "Bot token not configured. Add TELEGRAM_BOT_TOKEN secret." }, 500);
       }
-      if (!booster_id || !telegram_id) {
-        return json({ error: "Missing booster_id or telegram_id" }, 400);
+      if (!booster_id) {
+        return json({ error: "Missing booster_id" }, 400);
       }
 
       const booster = BOOSTERS[booster_id];
       if (!booster) {
+        logPaymentAttempt(action, telegram_id, { error: "Unknown booster", booster_id });
         return json({ error: "Unknown booster" }, 400);
       }
 
@@ -377,16 +498,18 @@ Deno.serve(async (req: Request) => {
       });
 
       if (!result.ok) {
+        logPaymentAttempt(action, telegram_id, { error: "createInvoiceLink failed", result });
         console.error("createInvoiceLink failed:", result);
         return json({ error: result.description ?? "Failed to create invoice" }, 500);
       }
 
+      logPaymentAttempt(action, telegram_id, { success: true, booster_id, price: booster.price });
       return json({ invoice_url: result.result });
     }
 
     // Fetch active boosters for a user
     if (action === "get_boosters") {
-      if (!telegram_id) return json({ error: "Missing telegram_id" }, 400);
+      // telegram_id is already validated from initData above
 
       const { data } = await supabase
         .from("game_progress")
