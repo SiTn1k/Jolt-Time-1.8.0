@@ -11,6 +11,7 @@ import { DailyStreakModal } from './components/DailyStreakModal';
 import { DailyRewards } from './components/DailyRewards';
 import { DailyTasksPanel } from './components/DailyTasksPanel';
 import { AdsGramButton } from './components/AdsGramButton';
+import { AdsGramTask } from './components/AdsGramTask';
 import { PrestigeButton, MuseumLaboratory } from './components/PrestigeSystem';
 import { SessionAdModal, ChestAdModal, EnergyRestoreAdButton, useSessionAdTrigger, useChestAdTrigger } from './components/AdSystem';
 import { OfflineRewardModal } from './components/OfflineRewardModal';
@@ -815,6 +816,9 @@ function App() {
 
           {activeTab === 'boosters' && (
             <div className="p-3">
+              {/* NEW: Task-based Ad at the beginning */}
+              <AdsGramTask onRewardClaimed={() => refreshBoosters()} />
+
               <div className="flex items-center gap-2 mb-4">
                 <Star className="w-5 h-5 text-yellow-400" />
                 <h3 className="font-bold text-lg">{tr('app.boosters')}</h3>
