@@ -14,12 +14,13 @@ import { Statistics } from './screens/Statistics';
 import { Premium } from './screens/Premium';
 import { HeroArchive } from './screens/HeroArchive';
 import { NpcEncyclopedia } from './screens/NpcEncyclopedia';
+import { Codex } from './screens/Codex';
 import { TutorialGuide } from '../components/tutorial';
 
 // Lazy load heavy screens for code splitting
 const Museum = lazy(() => import('./screens/Museum').then(m => ({ default: m.Museum })));
 
-type ScreenId = 'academy' | 'map' | 'heroes' | 'laboratory' | 'museum' | 'treasury' | 'buildings' | 'daily' | 'statistics' | 'premium' | 'heroArchive' | 'npcEncyclopedia';
+type ScreenId = 'academy' | 'map' | 'heroes' | 'laboratory' | 'museum' | 'treasury' | 'buildings' | 'daily' | 'statistics' | 'premium' | 'heroArchive' | 'npcEncyclopedia' | 'codex';
 
 const navigation: { id: ScreenId; name: string; icon: typeof Map }[] = [
   { id: 'academy', name: 'Академія', icon: Building2 },
