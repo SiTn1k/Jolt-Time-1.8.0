@@ -135,6 +135,15 @@ Priority system for guiding players:
 - Phase 16: TutorialBubble mobile fix (Portal rendering)
 - Phase 17: Player Journey & Progression
 - Phase 17-20: Content expansion, translations, lazy loading
+- Phase 21: Polish, UX & Accessibility
+
+## Phase 21 - Accessibility Fixes
+- aria-label="Close" added to: StorySystem, MuseumSystem, NPCSystem
+
+## Console Management
+- console.warn preserved for legitimate warnings
+- console.log removed from production code
+- Debug logs kept in store.ts for error diagnosis
 
 ## Performance Optimizations (Phase 19)
 ### Bundle Splitting
