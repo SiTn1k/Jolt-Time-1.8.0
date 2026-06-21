@@ -47,12 +47,13 @@ export function TutorialBubble({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
-        className="fixed left-4 right-4 z-[100] pointer-events-none"
+        className="fixed z-[100] pointer-events-none"
         style={{
-          bottom: position === 'bottom' ? 'calc(80px + env(safe-area-inset-bottom))' : 'auto',
+          left: '50%',
+          transform: `translateX(-50%) ${position === 'center' ? 'translateY(-50%)' : 'translateY(0)'}`,
+          bottom: position === 'bottom' ? `calc(80px + env(safe-area-inset-bottom))` : 'auto',
           top: position === 'center' ? '50%' : 'auto',
-          transform: position === 'center' ? 'translateY(-50%)' : 'none',
-          maxWidth: '420px',
+          width: 'min(calc(100vw - 32px), 420px)',
         }}
       >
         <div
@@ -69,7 +70,7 @@ export function TutorialBubble({
           <div className="flex items-center gap-3 p-4 border-b border-white/[0.08]">
             {/* Guide Avatar */}
             <div
-              className="w-11 h-11 rounded-full flex items-center justify-center text-xl shrink-0"
+              className="w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0"
               style={{
                 background: '#FFC72C',
               }}
@@ -129,7 +130,7 @@ export function TutorialBubble({
             {/* Action button */}
             <button
               onClick={onNext}
-              className="w-full h-11 rounded-xl font-semibold text-sm transition-all active:scale-[0.98] flex items-center justify-center"
+              className="w-full h-10 rounded-xl font-semibold text-sm transition-all active:scale-[0.98] flex items-center justify-center"
               style={{
                 background: '#FFC72C',
                 color: '#0d1117',
