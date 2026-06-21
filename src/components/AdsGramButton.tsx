@@ -92,8 +92,8 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
         hapticNotification('error');
       }
     } catch (err) {
-      console.error('Ad show error:', err);
-      setError('Сталася помилка');
+      console.error('[AdsGramButton] Ad show error:', err);
+      setError('Сталася помилка. Спробуй ще раз.');
       hapticNotification('error');
     } finally {
       setIsLoading(false);

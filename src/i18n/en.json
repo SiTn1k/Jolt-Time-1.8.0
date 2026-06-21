@@ -65,7 +65,10 @@
     "xp_gain": "Chief Historian",
     "xp_gain_desc": "+5% XP",
     "max": "MAX",
-    "pts": "PT"
+    "pts": "PT",
+    "button": "Rebirth",
+    "confirm_text": "Your progress will reset, but artifacts will remain!",
+    "ready_title": "Ready for Rebirth!"
   },
   "app": {
     "loading": "Loading...",

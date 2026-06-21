@@ -91,8 +91,20 @@ export function initAdsgram(blockId: string = ADSGRAM_BLOCK_ID, debug = false): 
  * Server-side validation ensures boost cannot be forged
  */
 export async function grantXpBoostFromServer(telegramId: number): Promise<{ success: boolean; error?: string; alreadyActive?: boolean }> {
+  const url = getEdgeFunctionUrl();
+  
+  if (!url || url.includes('undefined') || url.includes('null')) {
+    console.error('[adsgram] Edge function URL not configured:', url);
+    return {
+      success: false,
+      error: 'Boost service is not configured. Please try again later.',
+    };
+  }
+
+  console.log('[adsgram] Granting XP boost from server...');
+  
   try {
-    const response = await fetch(getEdgeFunctionUrl(), {
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -103,6 +115,7 @@ export async function grantXpBoostFromServer(telegramId: number): Promise<{ succ
     });
 
     const data = await response.json();
+    console.log('[adsgram] Server response:', data);
 
     if (!response.ok) {
       return {
@@ -116,10 +129,10 @@ export async function grantXpBoostFromServer(telegramId: number): Promise<{ succ
       success: true,
     };
   } catch (err) {
-    console.error('Failed to grant XP boost:', err);
+    console.error('[adsgram] Failed to grant XP boost:', err);
     return {
       success: false,
-      error: 'Network error',
+      error: 'Network error - please try again',
     };
   }
 }
