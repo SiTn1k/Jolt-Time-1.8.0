@@ -211,15 +211,15 @@ function App() {
   const handleBuyBooster = useCallback(async (booster: { id: string; name: string; price: number }) => {
     const tg = getTelegramWebApp();
     if (!tg) {
-      setShowError(tr('error.telegram_stars_app_only'));
+      setShowError(t('error.telegram_stars_app_only'));
       return;
     }
     if (!telegramId) {
-      setShowError(tr('error.login_telegram'));
+      setShowError(t('error.login_telegram'));
       return;
     }
     if (!supabase) {
-      setShowError(tr('error.no_connection'));
+      setShowError(t('error.no_connection'));
       return;
     }
 
@@ -228,7 +228,7 @@ function App() {
 
     try {
       if (!supabase) {
-        setShowError(tr('error.supabase_not_connected'));
+        setShowError(t('error.supabase_not_connected'));
         setPurchasingBooster(null);
         return;
       }
@@ -238,7 +238,7 @@ function App() {
       });
 
       if (error || !data?.invoice_url) {
-        const msg = data?.error ?? error?.message ?? tr('error.create_bill_failed');
+        const msg = data?.error ?? error?.message ?? t('error.create_bill_failed');
         setShowError(msg);
         setPurchasingBooster(null);
         return;
@@ -253,15 +253,15 @@ function App() {
           setTimeout(() => refreshBoosters(), 2000);
         } else if (status === 'failed') {
           hapticNotification('error');
-          setShowError(tr('error.payment_failed'));
+          setShowError(t('error.payment_failed'));
         }
       });
     } catch (e) {
       console.error('handleBuyBooster error:', e);
-      setShowError(tr('error.open_bill_failed'));
+      setShowError(t('error.open_bill_failed'));
       setPurchasingBooster(null);
     }
-  }, [telegramId, refreshBoosters]);
+  }, [telegramId, refreshBoosters, t]);
 
   const handleEpochSwitch = (epochId: EpochId) => {
     if (state.unlockedEpochs.includes(epochId)) {

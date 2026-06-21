@@ -177,6 +177,8 @@ export function Academy() {
         onStartQuest={handleStartQuest}
         onCompleteQuest={handleCompleteQuest}
         onUnlockArc={handleUnlockArc}
+        reputation={reputation}
+        historicalPrestige={historicalPrestige}
       />
 
       <div className="relative z-10">

@@ -102,6 +102,7 @@ export interface Toast {
 
 interface GameState {
   academyLevel: number;
+  academyXp: number;
   reputation: number;
   karbovanets: number;
   museumVisitors: number;
@@ -190,6 +191,7 @@ export const useExpeditionStore = create<GameState>()(
   persist(
     (set, get) => ({
       academyLevel: 3,
+      academyXp: 0,
       reputation: 1250,
       karbovanets: 8500,
       museumVisitors: 342,
@@ -655,9 +657,9 @@ export const useExpeditionStore = create<GameState>()(
               }
               break;
             case 'academy_xp':
-              // TODO: Implement Academy XP - needs academyLevel progression system
-              // Requires: academy XP tracking, academy level-up logic beyond prestige
-              console.warn('Academy XP reward not implemented:', amount);
+              // Grant Academy XP - contributes to Academy level progression
+              set(st => ({ academyXp: (st.academyXp || 0) + amount }));
+              get().pushToast(`+${amount} досвіду академії`, '#FFC72C');
               break;
             case 'reputation':
               set(st => ({ reputation: st.reputation + amount }));
@@ -665,9 +667,26 @@ export const useExpeditionStore = create<GameState>()(
               get().checkArcRequirements();
               break;
             case 'artifact':
-              // TODO: Implement artifact reward - itemId field exists but no grant logic
-              // Requires: artifact inventory system, fragment collection system
-              console.warn('Artifact reward not implemented:', reward.itemId);
+              // Grant artifact by itemId - find in initial artifacts and add to inventory
+              {
+                const artifactId = reward.itemId;
+                if (artifactId) {
+                  const artifactTemplates = initialArtifacts;
+                  const template = artifactTemplates.find(a => a.id === artifactId);
+                  if (template) {
+                    // Create a new artifact instance with 'damaged' status
+                    const newArtifact: Artifact = {
+                      ...template,
+                      id: `${artifactId}-${Date.now()}`,
+                      status: 'damaged',
+                    };
+                    set(st => ({ artifacts: [...st.artifacts, newArtifact] }));
+                    get().pushToast(`Артефакт "${template.name}" отримано!`, '#9747FF');
+                  } else {
+                    console.warn('Artifact template not found:', artifactId);
+                  }
+                }
+              }
               break;
             case 'hero_fragment':
               // Grant hero fragment to the specified hero
@@ -1685,6 +1704,8 @@ export function resetExpeditionOnPrestige() {
     incomeBuffer: 0,
     // Reset museum visitors
     museumVisitors: 0,
+    // Reset Academy XP on prestige
+    academyXp: 0,
     // Keep karbovanets (they reset with the game)
     // Keep reputation (may want to preserve or reset based on design)
     // Keep academy level (prestige bonus)

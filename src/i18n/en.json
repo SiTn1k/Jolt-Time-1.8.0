@@ -544,6 +544,12 @@
     "start_game": "Start Game!",
     "skip_tutorial": "Skip tutorial"
   },
+  "arc": {
+    "arcs": "Arcs",
+    "current": "Current arc",
+    "requirements": "Requirements",
+    "unlock": "Unlock"
+  },
   "expedition": {
     "academy_unlock_title": "Academy Timeline Unlocked",
     "academy_unlock_description": "Your research has changed the very fabric of time. Now you can manage the Academy of Time and explore the history of Ukraine.",

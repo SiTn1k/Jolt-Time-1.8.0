@@ -25,6 +25,9 @@ interface StorySystemProps {
   onCompleteQuest?: (questId: string) => void;
   onClaimReward?: (npcId: string, rewardKey: string) => void;
   onUnlockArc?: (arcNumber: number) => void;
+  // Additional state for arc requirements
+  reputation?: number;
+  historicalPrestige?: number;
 }
 
 type Tab = 'npcs' | 'quests' | 'arcs';
@@ -38,6 +41,8 @@ export function StorySystem({
   onCompleteQuest,
   onClaimReward,
   onUnlockArc,
+  reputation = 0,
+  historicalPrestige = 0,
 }: StorySystemProps) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('npcs');
@@ -46,8 +51,8 @@ export function StorySystem({
   
   // Helper to build current state for arc requirement checking
   const getCurrentState = () => ({
-    reputation: 0, // Will be passed from parent if needed
-    historicalPrestige: 0,
+    reputation,
+    historicalPrestige,
     completedQuests: storyState.completedQuests,
     completedArcs: storyState.completedArcs,
     npcRelationships: storyState.npcRelationships,

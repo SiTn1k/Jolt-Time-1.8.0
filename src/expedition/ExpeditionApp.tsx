@@ -1,16 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Building2, Map, Users, FlaskConical, Landmark, HardHat, Gift } from 'lucide-react';
+import { Building2, Map, Users, FlaskConical, Landmark, HardHat, Gift, Loader2 } from 'lucide-react';
 import { useExpeditionStore } from './store';
 import { useAcademySync } from './expeditionSync';
 import { Academy } from './screens/Academy';
 import { WorldMap } from './screens/WorldMap';
 import { Heroes } from './screens/Heroes';
 import { Laboratory } from './screens/Laboratory';
-import { Museum } from './screens/Museum';
 import { Treasury } from './screens/Treasury';
 import { Buildings } from './screens/Buildings';
 import { DailyRewards } from './screens/DailyRewards';
+
+// Lazy load heavy screens for code splitting
+const Museum = lazy(() => import('./screens/Museum').then(m => ({ default: m.Museum })));
 
 type ScreenId = 'academy' | 'map' | 'heroes' | 'laboratory' | 'museum' | 'treasury' | 'buildings' | 'daily';
 
@@ -94,7 +96,15 @@ export function ExpeditionApp() {
         {screen === 'map' && <WorldMap />}
         {screen === 'heroes' && <Heroes />}
         {screen === 'laboratory' && <Laboratory />}
-        {screen === 'museum' && <Museum />}
+        {screen === 'museum' && (
+          <Suspense fallback={
+            <div className="flex items-center justify-center h-full">
+              <Loader2 className="w-8 h-8 animate-spin text-[#FFC72C]" />
+            </div>
+          }>
+            <Museum />
+          </Suspense>
+        )}
         {screen === 'daily' && <DailyRewards />}
         {screen === 'treasury' && <Treasury />}
         {screen === 'buildings' && <Buildings />}
