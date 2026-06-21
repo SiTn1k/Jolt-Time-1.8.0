@@ -82,6 +82,25 @@ export function initTelegramMiniApp(): TelegramWebApp | null {
     tg.expand();
     tg.enableClosingConfirmation?.();
 
+    // Prevent zoom in Telegram WebView
+    tg.setHeaderColor?.('secondary_bg_color');
+    
+    // Prevent viewport zoom
+    const viewportMeta = document.querySelector('meta[name="viewport"]');
+    if (viewportMeta) {
+      viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+    }
+
+    // Disable double-tap zoom
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, { passive: false });
+
     if (tg.themeParams) {
       document.documentElement.style.setProperty('--tg-bg', tg.themeParams.bg_color || '#1a1a2e');
       document.documentElement.style.setProperty('--tg-text', tg.themeParams.text_color || '#ffffff');
