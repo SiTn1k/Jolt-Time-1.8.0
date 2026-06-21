@@ -206,37 +206,115 @@ function jsonResponse(data: OpenChestResponse | { error: string }, status = 200)
   });
 }
 
+// =====================================================
+// ARTIFACT DROP RATE CONSTANTS (Balanced for game economy)
+// =====================================================
+const DROP_RATES = {
+  // Base chances (before bonuses)
+  BASE_SECRET: 1,      // 1%
+  BASE_LEGENDARY: 4,   // 4%
+  BASE_EPIC: 10,       // 10%
+  BASE_RARE: 25,       // 25%
+  BASE_COMMON: 60,     // 60% (implicit, remaining)
+  
+  // Maximum caps
+  MAX_SECRET: 5,        // 5% max
+  MAX_LEGENDARY: 10,    // 10% max
+  MAX_EPIC: 20,        // 20% max
+  MAX_RARE: 30,        // 30% max
+  
+  // Bonus per research level
+  SECRET_BONUS_PER_LEVEL: 0.5,  // +0.5% per rare_artifact_chance level
+  LEGENDARY_BONUS_PER_LEVEL: 0.3, // +0.3% per rare_artifact_chance level
+  EPIC_BONUS_PER_LEVEL: 0.2,    // +0.2% per rare_artifact_chance level
+};
+
+/**
+ * Calculate capped drop chances based on research level
+ * Returns: { secret, legendary, epic, rare, common } - all as percentages (0-100)
+ */
+function calculateDropChances(rareArtifactChanceBonus: number): {
+  secret: number;
+  legendary: number;
+  epic: number;
+  rare: number;
+  common: number;
+} {
+  // Calculate each rarity chance with bonuses
+  let secretChance = DROP_RATES.BASE_SECRET + (rareArtifactChanceBonus * DROP_RATES.SECRET_BONUS_PER_LEVEL);
+  let legendaryChance = DROP_RATES.BASE_LEGENDARY + (rareArtifactChanceBonus * DROP_RATES.LEGENDARY_BONUS_PER_LEVEL);
+  let epicChance = DROP_RATES.BASE_EPIC + (rareArtifactChanceBonus * DROP_RATES.EPIC_BONUS_PER_LEVEL);
+  let rareChance = DROP_RATES.BASE_RARE;
+  let commonChance = DROP_RATES.BASE_COMMON;
+
+  // Apply hard caps
+  secretChance = Math.min(secretChance, DROP_RATES.MAX_SECRET);
+  legendaryChance = Math.min(legendaryChance, DROP_RATES.MAX_LEGENDARY);
+  epicChance = Math.min(epicChance, DROP_RATES.MAX_EPIC);
+  rareChance = Math.min(rareChance, DROP_RATES.MAX_RARE);
+
+  // Calculate total and normalize if > 100%
+  const totalCapped = secretChance + legendaryChance + epicChance + rareChance;
+  
+  if (totalCapped > 100 - DROP_RATES.BASE_COMMON) {
+    // Normalize: scale all capped rarities to fit with 60% minimum for common
+    const maxCapped = 100 - DROP_RATES.BASE_COMMON;
+    const scale = maxCapped / totalCapped;
+    secretChance *= scale;
+    legendaryChance *= scale;
+    epicChance *= scale;
+    rareChance *= scale;
+    commonChance = DROP_RATES.BASE_COMMON;
+  } else {
+    // Remaining goes to common
+    commonChance = 100 - (secretChance + legendaryChance + epicChance + rareChance);
+  }
+
+  return {
+    secret: Math.round(secretChance * 100) / 100,
+    legendary: Math.round(legendaryChance * 100) / 100,
+    epic: Math.round(epicChance * 100) / 100,
+    rare: Math.round(rareChance * 100) / 100,
+    common: Math.round(commonChance * 100) / 100,
+  };
+}
+
 /**
  * Roll for rarity based on chances
  * Returns: common | rare | epic | legendary | secret
  */
 function rollRarity(prestigeLevel: number, rareArtifactChanceBonus: number): string {
   const roll = Math.random() * 100;
+  
+  // Get balanced drop chances
+  const chances = calculateDropChances(rareArtifactChanceBonus);
 
-  // Secret chance: base 1% + bonus from research
-  const secretChance = 1 + rareArtifactChanceBonus;
-  if (prestigeLevel >= 1 && roll < secretChance) {
+  // Secret: only for prestige 1+
+  if (prestigeLevel >= 1 && roll < chances.secret) {
     return "secret";
   }
 
-  // Legendary: 4%
-  if (roll < secretChance + 4) {
+  // Legendary
+  if (roll < chances.secret + chances.legendary) {
     return "legendary";
   }
 
-  // Epic: 10%
-  if (roll < secretChance + 4 + 10) {
+  // Epic
+  if (roll < chances.secret + chances.legendary + chances.epic) {
     return "epic";
   }
 
-  // Rare: 25%
-  if (roll < secretChance + 4 + 10 + 25) {
+  // Rare
+  if (roll < chances.secret + chances.legendary + chances.epic + chances.rare) {
     return "rare";
   }
 
-  // Common: remaining ~60%
+  // Common: remaining
   return "common";
 }
+
+// Export for testing
+export { calculateDropChances, DROP_RATES };
 
 /**
  * Get random artifact from epoch with matching rarity
