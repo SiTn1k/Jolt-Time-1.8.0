@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useExpeditionStore } from '../store';
 import { dailyRewardService, DailyReward, DailyRewardState } from '../dailyRewardsService';
 import { Gift, Calendar, Star, Coins, Sparkles, Clock, Check, Loader2 } from 'lucide-react';
+import { ChallengesSystem } from '../components/ChallengesSystem';
 import { Card } from '../ui';
 import { useTranslation } from '../../i18n';
 import { useAcademySync } from '../expeditionSync';
@@ -147,6 +148,9 @@ export function DailyRewards() {
         <h2 className="text-xl font-bold text-white mb-2">{t('expedition.daily_rewards')}</h2>
         <p className="text-sm text-gray-400">{getStreakMessage()}</p>
       </div>
+
+      {/* Challenges Section */}
+      <ChallengesSystem />
 
       {/* Current Streak */}
       <Card className="border-[#FFC72C]/30 p-4">

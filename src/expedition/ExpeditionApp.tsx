@@ -1,6 +1,6 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Building2, Map, Users, FlaskConical, Landmark, HardHat, Gift, Loader2 } from 'lucide-react';
+import { Building2, Map, Users, FlaskConical, Landmark, HardHat, Gift, Loader2, BarChart3 } from 'lucide-react';
 import { useExpeditionStore } from './store';
 import { useAcademySync } from './expeditionSync';
 import { Academy } from './screens/Academy';
@@ -10,12 +10,13 @@ import { Laboratory } from './screens/Laboratory';
 import { Treasury } from './screens/Treasury';
 import { Buildings } from './screens/Buildings';
 import { DailyRewards } from './screens/DailyRewards';
+import { Statistics } from './screens/Statistics';
 import { TutorialGuide } from '../components/tutorial';
 
 // Lazy load heavy screens for code splitting
 const Museum = lazy(() => import('./screens/Museum').then(m => ({ default: m.Museum })));
 
-type ScreenId = 'academy' | 'map' | 'heroes' | 'laboratory' | 'museum' | 'treasury' | 'buildings' | 'daily';
+type ScreenId = 'academy' | 'map' | 'heroes' | 'laboratory' | 'museum' | 'treasury' | 'buildings' | 'daily' | 'statistics';
 
 const navigation: { id: ScreenId; name: string; icon: typeof Map }[] = [
   { id: 'academy', name: 'Академія', icon: Building2 },
@@ -24,6 +25,7 @@ const navigation: { id: ScreenId; name: string; icon: typeof Map }[] = [
   { id: 'laboratory', name: 'Лаб', icon: FlaskConical },
   { id: 'museum', name: 'Музей', icon: Landmark },
   { id: 'daily', name: 'Нагороди', icon: Gift },
+  { id: 'statistics', name: 'Стата', icon: BarChart3 },
   { id: 'buildings', name: 'Будівлі', icon: HardHat },
 ];
 
@@ -112,6 +114,7 @@ export function ExpeditionApp() {
         {screen === 'daily' && <DailyRewards />}
         {screen === 'treasury' && <Treasury />}
         {screen === 'buildings' && <Buildings />}
+        {screen === 'statistics' && <Statistics />}
       </div>
 
       <nav className="bg-[#161B22] border-t border-white/10 shrink-0">
