@@ -886,7 +886,7 @@ function EventsTab({ museumState, joinEvent }: { museumState: MuseumState; joinE
 
       {/* Legendary Exhibitions */}
       <h3 className="text-sm font-medium mt-6 mb-3" style={{ fontFamily: "'Exo 2', sans-serif" }}>
-        🌟 Legendary Exhibitions
+        Legendary Exhibitions
       </h3>
       {LEGENDARY_EXHIBITIONS.map((exhibition) => {
         const isUnlocked = museumState.reputation >= exhibition.requiredReputation &&

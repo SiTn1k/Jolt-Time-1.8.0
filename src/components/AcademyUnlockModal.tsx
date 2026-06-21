@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, Clock, Star, Users, BookOpen, Landmark, Map, Gift, Check } from 'lucide-react';
+import { Sparkles, Star, Users, BookOpen, Landmark, Map, Gift} from 'lucide-react';
 import { useTranslation } from '../i18n';
 
 interface AcademyUnlockModalProps {

@@ -5,7 +5,7 @@ import { ARTIFACT_PARTS_PER_LEVEL } from '../types/game';
 import { hapticImpact, hapticNotification } from '../lib/telegram';
 import { rpcOpenChest } from '../lib/rpc';
 import { getTelegramUserId } from '../lib/telegram';
-import { X, Sparkles, Zap, Loader2 } from 'lucide-react';
+import { X, Sparkles, Zap, Loader2, Gift, Gem, Landmark, Crown, Sword, ScrollText, Coins, Theater, AlertCircle } from 'lucide-react';
 
 interface GachaReward {
   id: string;
@@ -37,7 +37,7 @@ function getGachaCost(epochId: EpochId): number {
 const ROLL_STEPS = 18;
 const ROLL_INTERVAL_MS = 60;
 
-const ROLL_ICONS = ['🎁', '✨', '💎', '🏺', '👑', '⚔️', '☦️', '📜', '🪙', '🎭'];
+const ROLL_ICONS = ['Gift', 'Sparkles', 'Gem', 'Landmark', 'Crown', 'Sword', 'ScrollText', 'Coins', 'Theater'];
 
 export function GachaModal({
   epoch,
@@ -52,7 +52,7 @@ export function GachaModal({
   onServerReward,
 }: GachaModalProps) {
   const [phase, setPhase] = useState<'ready' | 'rolling' | 'result' | 'error'>('ready');
-  const [currentIcon, setCurrentIcon] = useState('🎁');
+  const [currentIcon, setCurrentIcon] = useState('Gift');
   const [rollStep, setRollStep] = useState(0);
   const [rewards, setRewards] = useState<GachaReward[]>([]);
   const [primaryReward, setPrimaryReward] = useState<GachaReward | null>(null);
@@ -107,7 +107,11 @@ export function GachaModal({
     setPrimaryReward(result.rewards[0]);
   }, [phase, canAfford, hasArtifacts, onRoll, gachaCost, epoch.id]);
 
-  // Animation effect — shows rolling then reveals server result
+  
+const ICON_MAP: Record<string, typeof Gift> = {
+  Gift, Sparkles, Gem, Landmark, Crown, Sword, ScrollText, Coins, Theater
+};
+// Animation effect — shows rolling then reveals server result
   useEffect(() => {
     if (phase !== 'rolling') return;
 
@@ -125,7 +129,7 @@ export function GachaModal({
         const resultRewards = pendingRewardsRef.current;
         if (resultRewards && resultRewards.length > 0) {
           const primary = resultRewards[0];
-          setCurrentIcon(primary.icon);
+          setCurrentIcon(primary.icon || 'Gift');
           onServerRewardRef.current(resultRewards);
         }
 
@@ -226,7 +230,7 @@ export function GachaModal({
               phase === 'rolling' ? 'animate-bounce' : ''
             } ${phase === 'result' && primaryReward ? getRarityStyle(primaryReward.rarity).color + ' scale-110' : ''}`}
           >
-            {phase === 'error' ? '❌' : currentIcon}
+            {phase === 'error' ? <AlertCircle className="w-16 h-16 text-red-500" /> : (() => { const Icon = ICON_MAP[currentIcon]; return Icon ? <Icon className="w-16 h-16" /> : <Gift className="w-16 h-16" />; })()}
           </div>
 
           {phase === 'rolling' && (

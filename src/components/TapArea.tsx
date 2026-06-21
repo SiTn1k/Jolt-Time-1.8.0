@@ -15,7 +15,6 @@ interface TapAreaProps {
   currency: number;
   currencyIcon: string;
   topOffset?: number;
-  totalLevels?: number;
   currentEpochIndex?: number;
   totalEpochs?: number;
   prestigeLevel?: number;
@@ -33,7 +32,6 @@ export function TapArea({
   currency,
   currencyIcon,
   topOffset = 0,
-  totalLevels = 960,
   currentEpochIndex = 0,
   totalEpochs = 12,
   prestigeLevel = 0,

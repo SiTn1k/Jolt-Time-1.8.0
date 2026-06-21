@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Trophy, Zap, Coins, Gift, Check, RotateCcw } from 'lucide-react';
 import { Button } from './ui';
 import { formatNumber } from '../lib/utils';
@@ -66,7 +66,7 @@ export function DailyChallenges({
   const todayDate = getTodayDate();
   const dailyChallenges = getDailyChallenges(todayDate);
 
-  const getProgress = (challengeId: string, target: number): number => {
+  const getProgress = (challengeId: string): number => {
     const counterKey = `challenge_${challengeId}`;
     if (dayChallenges.ids.includes(challengeId)) {
       return dayChallenges.progress[counterKey] || 0;
@@ -80,7 +80,7 @@ export function DailyChallenges({
   };
 
   const challenges: DailyChallenge[] = dailyChallenges.map((c) => {
-    const current = Math.min(getProgress(c.id, c.target), c.target);
+    const current = Math.min(getProgress(c.id), c.target);
     const completed = current >= c.target;
     const claimed = dayChallenges.claimed?.includes(c.id) || false;
     return {
@@ -91,7 +91,6 @@ export function DailyChallenges({
     };
   });
 
-  const completedCount = challenges.filter((c) => c.completed).length;
   const claimedCount = challenges.filter((c) => c.claimed).length;
 
   const handleClaim = (challenge: DailyChallenge) => {
