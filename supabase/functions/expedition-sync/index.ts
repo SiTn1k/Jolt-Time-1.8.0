@@ -372,8 +372,9 @@ async function completeExpedition(
   }
 
   // Verify expedition is actually completed (not started or in progress)
+  // Accept both 'completed' and 'collecting' - collecting means client is in process of collecting
   const status = expedition.status as string;
-  if (status !== "completed") {
+  if (status !== "completed" && status !== "collecting") {
     return jsonResponse({ error: "Expedition not completed" }, 400);
   }
 
@@ -485,7 +486,7 @@ async function completeExpedition(
       return { 
         ...e, 
         rewardsClaimed: true, 
-        status: "available",
+        status: "completed",  // Keep as completed - client handles final state
         assignedHeroId: null,
       };
     }

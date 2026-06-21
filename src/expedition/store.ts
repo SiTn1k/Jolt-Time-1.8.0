@@ -437,6 +437,10 @@ export const useExpeditionStore = create<GameState>()(
         const allArtifacts = state.artifacts;
         const museumArtifacts = allArtifacts.filter(a => a.status === 'museum');
         
+        // Collect rewards to apply
+        let repReward = 0;
+        let carbReward = 0;
+        
         // Check each collection
         for (const collection of museumCollections) {
           // Skip if already completed
@@ -450,22 +454,9 @@ export const useExpeditionStore = create<GameState>()(
             completed.push(collection.id);
             updated = true;
             
-            // Grant collection rewards
-            if (collection.bonus.reputationBonus > 0) {
-              set((st) => ({
-                reputation: st.reputation + collection.bonus.reputationBonus,
-                museumState: {
-                  ...st.museumState,
-                  completedCollections: completed,
-                },
-              }));
-            }
-            
-            if (collection.bonus.karbovanetsBonus > 0) {
-              set((st) => ({
-                karbovanets: st.karbovanets + collection.bonus.karbovanetsBonus,
-              }));
-            }
+            // Accumulate collection rewards
+            repReward += collection.bonus.reputationBonus || 0;
+            carbReward += collection.bonus.karbovanetsBonus || 0;
             
             // Show toast for collection completion
             setTimeout(() => {
@@ -477,7 +468,7 @@ export const useExpeditionStore = create<GameState>()(
           }
         }
         
-        // Update museum state with new collection progress
+        // Apply all rewards in a single set() call
         if (updated) {
           // Recalculate progress for all collections
           const newProgress: Record<string, number> = {};
@@ -486,6 +477,8 @@ export const useExpeditionStore = create<GameState>()(
           }
           
           set((st) => ({
+            reputation: st.reputation + repReward,
+            karbovanets: st.karbovanets + carbReward,
             museumState: {
               ...st.museumState,
               completedCollections: completed,
@@ -528,43 +521,49 @@ export const useExpeditionStore = create<GameState>()(
         else if (newTrust >= TRUST_THRESHOLDS[3]) newLevel = 3;
         else if (newTrust >= TRUST_THRESHOLDS[2]) newLevel = 2;
         
-        set((st) => ({
-          storyState: {
-            ...st.storyState,
-            npcRelationships: {
-              ...st.storyState.npcRelationships,
-              [npcId]: {
-                ...current,
-                trustPoints: newTrust,
-                relationshipLevel: newLevel,
-                lastInteraction: now,
-              },
-            },
-          },
-        }));
+        // Collect rewards for level up
+        let repReward = 0;
+        let carbReward = 0;
+        let fragReward: { rarity: string; amount: number }[] = [];
         
-        // Grant rewards on level up
         if (newLevel > oldLevel) {
           for (let lvl = oldLevel + 1; lvl <= newLevel; lvl++) {
             const reward = RELATIONSHIP_REWARDS[lvl as RelationshipLevel];
             if (!reward) continue;
-            
-            if (reward.karbovanets) {
-              set((st) => ({ karbovanets: st.karbovanets + reward.karbovanets! }));
-            }
-            if (reward.reputation) {
-              set((st) => ({ reputation: st.reputation + reward.reputation! }));
-            }
-            if (reward.artifactFragment) {
-              set((st) => ({ 
-                artifactFragments: { 
-                  ...st.artifactFragments, 
-                  [reward.artifactFragment!.rarity]: (st.artifactFragments[reward.artifactFragment!.rarity as keyof typeof st.artifactFragments] || 0) + reward.artifactFragment!.amount 
-                } 
-              }));
-            }
+            if (reward.karbovanets) carbReward += reward.karbovanets;
+            if (reward.reputation) repReward += reward.reputation;
+            if (reward.artifactFragment) fragReward.push(reward.artifactFragment);
+          }
+        }
+        
+        // Apply all changes in single atomic set()
+        set((st) => {
+          const newFragments = { ...st.artifactFragments };
+          for (const frag of fragReward) {
+            const key = frag.rarity as keyof typeof st.artifactFragments;
+            newFragments[key] = (newFragments[key] || 0) + frag.amount;
           }
           
+          return {
+            storyState: {
+              ...st.storyState,
+              npcRelationships: {
+                ...st.storyState.npcRelationships,
+                [npcId]: {
+                  ...current,
+                  trustPoints: newTrust,
+                  relationshipLevel: newLevel,
+                  lastInteraction: now,
+                },
+              },
+            },
+            karbovanets: st.karbovanets + carbReward,
+            reputation: st.reputation + repReward,
+            artifactFragments: newFragments,
+          };
+        });
+        
+        if (newLevel > oldLevel) {
           get().pushToast(`Рівень довіри: ${newLevel}!`, '#FFC72C');
         }
         
@@ -1199,23 +1198,27 @@ export const useExpeditionStore = create<GameState>()(
         const s = get();
         const exp = s.expeditions.find((e) => e.id === expeditionId);
         if (!exp || exp.collected || Date.now() < exp.endsAt) return;
+        if (exp.status === 'collecting') {
+          s.pushToast('Експедиція вже збирається...', '#FFC72C');
+          return;
+        }
 
-        // Mark as collected immediately to prevent double-calling
+        // Mark as 'collecting' (NOT collected) to prevent double-calling
         set((st) => ({
           expeditions: st.expeditions.map((e) =>
-            e.id === expeditionId ? { ...e, collected: true, status: 'completed' } : e,
+            e.id === expeditionId ? { ...e, status: 'collecting' } : e,
           ),
         }));
 
         // Use server-side validation for expedition completion
-        const heroId = exp.heroes[0]; // Primary hero assigned to expedition
+        const heroId = exp.heroes[0];
 
         academySync.completeExpeditionServerValidated(expeditionId, heroId).then((result) => {
           if (!result.ok) {
-            // Revert collected state on error
+            console.error('[expedition] Server error for', expeditionId, result);
             set((st) => ({
               expeditions: st.expeditions.map((e) =>
-                e.id === expeditionId ? { ...e, collected: false, status: 'returning' } : e,
+                e.id === expeditionId ? { ...e, status: 'returning' } : e,
               ),
             }));
             s.pushToast('Помилка завершення експедиції', '#FF2A5F');
@@ -1225,7 +1228,6 @@ export const useExpeditionStore = create<GameState>()(
           const { success, rewards } = result as { success?: boolean; rewards?: Record<string, unknown> };
 
           if (success && rewards) {
-            // Server-side success - apply rewards from server
             const serverKarbovanets = (rewards.karbovanets as number) || 0;
             const serverPrestige = (rewards.prestigeGained as number) || 0;
             const artifactId = rewards.artifactId as string | null;
@@ -1239,13 +1241,11 @@ export const useExpeditionStore = create<GameState>()(
                 return { ...h, assigned: false, assignedTo: undefined, experience: newXP, level: newLevel };
               });
 
-              // Unlock next region on success
               const idx = st.regions.findIndex((r) => r.id === exp.regionId);
               const regions = idx >= 0 && idx + 1 < st.regions.length && !st.regions[idx + 1].unlocked
                 ? st.regions.map((r, i) => i === idx + 1 ? { ...r, unlocked: true } : r)
                 : st.regions;
 
-              // Add artifact if found
               let artifacts = st.artifacts;
               if (artifactId) {
                 const newArtifact: Artifact = {
@@ -1262,13 +1262,17 @@ export const useExpeditionStore = create<GameState>()(
                 artifacts = [...st.artifacts, newArtifact];
               }
 
+              // Mark as collected AFTER successful server response
               return {
                 heroes,
                 regions,
                 artifacts,
                 karbovanets: st.karbovanets + serverKarbovanets,
                 historicalPrestige: st.historicalPrestige + serverPrestige,
-                reputation: st.reputation + Math.floor(serverPrestige / 2), // 50% of prestige as reputation
+                reputation: st.reputation + Math.floor(serverPrestige / 2),
+                expeditions: st.expeditions.map((e) =>
+                  e.id === expeditionId ? { ...e, collected: true, status: 'completed' } : e,
+                ),
               };
             });
 
@@ -1280,23 +1284,26 @@ export const useExpeditionStore = create<GameState>()(
             );
             s.updateQuestObjective(`expedition_${exp.regionId}`, 1);
           } else {
-            // Server-side failure - still give failure reward
             const failureReward = Math.floor(exp.rewardKarbovanets * EXPEDITION_REWARD_MULTIPLIER * 0.2);
             set((st) => ({
               karbovanets: st.karbovanets + failureReward,
+              expeditions: st.expeditions.map((e) =>
+                e.id === expeditionId ? { ...e, status: 'returning' } : e,
+              ),
             }));
             s.pushToast(`Експедиція невдала. +${failureReward} карб.`, '#FF2A5F');
           }
-        }).catch(() => {
-          // Network error - revert
+        }).catch((err) => {
+          console.error('[expedition] Network error for', expeditionId, err);
           set((st) => ({
             expeditions: st.expeditions.map((e) =>
-              e.id === expeditionId ? { ...e, collected: false, status: 'returning' } : e,
+              e.id === expeditionId ? { ...e, status: 'returning' } : e,
             ),
           }));
           s.pushToast('Помилка мережі', '#FF2A5F');
         });
       },
+
 
       beginRestoration: (artifactId) => {
         const s = get();
@@ -1488,7 +1495,25 @@ export const useExpeditionStore = create<GameState>()(
         storyState: s.storyState,
         buildingLevels: s.buildingLevels,
         buildingUpgradeEndTimes: s.buildingUpgradeEndTimes,
+        heroFragments: s.heroFragments,
+        artifactFragments: s.artifactFragments,
       }),
+      // Crash recovery: fix stuck expeditions on load
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          // Fix expeditions stuck in 'collecting' status (crash during collection)
+          const fixedExpeditions = state.expeditions.map((e) => {
+            if (e.status === 'collecting' && !e.collected) {
+              console.warn('[expedition] Crash recovery: fixing stuck expedition', e.id);
+              return { ...e, status: 'returning' as const };
+            }
+            return e;
+          });
+          if (fixedExpeditions.some((e, i) => e.status !== state.expeditions[i]?.status)) {
+            state.expeditions = fixedExpeditions;
+          }
+        }
+      },
     },
   ),
 );
