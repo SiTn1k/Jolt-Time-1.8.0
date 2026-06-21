@@ -14,7 +14,8 @@ import { useLiveOpsStore } from '../liveOpsStore';
 import { useTranslation } from '../../i18n';
 
 // Academy unlock threshold - reduced from 5000 to 3000 for better retention
-const ACADEMY_PRESTIGE_THRESHOLD = 3000;
+// TEMP: Set to 0 for testing Academy functionality
+const ACADEMY_PRESTIGE_THRESHOLD = 0;
 
 export function Academy() {
   const { t } = useTranslation();

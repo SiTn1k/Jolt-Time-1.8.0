@@ -68,7 +68,7 @@ export function AcademyTeaser() {
   const { t } = useTranslation();
   const historicalPrestige = useExpeditionStore((s) => s.historicalPrestige);
   
-  const ACADEMY_THRESHOLD = 3000;
+  const ACADEMY_THRESHOLD = 0; // TEMP: Set to 0 for testing
   const progressPercent = Math.min(100, (historicalPrestige / ACADEMY_THRESHOLD) * 100);
   const isUnlocked = historicalPrestige >= ACADEMY_THRESHOLD;
   
