@@ -37,7 +37,6 @@ class NotificationService {
   private async init() {
     // Check browser support
     if (!('Notification' in window)) {
-      console.log('Browser does not support notifications');
       return;
     }
 
@@ -52,7 +51,6 @@ class NotificationService {
    */
   async requestPermission(): Promise<boolean> {
     if (!('Notification' in window)) {
-      console.log('Browser does not support notifications');
       return false;
     }
 
@@ -61,7 +59,6 @@ class NotificationService {
       this.permissionGranted = permission === 'granted';
       
       if (this.permissionGranted) {
-        console.log('Notification permission granted');
         // Subscribe to OneSignal if configured
         await this.subscribeToOneSignal();
       }
@@ -95,7 +92,6 @@ class NotificationService {
    */
   async sendLocalNotification(notification: PushNotification): Promise<void> {
     if (!this.permissionGranted) {
-      console.log('Notifications not permitted');
       return;
     }
 
@@ -121,7 +117,6 @@ class NotificationService {
    */
   async sendServerNotification(userId: string, payload: NotificationPayload): Promise<boolean> {
     if (!supabase) {
-      console.log('Supabase not configured');
       return false;
     }
 
@@ -237,7 +232,6 @@ class NotificationService {
     // 2. Initialize: OneSignal.init({ appId })
     // 3. Request permission: await OneSignal.requestPermission()
     
-    console.log('OneSignal configured with App ID:', appId);
   }
 
   /**
@@ -246,7 +240,6 @@ class NotificationService {
   private async subscribeToOneSignal(): Promise<void> {
     // This would be implemented with full OneSignal SDK
     // For now, this is a placeholder
-    console.log('OneSignal subscription placeholder');
   }
 
   /**
@@ -257,7 +250,6 @@ class NotificationService {
     projectId: string;
     messagingSenderId: string;
   }): Promise<void> {
-    console.log('Firebase FCM configured:', config.projectId);
     // Firebase SDK would be initialized here
   }
 

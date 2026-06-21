@@ -397,7 +397,6 @@ export function useAcademySync() {
       }
 
       hasHydrated.current = true;
-      console.log('Academy data hydrated from Supabase');
     };
 
     loadFromServer();

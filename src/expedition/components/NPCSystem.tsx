@@ -161,7 +161,7 @@ export function NPCSystem() {
                 </div>
                 <button 
                   onClick={() => setSelectedId(null)} 
-                  className="w-8 h-8 rounded-full flex items-center justify-center bg-[#21262D]"
+                  className="w-8 h-8 rounded-full flex items-center justify-center bg-[#21262D]" aria-label="Close"
                 >
                   <X className="w-4 h-4 text-[#8B949E]" />
                 </button>

@@ -1405,24 +1405,12 @@ export const useExpeditionStore = create<GameState>()(
       collectExpedition: (expeditionId) => {
         const s = get();
         const exp = s.expeditions.find((e) => e.id === expeditionId);
-        
-        // Debug logging
-        console.log('[expedition] collectExpedition called:', {
-          expeditionId,
-          expFound: !!exp,
-          collected: exp?.collected,
-          status: exp?.status,
-          endsAt: exp?.endsAt,
-          now: Date.now(),
-        });
 
         if (!exp || exp.collected) {
-          console.log('[expedition] Skipping - not found or already collected');
           return;
         }
         
         if (Date.now() < exp.endsAt) {
-          console.log('[expedition] Skipping - expedition not ended yet');
           return;
         }
         
@@ -1442,16 +1430,8 @@ export const useExpeditionStore = create<GameState>()(
         const heroId = exp.heroes[0];
 
         academySync.completeExpeditionServerValidated(expeditionId, heroId).then((result) => {
-          console.log('[expedition] Server response:', {
-            expeditionId,
-            ok: result.ok,
-            alreadyClaimed: (result as Record<string, unknown>).alreadyClaimed,
-            error: result.error,
-          });
-
           // Handle already claimed (idempotency)
           if ((result as Record<string, unknown>).alreadyClaimed) {
-            console.log('[expedition] Rewards already claimed, updating local state');
             set((st) => ({
               expeditions: st.expeditions.map((e) =>
                 e.id === expeditionId ? { ...e, collected: true, status: 'completed' } : e,

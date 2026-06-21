@@ -199,7 +199,7 @@ export function StorySystem({
               <h2 className="text-lg" style={{ fontFamily: "'Exo 2', sans-serif" }}>
                 {t('expedition.story_system') || 'Story System'}
               </h2>
-              <button onClick={onClose} className="p-2 text-muted-foreground hover:text-white">
+              <button onClick={onClose} className="p-2 text-muted-foreground hover:text-white" aria-label="Close">
                 <X className="w-5 h-5" />
               </button>
             </div>
