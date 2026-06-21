@@ -1,7 +1,7 @@
 import { useExpeditionStore } from '../store';
 import { motion } from 'motion/react';
 import { Sword, BookOpen, Compass, MessageCircle, Star, Crown, Award, Sparkles, Zap, Clock, Target, Lock } from 'lucide-react';
-import { Card, Badge, Progress, ScrollArea } from '../ui';
+import { Card, Badge, Progress, ScrollArea, EmptyState } from '../ui';
 import { useState } from 'react';
 import type { Rarity, HeroRank, HeroSpecialization, Hero } from '../data';
 import { HERO_RANK_THRESHOLDS, checkHeroUnlocked, getHeroUnlockProgress } from '../data';
@@ -68,7 +68,15 @@ export function Heroes() {
   const isSelectedHeroLocked = selectedHero && !checkHeroUnlocked(selectedHero, currentPrestigeLevel, currentEpochId, currentPlayerLevel);
 
   if (unlockedHeroes.length === 0) {
-    return <div className="p-4 text-muted-foreground">{t('heroes.no_available')}</div>;
+    return (
+      <div className="min-h-full bg-[#0D1117] p-4">
+        <EmptyState
+          icon={<Building2 className="w-8 h-8 text-[#FFC72C]" />}
+          title="Продовжуйте розвиток Академії"
+          description="Герої відкриваються залежно від рівня гравця та переродження"
+        />
+      </div>
+    );
   }
 
   const heroRank = selectedHero ? getRank(selectedHero.experience) : 'novice';

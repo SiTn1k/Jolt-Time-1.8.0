@@ -75,3 +75,26 @@ export function SkeletonBuilding({ className }: SkeletonProps) {
     </div>
   );
 }
+
+interface EmptyStateProps {
+  icon?: React.ReactNode;
+  title: string;
+  description?: string;
+  className?: string;
+}
+
+export function EmptyState({ icon, title, description, className }: EmptyStateProps) {
+  return (
+    <div className={cn('flex flex-col items-center justify-center py-12 px-4 text-center', className)}>
+      {icon && (
+        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+          {icon}
+        </div>
+      )}
+      <h3 className="text-sm font-semibold text-[#E6EDF3] mb-2">{title}</h3>
+      {description && (
+        <p className="text-xs text-[#8B949E] max-w-xs">{description}</p>
+      )}
+    </div>
+  );
+}

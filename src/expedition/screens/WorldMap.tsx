@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { UkrainianPattern } from '../components/UkrainianPattern';
 import { useTickValue } from '../useTick';
 import { useTranslation } from '../../i18n';
+import { ExpeditionAdsButton } from '../components/ExpeditionAdsButton';
 
 export function WorldMap() {
   const { t } = useTranslation();
@@ -136,8 +137,15 @@ export function WorldMap() {
                         style={{ backgroundColor: '#9747FF', color: '#fff', fontFamily: "'Exo 2', sans-serif" }}
                       >
                         <Zap className="w-3 h-3 mr-1" />
-                        {t('expedition.speed_up')}
+                        {t('expedition.speed_up')} (50%)
                       </Button>
+                      <ExpeditionAdsButton
+                        onComplete={() => {
+                          // Complete expedition immediately
+                          collectExpedition(exp.id);
+                        }}
+                        onError={(e) => console.log(e)}
+                      />
                     </div>
                   )}
                 </Card>

@@ -21,6 +21,7 @@ import { rpcTrackSession } from './lib/rpc';
 import { supabase } from './lib/supabase';
 import { notificationService } from './services/NotificationService';
 import { Crown, ShoppingBag, Trophy, Gift, Loader2, Users, X, Shield, Zap, Star, ChevronRight, Wifi, RefreshCw, Timer, AlertTriangle, Battery, BatteryLow, Globe, Building2, Map, Users as UsersIcon, FlaskConical, Landmark, Lock } from 'lucide-react';
+import { Check } from 'lucide-react';
 import type { EpochId } from './types/game';
 import { formatNumber } from './lib/utils';
 import { getTodayDateStr } from './data/tasks';
@@ -885,51 +886,63 @@ function App() {
 
               {/* Academy Preview - shown for all users before prestige level 2 */}
               {((state.prestigeLevel || 0) < 2) && (
-                <div className="mb-4">
-                  <div className="flex items-center justify-between mb-3">
+                <div className="mb-4 rounded-2xl border border-[#FFC72C]/30 bg-gradient-to-br from-[#FFC72C]/10 to-[#9747FF]/10 p-4">
+                  <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <Building2 className="w-5 h-5 text-[#FFC72C]" />
-                      <h3 className="font-semibold text-[#E6EDF3]">Академія</h3>
+                      <Building2 className="w-6 h-6 text-[#FFC72C]" />
+                      <h3 className="font-bold text-[#E6EDF3] text-lg">Академія</h3>
                     </div>
-                    <div className="text-xs text-[#8B949E]">
-                      Prestige {(state.prestigeLevel || 0) + 1} / 2
+                    <div className="flex items-center gap-2">
+                      <Star className="w-4 h-4 text-[#FFC72C]" />
+                      <span className="text-sm font-bold text-[#FFC72C]">
+                        {(state.prestigeLevel || 0) + 1} / 2
+                      </span>
                     </div>
                   </div>
                   
-                  {/* Progress bar */}
-                  <div className="h-1.5 bg-white/[0.08] rounded-full mb-4 overflow-hidden">
+                  <p className="text-xs text-[#8B949E] mb-3">
+                    Академія відкриється після 2-го переродження
+                  </p>
+
+                  {/* Prominent Progress bar */}
+                  <div className="h-3 bg-white/[0.1] rounded-full mb-4 overflow-hidden relative">
                     <div 
-                      className="h-full bg-[#FFC72C] rounded-full transition-all"
-                      style={{ width: `${((state.prestigeLevel || 0) / 2) * 100}%` }}
+                      className="h-full bg-gradient-to-r from-[#FFC72C] to-[#9747FF] rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min(((state.prestigeLevel || 0) / 2) * 100, 100)}%` }}
                     />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-[10px] font-bold text-white/80">
+                        {Math.round(((state.prestigeLevel || 0) / 2) * 100)}%
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Preview cards */}
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { icon: Building2, name: 'Академія', desc: 'Наука та дослідження' },
-                      { icon: Map, name: 'Карта світу', desc: 'Експедиції' },
-                      { icon: UsersIcon, name: 'Герої', desc: 'Збери команду' },
-                      { icon: FlaskConical, name: 'Лабораторія', desc: 'Вдосконалення' },
-                      { icon: Landmark, name: 'Музей', desc: 'Колекція артефактів' },
-                      { icon: Crown, name: 'Скарбниця', desc: 'Нагороди' },
-                    ].map((item, index) => (
-                      <div
-                        key={index}
-                        className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-3 opacity-65"
-                        style={{ filter: 'blur(0.5px)' }}
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <item.icon className="w-4 h-4 text-[#FFC72C]" />
-                          <span className="text-xs font-medium text-[#E6EDF3]">{item.name}</span>
-                        </div>
-                        <p className="text-[10px] text-[#8B949E]">{item.desc}</p>
-                        <div className="flex items-center gap-1 mt-2">
-                          <Lock className="w-3 h-3 text-[#8B949E]" />
-                          <span className="text-[9px] text-[#8B949E]">Відкриється пізніше</span>
-                        </div>
-                      </div>
-                    ))}
+                  {/* Features list */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-xs text-[#E6EDF3]">
+                      <Check className="w-4 h-4 text-[#10B981]" />
+                      <span>Герої</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-[#E6EDF3]">
+                      <Check className="w-4 h-4 text-[#10B981]" />
+                      <span>Експедиції</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-[#E6EDF3]">
+                      <Check className="w-4 h-4 text-[#10B981]" />
+                      <span>NPC</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-[#E6EDF3]">
+                      <Check className="w-4 h-4 text-[#10B981]" />
+                      <span>Музей</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-[#E6EDF3]">
+                      <Check className="w-4 h-4 text-[#10B981]" />
+                      <span>Сюжетні арки</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-[#E6EDF3]">
+                      <Check className="w-4 h-4 text-[#10B981]" />
+                      <span>Академія</span>
+                    </div>
                   </div>
                 </div>
               )}

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useExpeditionStore } from '../store';
 import { buildings } from '../data';
-import { Card, Progress, Badge } from '../ui';
+import { Card, Progress, Badge, EmptyState } from '../ui';
 import { 
   Building2, Clock, Coins, ChevronRight, Check, Zap,
-  TrendingUp, Users, FlaskConical, Landmark, BookOpen, Vault
+  TrendingUp, Users, FlaskConical, Landmark, BookOpen, Vault, Building
 } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 
@@ -98,6 +98,14 @@ export function Buildings() {
         </Card>
       </div>
 
+      {buildings.length === 0 && (
+        <EmptyState
+          icon={<Building className="w-8 h-8 text-[#FFC72C]" />}
+          title="Продовжуйте розвиток Академії"
+          description="Будівлі відкриються після досягнення певного рівня"
+        />
+      )}
+      
       <div className="space-y-4">
         {buildings.map((building) => {
           const currentLevel = buildingLevels[building.id] || 1;
