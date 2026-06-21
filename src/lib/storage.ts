@@ -494,72 +494,10 @@ async function applyReferralBonus(_newUserId: number, referrerId: number): Promi
   if (e1) console.error('Failed to apply referral bonus:', e1);
 }
 
-export async function getLeaderboard(limit = 50): Promise<LeaderboardEntry[]> {
-  if (!supabase) return [];
-  try {
-    // Sort by prestige_level DESC, then level DESC, then total_xp DESC
-    const { data, error } = await supabase
-      .from('game_progress')
-      .select('telegram_id, first_name, username, level, total_xp, prestige_level, referrals_count')
-      .order('prestige_level', { ascending: false })
-      .order('level', { ascending: false })
-      .order('total_xp', { ascending: false })
-      .limit(limit);
-
-    if (error || !data) {
-      console.error('Leaderboard fetch error:', error);
-      return [];
-    }
-
-    // Validate entries with Zod
-    const entries: LeaderboardEntry[] = [];
-    for (let i = 0; i < data.length; i++) {
-      const row = data[i];
-      const parseResult = LeaderboardEntrySchema.safeParse({
-        rank: i + 1,
-        telegram_id: row.telegram_id,
-        first_name: row.first_name,
-        username: row.username,
-        level: row.level,
-        total_xp: row.total_xp,
-        prestige_level: row.prestige_level || 0,
-        referrals_count: row.referrals_count || 0,
-      });
-
-      if (parseResult.success) {
-        entries.push(parseResult.data);
-      } else {
-        console.error('Invalid leaderboard entry:', parseResult.error.issues);
-      }
-    }
-
-    return entries;
-  } catch (e) {
-    console.error('Leaderboard fetch failed:', e);
-    return [];
-  }
-}
-
-export async function getUserRank(telegramId: number): Promise<number | null> {
-  if (!supabase) return null;
-  try {
-    const { data } = await supabase
-      .from('game_progress')
-      .select('telegram_id, prestige_level, level, total_xp')
-      .order('prestige_level', { ascending: false })
-      .order('level', { ascending: false })
-      .order('total_xp', { ascending: false })
-      .limit(1000);
-
-    if (!data) return null;
-
-    const index = data.findIndex(row => row.telegram_id === telegramId);
-    return index >= 0 ? index + 1 : null;
-  } catch (e) {
-    console.error('User rank fetch failed:', e);
-    return null;
-  }
-}
+// =====================================================
+// LEADERBOARD - Optimized with materialized view
+// See optimized functions below
+// =====================================================
 
 export async function fetchActiveBoosters(telegramId: number): Promise<ActiveBoosters> {
   if (!supabase) return {};
@@ -640,5 +578,116 @@ export async function getServerTime(): Promise<number> {
   } catch (error) {
     console.error('Failed to get server time:', error);
     return serverTimeCache.time > 0 ? serverTimeCache.time : now;
+  }
+}
+
+// =====================================================
+// LEADERBOARD - Optimized with materialized view
+// =====================================================
+
+const LEADERBOARD_CACHE_KEY = 'ukraine_tap_leaderboard_cache';
+const LEADERBOARD_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+interface CachedLeaderboard {
+  data: LeaderboardEntry[];
+  timestamp: number;
+  totalCount: number;
+}
+
+function getCachedLeaderboard(): CachedLeaderboard | null {
+  try {
+    const cached = localStorage.getItem(LEADERBOARD_CACHE_KEY);
+    if (cached) {
+      return JSON.parse(cached) as CachedLeaderboard;
+    }
+  } catch {
+    // Ignore cache errors
+  }
+  return null;
+}
+
+function setCachedLeaderboard(data: LeaderboardEntry[], totalCount: number): void {
+  try {
+    localStorage.setItem(LEADERBOARD_CACHE_KEY, JSON.stringify({
+      data,
+      timestamp: Date.now(),
+      totalCount,
+    }));
+  } catch {
+    // Ignore cache errors
+  }
+}
+
+export async function getLeaderboard(limit = 50, forceRefresh = false): Promise<LeaderboardEntry[]> {
+  // Check cache first
+  if (!forceRefresh) {
+    const cached = getCachedLeaderboard();
+    if (cached && Date.now() - cached.timestamp < LEADERBOARD_CACHE_TTL) {
+      return cached.data.slice(0, limit);
+    }
+  }
+
+  if (!supabase) return [];
+  
+  try {
+    // Use RPC for optimized query
+    const { data, error } = await supabase.rpc('get_leaderboard_top', { p_limit: limit });
+
+    if (error) {
+      console.error('Leaderboard fetch error:', error);
+      // Fallback to cached data if available
+      const cached = getCachedLeaderboard();
+      return cached?.data.slice(0, limit) || [];
+    }
+
+    // Validate entries with Zod
+    const entries: LeaderboardEntry[] = [];
+    for (const row of data || []) {
+      const parseResult = LeaderboardEntrySchema.safeParse({
+        rank: row.rank,
+        telegram_id: row.telegram_id,
+        first_name: row.first_name,
+        username: row.username,
+        level: row.level,
+        total_xp: row.total_xp,
+        prestige_level: row.prestige_level || 0,
+        referrals_count: row.referrals_count || 0,
+      });
+
+      if (parseResult.success) {
+        entries.push(parseResult.data);
+      }
+    }
+
+    // Get total count
+    const { data: countData } = await supabase.rpc('get_leaderboard_count');
+    const totalCount = countData || entries.length;
+
+    // Cache the results
+    setCachedLeaderboard(entries, totalCount);
+
+    return entries;
+  } catch (e) {
+    console.error('Leaderboard fetch failed:', e);
+    return [];
+  }
+}
+
+export async function getUserRank(telegramId: number): Promise<number | null> {
+  if (!supabase) return null;
+  
+  try {
+    // Use RPC for optimized rank lookup
+    const { data, error } = await supabase.rpc('get_user_rank', { p_telegram_id: telegramId });
+
+    if (error) {
+      console.error('User rank fetch error:', error);
+      return null;
+    }
+
+    return typeof data === 'number' ? data : null;
+  } catch (e) {
+    console.error('User rank fetch failed:', e);
+    return null;
   }
 }
