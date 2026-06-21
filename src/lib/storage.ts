@@ -9,6 +9,7 @@ import {
   LeaderboardEntrySchema,
   safeParse 
 } from '../schemas/game';
+import { validateReferrerId, verifyReferrerExists } from './referralValidation';
 
 const LOCAL_STORAGE_KEY = 'ukraine_tap_game_state';
 const DEVICE_ID_KEY = 'ukraine_tap_device_id';
@@ -229,10 +230,26 @@ export async function loadGameState(): Promise<GameState | null> {
       if (telegramId) {
         const userInfo = getTelegramUserInfo();
         let bonus = 20;
+        let validReferrerId: number | null = null;
 
-        if (referrerId && referrerId !== telegramId) {
-          await applyReferralBonus(telegramId, referrerId);
-          bonus = 20 + NEW_USER_BONUS;
+        // SECURITY: Validate referrer ID before processing
+        if (referrerId) {
+          const validation = validateReferrerId(referrerId);
+          if (validation.valid && validation.referrerId !== telegramId) {
+            // Verify referrer exists in database
+            const exists = await verifyReferrerExists(supabase, validation.referrerId);
+            if (exists) {
+              validReferrerId = validation.referrerId;
+              await applyReferralBonus(telegramId, validReferrerId);
+              bonus = 20 + NEW_USER_BONUS;
+            } else {
+              console.warn('Referrer does not exist:', validation.referrerId);
+            }
+          } else if (!validation.valid) {
+            console.warn('Invalid referrer ID:', validation.error);
+          } else if (validation.referrerId === telegramId) {
+            console.warn('Self-referral blocked');
+          }
         }
 
         const newRow = {
@@ -252,7 +269,7 @@ export async function loadGameState(): Promise<GameState | null> {
           artifact_levels: {},
           completed_artifacts: [],
           artifact_dupes: {},
-          referrer_id: referrerId && referrerId !== telegramId ? sanitizeId(referrerId) : null,
+          referrer_id: validReferrerId,
           referrals_count: 0,
           referral_earnings: 0,
           active_boosters: {},
@@ -273,7 +290,7 @@ export async function loadGameState(): Promise<GameState | null> {
         const { error } = await supabase.from('game_progress').insert(newRow);
         if (error) console.error('New user insert failed:', error);
 
-        const hasRef = Boolean(referrerId && referrerId !== telegramId);
+        const hasRef = validReferrerId !== null;
         return {
           epochId: 'trypillia',
           level: 1,
