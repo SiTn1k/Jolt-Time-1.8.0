@@ -292,7 +292,7 @@ export const STORY_ARCS: ArcMetadata[] = [
       artifacts: 70,
       museumCollections: 5,
     },
-    npcIds: ['story-shevschenko'],
+    npcIds: ['story-shevchenko'],
     regionIds: ['region-kyiv-rus-extended', 'region-lviv'],
     estimatedDuration: '2-4 weeks',
   },
@@ -520,6 +520,7 @@ export const storyNpcs: StoryNpc[] = [
       3: 'quest-monk-1',
       4: 'region-kyiv-hills-unlock',
       5: 'artifact-byzantine-icon',
+      6: 'artifact-medieval-manuscript',
     },
   },
   {
@@ -694,7 +695,7 @@ export const storyNpcs: StoryNpc[] = [
 
   // ========== ARC 8 NPC: Історик Шевченко ==========
   {
-    id: 'story-shevschenko',
+    id: 'story-shevchenko',
     nameKey: 'npc.shevchenko.name',
     role: 'researcher',
     roleKey: 'npc.shevchenko.role',
@@ -723,7 +724,7 @@ export const storyNpcs: StoryNpc[] = [
       2: 'dialogue_rennaissance_1',
       3: 'quest-shevschenko-1',
       4: 'hero-poet-national',
-      5: 'artifact-kobzar manuscripts',
+      5: 'artifact-kobzar_manuscripts',
       6: 'bonus-national-awakening',
     },
   },
@@ -745,7 +746,7 @@ export const storyNpcs: StoryNpc[] = [
         'Боротьба триває!',
       ],
       relationship: {
-        1: ['Украинская Народная Республика...'],
+        1: ['Українська Народна Республіка — кожен крок до волі'],
         2: ['Ми боремося за незалежність!'],
         3: ['Кожен день — це подвиг!'],
         4: ['Разом до перемоги!'],
@@ -794,7 +795,7 @@ export const storyNpcs: StoryNpc[] = [
       1: null,
       2: 'dialogue_ww2_1',
       3: 'quest-ww2-1',
-      4: 'region-babi Yar-unlock',
+      4: 'region-babi_yar-unlock',
       5: 'artifact-ww2-medals',
       6: 'bonus-memorial-protection',
     },
