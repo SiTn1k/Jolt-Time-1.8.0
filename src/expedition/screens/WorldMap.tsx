@@ -117,6 +117,7 @@ export function WorldMap() {
                     <Button
                       className="w-full"
                       onClick={() => collectExpedition(exp.id)}
+                      data-tutorial="collect-expedition"
                       style={{ backgroundColor: '#10B981', color: '#0D1117', fontFamily: "'Exo 2', sans-serif" }}
                     >
                       <CheckCircle2 className="w-4 h-4 mr-2" />
@@ -219,7 +220,7 @@ export function WorldMap() {
             )}
 
             {selectedRegion.unlocked ? (
-              <Button className="w-full" onClick={handleStart} style={{ backgroundColor: '#FFC72C', color: '#0D1117', fontFamily: "'Exo 2', sans-serif" }}>
+              <Button className="w-full" onClick={handleStart} data-tutorial="start-expedition" style={{ backgroundColor: '#FFC72C', color: '#0D1117', fontFamily: "'Exo 2', sans-serif" }}>
                 <MapPin className="w-4 h-4 mr-2" />
                 {t('expedition.start_expedition')}
               </Button>

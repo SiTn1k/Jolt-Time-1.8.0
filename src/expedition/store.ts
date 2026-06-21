@@ -100,6 +100,13 @@ export interface Toast {
   color: string;
 }
 
+// Tutorial state interface
+export interface TutorialState {
+  completed: boolean;
+  skipped: boolean;
+  currentStep: number;
+}
+
 interface GameState {
   academyLevel: number;
   academyXp: number;
@@ -132,6 +139,13 @@ interface GameState {
   // Fragment inventory state
   heroFragments: Record<string, number>;  // heroId -> fragment count
   artifactFragments: Record<string, number>;  // rarity -> fragment count
+
+  // Tutorial state
+  tutorialState: TutorialState;
+  nextTutorialStep: () => void;
+  skipTutorial: () => void;
+  completeTutorial: () => void;
+  startTutorial: () => void;
 
   // expeditions
   startExpedition: (regionId: string, heroIds: string[]) => boolean;
@@ -225,6 +239,61 @@ export const useExpeditionStore = create<GameState>()(
       // Anti-spam tracking for quest actions
       _lastQuestAction: 0,
       _lastObjectiveKey: '',
+
+      // Tutorial state
+      tutorialState: {
+        completed: false,
+        skipped: false,
+        currentStep: 0,
+      },
+
+      nextTutorialStep: () =>
+        set((state) => {
+          const nextStep = state.tutorialState.currentStep + 1;
+          // 9 steps total (0-8), after step 8, mark as completed
+          if (nextStep >= 9) {
+            return {
+              tutorialState: {
+                completed: true,
+                skipped: false,
+                currentStep: 9,
+              },
+            };
+          }
+          return {
+            tutorialState: {
+              ...state.tutorialState,
+              currentStep: nextStep,
+            },
+          };
+        }),
+
+      skipTutorial: () =>
+        set(() => ({
+          tutorialState: {
+            completed: true,
+            skipped: true,
+            currentStep: 9,
+          },
+        })),
+
+      completeTutorial: () =>
+        set(() => ({
+          tutorialState: {
+            completed: true,
+            skipped: false,
+            currentStep: 9,
+          },
+        })),
+
+      startTutorial: () =>
+        set(() => ({
+          tutorialState: {
+            completed: false,
+            skipped: false,
+            currentStep: 0,
+          },
+        })),
 
       pushToast: (message, color = '#FFC72C') =>
         set((s) => ({
@@ -1682,6 +1751,7 @@ export const useExpeditionStore = create<GameState>()(
         buildingUpgradeEndTimes: s.buildingUpgradeEndTimes,
         heroFragments: s.heroFragments,
         artifactFragments: s.artifactFragments,
+        tutorialState: s.tutorialState,
       }),
       // Crash recovery: fix stuck expeditions on load
       onRehydrateStorage: () => (state) => {

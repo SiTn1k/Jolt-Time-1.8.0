@@ -41,10 +41,11 @@ export function TutorialBubble({
         transition={{ duration: 0.3, ease: 'easeOut' }}
         className="fixed z-[100] w-full pointer-events-none"
         style={{
-          bottom: position === 'bottom' ? '100px' : 'auto',
+          bottom: position === 'bottom' ? '80px' : 'auto',
           top: position === 'center' ? '50%' : 'auto',
           left: '50%',
           transform: position === 'center' ? 'translate(-50%, -50%)' : 'translateX(-50%)',
+          maxWidth: '430px',
         }}
       >
         <div

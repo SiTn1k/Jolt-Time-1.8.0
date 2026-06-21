@@ -102,13 +102,19 @@ export function TutorialOverlay({ isActive, targetSelector, children }: Tutorial
                 }}
               />
 
-              {/* Bottom cutout */}
+              {/* Bottom cutout - but leave space for bottom nav (64px) */}
               <div
                 className="absolute left-0 right-0"
                 style={{
                   top: targetRect.top + targetRect.height,
                   bottom: 0,
                 }}
+              />
+
+              {/* Bottom nav exclusion zone - leave nav clickable */}
+              <div
+                className="fixed bottom-0 left-0 right-0 h-16 pointer-events-auto"
+                style={{ background: 'transparent', zIndex: 95 }}
               />
 
               {/* Highlighted element border with pulse */}

@@ -10,6 +10,7 @@ import { Laboratory } from './screens/Laboratory';
 import { Treasury } from './screens/Treasury';
 import { Buildings } from './screens/Buildings';
 import { DailyRewards } from './screens/DailyRewards';
+import { TutorialGuide } from '../components/tutorial';
 
 // Lazy load heavy screens for code splitting
 const Museum = lazy(() => import('./screens/Museum').then(m => ({ default: m.Museum })));
@@ -91,6 +92,9 @@ export function ExpeditionApp() {
     >
       <ToastStack />
 
+      {/* Tutorial Guide - integrated with store state */}
+      <TutorialGuide />
+
       <div className="flex-1 overflow-y-auto overscroll-contain">
         {screen === 'academy' && <Academy />}
         {screen === 'map' && <WorldMap />}
@@ -119,6 +123,7 @@ export function ExpeditionApp() {
               <button
                 key={item.id}
                 onClick={() => setScreen(item.id)}
+                data-tutorial={item.id}
                 className="relative flex flex-col items-center justify-center gap-1 px-1"
               >
                 {isActive && (
