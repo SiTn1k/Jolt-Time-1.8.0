@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useExpeditionStore } from '../store';
 import { buildings } from '../data';
 import { motion } from 'motion/react';
-import { TrendingUp, Coins, Eye, Send, BookOpen, MessageCircle, Target, Zap, Archive, CheckCircle2 } from 'lucide-react';
+import { TrendingUp, Coins, Eye, Send, BookOpen, MessageCircle, Target, Zap, Archive, CheckCircle2, Map, Landmark, Gift } from 'lucide-react';
 import { Card, Badge } from '../ui';
 import { NPCSystem } from '../components/NPCSystem';
 import { UkrainianPattern } from '../components/UkrainianPattern';
@@ -35,13 +35,15 @@ export function Academy() {
   const historicalPrestige = useExpeditionStore((s) => s.historicalPrestige);
   const expeditions = useExpeditionStore((s) => s.expeditions);
   const artifacts = useExpeditionStore((s) => s.artifacts);
-  const museumItems = useExpeditionStore((s) => s.museumItems);
   const currentArc = useExpeditionStore((s) => s.storyState.currentArc);
   void currentArc; // Used for future story expansion
 
   const activeExpeditions = expeditions.filter((e) => !e.collected).length;
   const damagedArtifacts = artifacts.filter((a) => a.condition < 100);
   const totalArtifacts = artifacts.length;
+  
+  // Museum items are artifacts with status 'museum'
+  const museumItems = artifacts.filter((a) => a.status === 'museum');
 
   // Calculate museum collection percentage
   const museumCollectionPercent = totalArtifacts > 0 

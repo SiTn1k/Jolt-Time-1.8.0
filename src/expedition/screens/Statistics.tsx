@@ -71,8 +71,10 @@ export function Statistics() {
   const expeditions = useExpeditionStore(s => s.expeditions);
   const heroes = useExpeditionStore(s => s.heroes);
   const artifacts = useExpeditionStore(s => s.artifacts);
-  const museumItems = useExpeditionStore(s => s.museumItems);
   const museumState = useExpeditionStore(s => s.museumState);
+  
+  // Museum items are artifacts with status 'museum'
+  const museumItems = artifacts.filter(a => a.status === 'museum');
   const storyState = useExpeditionStore(s => s.storyState);
   const npcRelationships = useExpeditionStore(s => s.npcRelationships);
   const historicalPrestige = useExpeditionStore(s => s.historicalPrestige);
