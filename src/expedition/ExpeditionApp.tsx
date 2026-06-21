@@ -66,7 +66,11 @@ function ToastStack() {
   );
 }
 
-export function ExpeditionApp() {
+interface ExpeditionAppProps {
+  prestigeLevel: number;
+}
+
+export function ExpeditionApp({ prestigeLevel }: ExpeditionAppProps) {
   const tick = useExpeditionStore((s) => s.tick);
   const [screen, setScreen] = useState<ScreenId>('academy');
   
@@ -105,7 +109,7 @@ export function ExpeditionApp() {
       <TutorialGuide />
 
       <div className="flex-1 overflow-y-auto overscroll-contain">
-        {screen === 'academy' && <Academy />}
+        {screen === 'academy' && <Academy prestigeLevel={prestigeLevel} />}
         {screen === 'map' && <WorldMap />}
         {screen === 'heroes' && <Heroes />}
         {screen === 'laboratory' && <Laboratory />}

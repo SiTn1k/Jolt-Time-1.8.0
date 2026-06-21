@@ -13,11 +13,15 @@ import { AcademyTeaser } from '../components/AcademyTeaser';
 import { useLiveOpsStore } from '../liveOpsStore';
 import { useTranslation } from '../../i18n';
 
-// Academy unlock threshold - reduced from 5000 to 3000 for better retention
-// TEMP: Set to 0 for testing Academy functionality
-const ACADEMY_PRESTIGE_THRESHOLD = 0;
+// Academy unlock threshold - Prestige Level 2 required
+// This matches App.tsx: const isAcademyUnlocked = (state.prestigeLevel || 0) >= 2;
+const ACADEMY_PRESTIGE_THRESHOLD = 2;
 
-export function Academy() {
+interface AcademyProps {
+  prestigeLevel: number;
+}
+
+export function Academy({ prestigeLevel }: AcademyProps) {
   const { t } = useTranslation();
   const [showStory, setShowStory] = useState(false);
 
@@ -94,8 +98,9 @@ export function Academy() {
 
   const currentObjective = getCurrentObjective();
   
-  // Check if Academy is unlocked (prestige >= threshold)
-  const isAcademyUnlocked = historicalPrestige >= ACADEMY_PRESTIGE_THRESHOLD;
+  // Check if Academy is unlocked using prestigeLevel (not historicalPrestige)
+  // prestigeLevel comes from main game state (App.tsx)
+  const isAcademyUnlocked = prestigeLevel >= ACADEMY_PRESTIGE_THRESHOLD;
 
   // Handle NPC interaction - delegate to store
   const handleInteractWithNpc = (npcId: string) => {

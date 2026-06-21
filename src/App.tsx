@@ -314,7 +314,7 @@ function App() {
         </div>
       }>
         <>
-          <ExpeditionApp />
+          <ExpeditionApp prestigeLevel={state.prestigeLevel || 0} />
           {showAcademyUnlock && (
             <AcademyUnlockModal isOpen={showAcademyUnlock} onClose={handleAcademyUnlockClose} />
           )}
