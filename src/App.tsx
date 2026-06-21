@@ -20,6 +20,7 @@ import { EPOCHS, ARTIFACTS, getEpochById } from './data/epochs';
 import { initTelegramMiniApp, hapticImpact, hapticNotification, getTelegramWebApp, getTelegramUserId } from './lib/telegram';
 import { rpcTrackSession } from './lib/rpc';
 import { supabase } from './lib/supabase';
+import { notificationService } from './services/NotificationService';
 import { Crown, ShoppingBag, Trophy, Gift, Loader2, Users, X, Shield, Zap, Star, ChevronRight, Wifi, RefreshCw, Timer, AlertTriangle, Battery, BatteryLow, Globe } from 'lucide-react';
 import type { EpochId } from './types/game';
 import { formatNumber } from './lib/utils';
@@ -134,6 +135,14 @@ function App() {
     const tutorialSeen = localStorage.getItem('tutorial_seen');
     if (!tutorialSeen) {
       setShowTutorial(true);
+    }
+
+    // Request push notification permission on first launch
+    const notificationPermissionRequested = localStorage.getItem('notification_permission_requested');
+    if (!notificationPermissionRequested && 'Notification' in window) {
+      notificationService.requestPermission().then(() => {
+        localStorage.setItem('notification_permission_requested', 'true');
+      });
     }
 
     // Session tracking
