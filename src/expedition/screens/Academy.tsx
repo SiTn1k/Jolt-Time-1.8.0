@@ -24,6 +24,7 @@ export function Academy() {
   const interactWithNpc = useExpeditionStore((s) => s.interactWithNpc);
   const startQuest = useExpeditionStore((s) => s.startQuest);
   const completeQuest = useExpeditionStore((s) => s.completeQuest);
+  const unlockArc = useExpeditionStore((s) => s.unlockArc);
   
   // Other store state
   const academyLevel = useExpeditionStore((s) => s.academyLevel);
@@ -51,6 +52,11 @@ export function Academy() {
   // Handle quest complete - delegate to store
   const handleCompleteQuest = (questId: string) => {
     completeQuest(questId);
+  };
+
+  // Handle arc unlock - delegate to store
+  const handleUnlockArc = (arcNumber: number) => {
+    unlockArc(arcNumber);
   };
 
   return (
@@ -170,6 +176,7 @@ export function Academy() {
         onInteractWithNpc={handleInteractWithNpc}
         onStartQuest={handleStartQuest}
         onCompleteQuest={handleCompleteQuest}
+        onUnlockArc={handleUnlockArc}
       />
 
       <div className="relative z-10">

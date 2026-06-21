@@ -331,6 +331,10 @@ export interface StoryProgress {
   activeQuests: QuestProgress[]; // Track progress for each active quest
   completedQuests: string[];
   npcRelationships: Record<string, NpcRelationship>;
+  // Arc system
+  currentArc: number;
+  unlockedArcs: number[];
+  completedArcs: number[];
 }
 
 // NPC Story Data for MVP (5 NPCs)
@@ -1075,6 +1079,10 @@ export const initialStoryProgress: StoryProgress = {
   activeQuests: [],
   completedQuests: [],
   npcRelationships: {},
+  // Arc system - Arc 1 unlocked by default
+  currentArc: 1,
+  unlockedArcs: [1],
+  completedArcs: [],
 };
 
 // Role colors for Story NPCs

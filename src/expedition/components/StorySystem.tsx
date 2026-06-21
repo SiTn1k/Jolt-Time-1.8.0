@@ -6,11 +6,14 @@ import { useTranslation } from '../../i18n';
 import { 
   storyNpcs, 
   storyQuests, 
+  STORY_ARCS,
+  checkArcRequirements,
   type StoryNpc, 
   type StoryQuest,
   type NpcRelationship,
   type RelationshipLevel,
-  type StoryProgress 
+  type StoryProgress,
+  type ArcMetadata,
 } from '../storyData';
 
 interface StorySystemProps {
@@ -21,9 +24,10 @@ interface StorySystemProps {
   onStartQuest: (questId: string) => void;
   onCompleteQuest?: (questId: string) => void;
   onClaimReward?: (npcId: string, rewardKey: string) => void;
+  onUnlockArc?: (arcNumber: number) => void;
 }
 
-type Tab = 'npcs' | 'quests';
+type Tab = 'npcs' | 'quests' | 'arcs';
 
 export function StorySystem({
   isOpen,
@@ -33,11 +37,39 @@ export function StorySystem({
   onStartQuest,
   onCompleteQuest,
   onClaimReward,
+  onUnlockArc,
 }: StorySystemProps) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('npcs');
   const [selectedNpc, setSelectedNpc] = useState<StoryNpc | null>(null);
   const [npcDialogue, setNpcDialogue] = useState<string>('');
+  
+  // Helper to build current state for arc requirement checking
+  const getCurrentState = () => ({
+    reputation: 0, // Will be passed from parent if needed
+    historicalPrestige: 0,
+    completedQuests: storyState.completedQuests,
+    completedArcs: storyState.completedArcs,
+    npcRelationships: storyState.npcRelationships,
+    museumCompletedCollections: 0,
+    totalArtifacts: 0,
+  });
+  
+  // Get arc with requirements status
+  const getArcStatus = (arc: ArcMetadata) => {
+    const isUnlocked = storyState.unlockedArcs.includes(arc.arcNumber);
+    
+    if (isUnlocked) {
+      return { status: 'unlocked' as const, progress: null, missing: [] };
+    }
+    
+    const { met, missing } = checkArcRequirements(arc, getCurrentState());
+    return { 
+      status: met ? 'ready' : 'locked', 
+      progress: null, 
+      missing 
+    };
+  };
 
   const getRelationship = (npcId: string): NpcRelationship => {
     return storyState.npcRelationships[npcId] || {
@@ -190,6 +222,17 @@ export function StorySystem({
               >
                 <Map className="w-4 h-4 mx-auto mb-1" />
                 {t('quest.quests') || 'Quests'}
+              </button>
+              <button
+                onClick={() => setActiveTab('arcs')}
+                className={`flex-1 py-3 text-sm font-medium transition-colors ${
+                  activeTab === 'arcs' 
+                    ? 'text-[#FFC72C] border-b-2 border-[#FFC72C]' 
+                    : 'text-muted-foreground'
+                }`}
+              >
+                <Star className="w-4 h-4 mx-auto mb-1" />
+                {t('arc.arcs') || 'Arcs'}
               </button>
             </div>
 
@@ -517,6 +560,97 @@ export function StorySystem({
                       <p>{t('quest.no_quests') || 'No quests available'}</p>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Arc Tab */}
+              {activeTab === 'arcs' && (
+                <div className="space-y-4">
+                  {/* Arc Overview */}
+                  <Card className="p-4 border-[#FFC72C]/30">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-medium text-[#FFC72C]">
+                        {t('arc.current') || 'Поточна арка'}
+                      </h3>
+                      <Badge style={{ backgroundColor: '#FFC72C', color: '#0D1117' }}>
+                        {storyState.unlockedArcs.length} / {STORY_ARCS.length}
+                      </Badge>
+                    </div>
+                    <div className="text-2xl mb-1">
+                      {STORY_ARCS.find(a => a.arcNumber === storyState.currentArc)?.icon || '📜'}
+                    </div>
+                    <p className="text-sm font-medium">
+                      {STORY_ARCS.find(a => a.arcNumber === storyState.currentArc)?.name || 'Невідомо'}
+                    </p>
+                  </Card>
+
+                  {/* Arc List */}
+                  <div className="space-y-2">
+                    {STORY_ARCS.map(arc => {
+                      const arcStatus = getArcStatus(arc);
+                      const isCurrentArc = storyState.currentArc === arc.arcNumber;
+                      const isUnlocked = storyState.unlockedArcs.includes(arc.arcNumber);
+                      
+                      return (
+                        <Card 
+                          key={arc.arcNumber} 
+                          className={`p-3 ${
+                            isCurrentArc 
+                              ? 'border-[#FFC72C]' 
+                              : isUnlocked 
+                                ? 'border-white/10' 
+                                : 'border-white/5 opacity-60'
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div 
+                              className="w-10 h-10 rounded-lg flex items-center justify-center text-xl"
+                              style={{ backgroundColor: isUnlocked ? arc.color + '20' : 'rgba(255,255,255,0.05)' }}
+                            >
+                              {isUnlocked ? arc.icon : '🔒'}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="text-sm font-medium truncate">{arc.name}</h4>
+                                {isCurrentArc && (
+                                  <Badge variant="outline" className="text-[10px] border-[#FFC72C] text-[#FFC72C]">
+                                    {t('arc.current') || 'Поточна'}
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground line-clamp-2">{arc.description}</p>
+                              
+                              {/* Requirements for locked arcs */}
+                              {!isUnlocked && arcStatus.missing.length > 0 && (
+                                <div className="mt-2 space-y-1">
+                                  <p className="text-xs text-muted-foreground">
+                                    {t('arc.requirements') || 'Вимоги:'}
+                                  </p>
+                                  {arcStatus.missing.slice(0, 3).map((req, i) => (
+                                    <p key={i} className="text-xs text-[#FF6B6B] flex items-center gap-1">
+                                      <span className="w-1 h-1 rounded-full bg-[#FF6B6B]" />
+                                      {req}
+                                    </p>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Unlock button for ready arcs */}
+                            {arcStatus.status === 'ready' && onUnlockArc && (
+                              <Button
+                                onClick={() => onUnlockArc(arc.arcNumber)}
+                                className="text-xs"
+                                style={{ backgroundColor: '#10B981', color: 'white' }}
+                              >
+                                {t('arc.unlock') || 'Відкрити'}
+                              </Button>
+                            )}
+                          </div>
+                        </Card>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>

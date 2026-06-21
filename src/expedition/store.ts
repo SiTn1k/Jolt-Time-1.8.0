@@ -37,6 +37,8 @@ import {
   RelationshipLevel,
   RELATIONSHIP_REWARDS,
   TRUST_THRESHOLDS,
+  STORY_ARCS,
+  checkArcRequirements,
 } from './storyData';
 import {
   QUEST_REWARD_MULTIPLIER,
@@ -163,6 +165,8 @@ interface GameState {
   updateQuestObjective: (objectiveKey: string, increment: number) => void;
   isQuestComplete: (questId: string) => boolean;
   claimNpcReward: (npcId: string, rewardKey: string) => void;
+  checkArcRequirements: () => void;
+  unlockArc: (arcNumber: number) => boolean;
 
   // economy helpers
   addKarbovanets: (amount: number) => void;
@@ -487,6 +491,11 @@ export const useExpeditionStore = create<GameState>()(
           }));
         }
         
+        // If collections were completed, check if any arcs are now available
+        if (updated && completed.length > 0) {
+          get().checkArcRequirements();
+        }
+        
         return { completed, updated };
       },
       
@@ -579,6 +588,8 @@ export const useExpeditionStore = create<GameState>()(
         
         if (newLevel > oldLevel) {
           get().pushToast(`Рівень довіри: ${newLevel}!`, '#FFC72C');
+          // Check if any arcs are now available after relationship level up
+          get().checkArcRequirements();
         }
         
         // Track NPC interaction quest objective
@@ -650,6 +661,8 @@ export const useExpeditionStore = create<GameState>()(
               break;
             case 'reputation':
               set(st => ({ reputation: st.reputation + amount }));
+              // Check if any arcs are now available
+              get().checkArcRequirements();
               break;
             case 'artifact':
               // TODO: Implement artifact reward - itemId field exists but no grant logic
@@ -684,6 +697,9 @@ export const useExpeditionStore = create<GameState>()(
 
         // Show completion toast
         get().pushToast(`Квест "${quest.titleKey}" виконано!`, '#10B981');
+        
+        // Check if any arcs are now available
+        get().checkArcRequirements();
       },
 
       updateQuestObjective: (objectiveKey, increment) => {
@@ -763,6 +779,96 @@ export const useExpeditionStore = create<GameState>()(
           // Region unlock - unlock in game
           state.pushToast(`Новий регіон ${rewardKey.replace('region-', '')} відкрито!`, '#FF2A5F');
         }
+      },
+
+      // Arc system
+      checkArcRequirements: () => {
+        const state = get();
+        const { unlockedArcs, completedArcs, completedQuests, npcRelationships } = state.storyState;
+        
+        // Build current state for requirement checking
+        const currentState = {
+          reputation: state.reputation,
+          historicalPrestige: state.historicalPrestige,
+          completedQuests,
+          completedArcs,
+          npcRelationships,
+          museumCompletedCollections: state.museumState.completedCollections?.length || 0,
+          totalArtifacts: state.artifacts.length,
+        };
+        
+        // Check each arc that's not yet unlocked
+        let newlyUnlocked = false;
+        for (const arc of STORY_ARCS) {
+          if (unlockedArcs.includes(arc.arcNumber)) continue;
+          
+          const { met } = checkArcRequirements(arc, currentState);
+          if (met) {
+            // Unlock this arc
+            set((st) => ({
+              storyState: {
+                ...st.storyState,
+                unlockedArcs: [...st.storyState.unlockedArcs, arc.arcNumber],
+                currentArc: arc.arcNumber,
+              },
+            }));
+            state.pushToast(`Нова сюжетна арка відкрита: ${arc.icon} ${arc.name}!`, '#FFC72C');
+            newlyUnlocked = true;
+          }
+        }
+        
+        // If we unlocked something, check again for cascading unlocks
+        if (newlyUnlocked) {
+          // Use setTimeout to avoid potential infinite loops
+          setTimeout(() => get().checkArcRequirements(), 100);
+        }
+      },
+
+      unlockArc: (arcNumber) => {
+        const state = get();
+        
+        // Check if already unlocked
+        if (state.storyState.unlockedArcs.includes(arcNumber)) {
+          console.warn('Arc already unlocked:', arcNumber);
+          return false;
+        }
+        
+        // Find arc metadata
+        const arc = STORY_ARCS.find(a => a.arcNumber === arcNumber);
+        if (!arc) {
+          console.warn('Arc not found:', arcNumber);
+          return false;
+        }
+        
+        // Build current state for requirement checking
+        const currentState = {
+          reputation: state.reputation,
+          historicalPrestige: state.historicalPrestige,
+          completedQuests: state.storyState.completedQuests,
+          completedArcs: state.storyState.completedArcs,
+          npcRelationships: state.storyState.npcRelationships,
+          museumCompletedCollections: state.museumState.completedCollections?.length || 0,
+          totalArtifacts: state.artifacts.length,
+        };
+        
+        // Check requirements
+        const { met, missing } = checkArcRequirements(arc, currentState);
+        if (!met) {
+          console.warn('Arc requirements not met:', missing);
+          return false;
+        }
+        
+        // Unlock the arc
+        set((st) => ({
+          storyState: {
+            ...st.storyState,
+            unlockedArcs: [...st.storyState.unlockedArcs, arcNumber],
+            currentArc: arcNumber,
+          },
+        }));
+        
+        state.pushToast(`Нова сюжетна арка відкрита: ${arc.icon} ${arc.name}!`, '#FFC72C');
+        return true;
       },
 
       // Museum actions
@@ -1405,6 +1511,11 @@ export const useExpeditionStore = create<GameState>()(
           ),
         }));
         s.pushToast(`${npc.name}: +${karb} карб., +${rep} репутації`, '#FFC72C');
+        
+        // Check if any arcs are now available after reputation gain
+        if (rep > 0) {
+          s.checkArcRequirements();
+        }
       },
 
       tick: () => {
