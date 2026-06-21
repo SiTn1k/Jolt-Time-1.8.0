@@ -63,59 +63,60 @@ export function MuseumSystem({ isOpen, onClose }: MuseumSystemProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto">
       <div className="min-h-screen p-4 pb-20" style={{ maxWidth: '430px', margin: '0 auto' }}>
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div 
-              className="w-12 h-12 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: '#9747FF20', border: '1px solid #9747FF' }}
+              className="w-12 h-12 rounded-2xl flex items-center justify-center"
+              style={{ backgroundColor: 'rgba(151,71,255,0.15)' }}
             >
               <Landmark className="w-6 h-6" style={{ color: '#9747FF' }} />
             </div>
             <div>
-              <h1 className="text-xl" style={{ fontFamily: "'Exo 2', sans-serif" }}>
+              <h1 className="text-xl font-semibold" style={{ color: '#E6EDF3' }}>
                 {t('museum.title')}
               </h1>
-              <p className="text-xs text-muted-foreground">{t('museum.subtitle')}</p>
+              <p className="text-xs text-[#8B949E]">{t('museum.subtitle')}</p>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+            className="w-10 h-10 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 text-[#8B949E]" />
           </button>
         </div>
 
         {/* Stats Overview */}
         <div className="grid grid-cols-2 gap-3 mb-4">
-          <Card className="border-white/10 p-3">
+          <Card>
             <div className="flex items-center gap-2 mb-1">
               <Award className="w-4 h-4" style={{ color: '#FFC72C' }} />
-              <span className="text-xs text-muted-foreground">{t('museum.reputation_level')}</span>
+              <span className="text-xs text-[#8B949E]">{t('museum.reputation_level')}</span>
             </div>
-            <div className="text-xl" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>
+            <div className="text-xl font-semibold" style={{ color: '#FFC72C' }}>
               {repLevel.level} - {t(repLevel.nameKey)}
             </div>
           </Card>
-          <Card className="border-white/10 p-3">
+          <Card>
             <div className="flex items-center gap-2 mb-1">
               <Eye className="w-4 h-4" style={{ color: '#00E5FF' }} />
-              <span className="text-xs text-muted-foreground">{t('museum.visitors_today')}</span>
+              <span className="text-xs text-[#8B949E]">{t('museum.visitors_today')}</span>
             </div>
-            <div className="text-xl" style={{ fontFamily: "'Exo 2', sans-serif", color: '#00E5FF' }}>
+            <div className="text-xl font-semibold" style={{ color: '#00E5FF' }}>
               {finalDailyVisitors.toLocaleString()}
             </div>
           </Card>
         </div>
 
         {/* Reputation Progress */}
-        <Card className="border-white/10 p-3 mb-4">
+        <Card className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm">{t('museum.museum_reputation')}</span>
-            <span className="text-sm" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>
+            <span className="text-sm text-[#E6EDF3]">{t('museum.museum_reputation')}</span>
+            <span className="text-sm font-medium" style={{ color: '#FFC72C' }}>
               {Math.round(museumState.reputation).toLocaleString()} / {repLevel.requiredReputation.toLocaleString()}
             </span>
           </div>
@@ -123,24 +124,24 @@ export function MuseumSystem({ isOpen, onClose }: MuseumSystemProps) {
         </Card>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-2 -mx-1 px-1">
           {[
-            { id: 'exhibitions' as TabType, icon: Sparkles, label: t('museum.tab_exhibitions') },
-            { id: 'collections' as TabType, icon: Gift, label: t('museum.tab_collections') },
-            { id: 'upgrades' as TabType, icon: Settings, label: t('museum.tab_upgrades') },
-            { id: 'stats' as TabType, icon: TrendingUp, label: t('museum.tab_stats') },
-            { id: 'achievements' as TabType, icon: Trophy, label: t('museum.tab_achievements') },
-            { id: 'events' as TabType, icon: Calendar, label: t('museum.tab_events') },
-            { id: 'rankings' as TabType, icon: Crown, label: t('museum.tab_rankings') },
+            { id: 'exhibitions' as TabType, label: t('museum.tab_exhibitions') },
+            { id: 'collections' as TabType, label: t('museum.tab_collections') },
+            { id: 'upgrades' as TabType, label: t('museum.tab_upgrades') },
+            { id: 'stats' as TabType, label: t('museum.tab_stats') },
+            { id: 'achievements' as TabType, label: t('museum.tab_achievements') },
+            { id: 'events' as TabType, label: t('museum.tab_events') },
+            { id: 'rankings' as TabType, label: t('museum.tab_rankings') },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 min-h-[48px] rounded-xl whitespace-nowrap transition-all text-sm ${
-                activeTab === tab.id
-                  ? 'bg-[#9747FF] text-white'
-                  : 'bg-white/10 text-gray-300 hover:bg-white/20'
-              }`}
+              className="flex items-center gap-2 px-4 py-3 min-h-[48px] rounded-xl whitespace-nowrap transition-all text-sm"
+              style={{
+                backgroundColor: activeTab === tab.id ? '#9747FF' : 'rgba(255,255,255,0.06)',
+                color: activeTab === tab.id ? '#fff' : '#8B949E',
+              }}
             >
               <span>{tab.label}</span>
             </button>

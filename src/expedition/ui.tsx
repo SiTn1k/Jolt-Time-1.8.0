@@ -26,8 +26,14 @@ export function Card({
   return (
     <div
       onClick={onClick}
-      style={style}
-      className={cn('rounded-lg border bg-card text-card-foreground', className)}
+      style={{
+        backgroundColor: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: '20px',
+        padding: '16px',
+        ...style,
+      }}
+      className={cn('text-card-foreground', className)}
     >
       {children}
     </div>

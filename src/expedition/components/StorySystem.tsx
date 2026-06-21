@@ -203,79 +203,75 @@ export function StorySystem({
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                     >
-                      <Card className="border-white/10 p-4">
+                      <Card>
                         <div className="flex items-start gap-4 mb-4">
                           <div
-                            className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl"
+                            className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shrink-0"
                             style={{ 
-                              backgroundColor: `${selectedNpc.backgroundColor}30`,
-                              border: `2px solid ${selectedNpc.backgroundColor}`
+                              backgroundColor: `${selectedNpc.backgroundColor}20`,
                             }}
                           >
                             {selectedNpc.portrait}
                           </div>
-                          <div className="flex-1">
-                            <h3 className="text-base font-bold" style={{ fontFamily: "'Exo 2', sans-serif" }}>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-base font-semibold truncate" style={{ color: '#E6EDF3' }}>
                               {t(selectedNpc.nameKey)}
                             </h3>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs text-[#8B949E]">
                               {t(selectedNpc.roleKey)}
                             </p>
                             <div className="flex items-center gap-2 mt-1">
                               <Badge 
                                 style={{ 
-                                  backgroundColor: selectedNpc.rarity === 'legendary' ? '#FF2A5F' : 
-                                                  selectedNpc.rarity === 'epic' ? '#9747FF' :
-                                                  selectedNpc.rarity === 'rare' ? '#00E5FF' : '#8B949E',
-                                  color: '#0D1117',
+                                  backgroundColor: `${selectedNpc.backgroundColor}30`,
+                                  color: selectedNpc.backgroundColor,
                                   fontSize: '9px'
                                 }}
                               >
                                 {t(`artifacts.rarity_${selectedNpc.rarity}`)}
                               </Badge>
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-xs text-[#8B949E]">
                                 {t('npc.relationship')}: {getRelationship(selectedNpc.id).relationshipLevel}
                               </span>
                             </div>
                           </div>
                         </div>
 
-                        <p className="text-sm text-muted-foreground mb-4">
+                        <p className="text-sm text-[#8B949E] mb-4 leading-relaxed">
                           {t(selectedNpc.biographyKey)}
                         </p>
 
                         {/* Dialogue */}
-                        <div className="bg-[#0D1117] rounded-xl p-3 mb-4 border border-white/5">
+                        <div 
+                          className="rounded-2xl p-4 mb-4"
+                          style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
+                        >
                           <div className="flex items-center gap-2 mb-2">
                             <MessageCircle className="w-4 h-4 text-[#00E5FF]" />
-                            <span className="text-xs text-muted-foreground">{t('npc.dialogue')}</span>
+                            <span className="text-xs text-[#8B949E]">{t('npc.dialogue')}</span>
                           </div>
-                          <p className="text-sm italic">"{npcDialogue}"</p>
+                          <p className="text-sm italic text-[#E6EDF3]">«{npcDialogue}»</p>
                         </div>
 
                         {/* Actions */}
-                        <div className="flex gap-2">
+                        <div className="flex gap-3">
                           <Button 
                             onClick={handleTalk}
-                            variant="outline"
-                            className="flex-1"
-                            style={{ borderColor: '#00E5FF', color: '#00E5FF' }}
+                            className="flex-1 h-12 rounded-xl"
+                            style={{ 
+                              backgroundColor: 'rgba(255,255,255,0.06)',
+                              color: '#E6EDF3',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                            }}
                           >
                             <MessageCircle className="w-4 h-4 mr-2" />
                             {t('expedition.npc_talk')}
-                          </Button>
-                          <Button
-                            onClick={() => setSelectedNpc(null)}
-                            variant="outline"
-                            className="px-3"
-                          >
-                            <ChevronRight className="w-4 h-4" />
                           </Button>
                         </div>
                       </Card>
 
                       {/* NPC Quests */}
-                      <h4 className="text-sm font-medium mt-4 mb-2">{t('quest.quests')}:</h4>
+                      <h4 className="text-sm font-medium mt-4 mb-2 text-[#E6EDF3]">{t('quest.quests')}:</h4>
                       <div className="space-y-2">
                         {storyQuests
                           .filter(q => q.npcId === selectedNpc.id)
@@ -286,7 +282,7 @@ export function StorySystem({
                             const allComplete = objectives.every(o => o.completed);
                             
                             return (
-                              <Card key={quest.id} className="border-white/10 p-3">
+                              <Card key={quest.id}>
                                 <div className="flex items-center justify-between">
                                   <div className="flex-1">
                                     <h5 className="text-sm font-medium">{t(quest.titleKey)}</h5>
@@ -384,35 +380,33 @@ export function StorySystem({
                           animate={{ opacity: 1, y: 0 }}
                         >
                           <Card 
-                            className="border-white/10 p-3 cursor-pointer hover:border-white/20 transition-colors"
+                            className="cursor-pointer transition-all active:scale-[0.98]"
                             onClick={() => handleNpcClick(npc)}
                           >
                             <div className="flex items-center gap-3">
                               <div
-                                className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl"
+                                className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0"
                                 style={{ 
-                                  backgroundColor: `${npc.backgroundColor}30`,
-                                  border: `1px solid ${npc.backgroundColor}`
+                                  backgroundColor: `${npc.backgroundColor}15`,
                                 }}
                               >
                                 {npc.portrait}
                               </div>
-                              <div className="flex-1">
+                              <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <h4 className="text-sm font-medium">{t(npc.nameKey)}</h4>
+                                  <h4 className="text-sm font-medium truncate">{t(npc.nameKey)}</h4>
                                   <Badge 
-                                    className="text-[8px] px-1"
                                     style={{ 
-                                      backgroundColor: npc.backgroundColor,
-                                      color: '#0D1117'
+                                      backgroundColor: `${npc.backgroundColor}30`,
+                                      color: npc.backgroundColor,
                                     }}
                                   >
                                     {relationship.relationshipLevel}
                                   </Badge>
                                 </div>
-                                <p className="text-xs text-muted-foreground">{t(npc.roleKey)}</p>
+                                <p className="text-xs text-[#8B949E] truncate">{t(npc.roleKey)}</p>
                               </div>
-                              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                              <ChevronRight className="w-5 h-5 text-[#8B949E] shrink-0" />
                             </div>
                           </Card>
                         </motion.div>

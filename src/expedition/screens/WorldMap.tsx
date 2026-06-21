@@ -133,48 +133,48 @@ export function WorldMap() {
         )}
 
         <motion.div key={selectedRegion.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-          <Card className="border-white/10 p-4 mb-4">
+          <Card className="mb-4">
             <div className="flex items-start justify-between mb-3">
-              <div className="flex-1">
-                <h2 className="text-lg mb-1" style={{ fontFamily: "'Exo 2', sans-serif" }}>{selectedRegion.name}</h2>
-                <p className="text-xs text-muted-foreground mb-2">{selectedRegion.era}</p>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg font-semibold mb-1 truncate" style={{ color: '#E6EDF3' }}>{selectedRegion.name}</h2>
+                <p className="text-xs text-[#8B949E] mb-2">{selectedRegion.era}</p>
               </div>
-              <Badge className="px-2 py-1" style={{ backgroundColor: '#FFC72C', color: '#0D1117' }}>
+              <Badge className="px-2 py-1 shrink-0 ml-2" style={{ backgroundColor: '#FFC72C', color: '#0D1117' }}>
                 {t('expedition.difficulty')} {selectedRegion.difficulty}
               </Badge>
             </div>
 
-            <p className="text-sm mb-4 leading-relaxed">{selectedRegion.description}</p>
+            <p className="text-sm mb-4 leading-relaxed text-[#8B949E]">{selectedRegion.description}</p>
 
             <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className="bg-[#0D1117] rounded p-2">
+              <Card>
                 <div className="flex items-center gap-2 mb-1">
                   <Clock className="w-3 h-3" style={{ color: '#00E5FF' }} />
-                  <span className="text-xs text-muted-foreground">{t('common.duration')}</span>
+                  <span className="text-xs text-[#8B949E]">{t('common.duration')}</span>
                 </div>
-                <div className="text-sm" style={{ fontFamily: "'Exo 2', sans-serif", color: '#00E5FF' }}>
+                <div className="text-sm font-medium" style={{ color: '#00E5FF' }}>
                   {expeditionSeconds(selectedRegion)}{t('common.per_second').replace('/', '')}
                 </div>
-              </div>
-              <div className="bg-[#0D1117] rounded p-2">
+              </Card>
+              <Card>
                 <div className="flex items-center gap-2 mb-1">
                   <TrendingUp className="w-3 h-3" style={{ color: '#FFC72C' }} />
-                  <span className="text-xs text-muted-foreground">{t('expedition.base_chance')}</span>
+                  <span className="text-xs text-[#8B949E]">{t('expedition.base_chance')}</span>
                 </div>
-                <div className="text-sm" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>
+                <div className="text-sm font-medium" style={{ color: '#FFC72C' }}>
                   {selectedRegion.successChance}%
                 </div>
-              </div>
+              </Card>
             </div>
 
             <div className="mb-4">
               <div className="flex items-center gap-2 mb-2">
                 <Star className="w-4 h-4" style={{ color: '#FF2A5F' }} />
-                <span className="text-xs" style={{ fontFamily: "'Exo 2', sans-serif" }}>{t('expedition.possible_artifacts')}</span>
+                <span className="text-xs font-medium" style={{ color: '#E6EDF3' }}>{t('expedition.possible_artifacts')}</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {selectedRegion.artifacts.map((artifact, index) => (
-                  <Badge key={index} variant="outline" className="text-[10px]" style={{ borderColor: '#FF2A5F', color: '#FF2A5F' }}>
+                  <Badge key={index} style={{ backgroundColor: 'rgba(255,47,95,0.15)', color: '#FF2A5F', border: 'none' }}>
                     {artifact}
                   </Badge>
                 ))}
