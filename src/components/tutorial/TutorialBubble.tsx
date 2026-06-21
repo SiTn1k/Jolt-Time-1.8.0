@@ -3,6 +3,7 @@
  * 
  * Bottom sheet style bubble with guide character.
  * Inspired by Monobank/Revolut design language.
+ * Mobile-first responsive design with safe area support.
  */
 
 import { motion, AnimatePresence } from 'motion/react';
@@ -46,29 +47,29 @@ export function TutorialBubble({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
-        className="fixed z-[100] w-full pointer-events-none"
+        className="fixed left-4 right-4 z-[100] pointer-events-none"
         style={{
-          bottom: position === 'bottom' ? '80px' : 'auto',
+          bottom: position === 'bottom' ? 'calc(80px + env(safe-area-inset-bottom))' : 'auto',
           top: position === 'center' ? '50%' : 'auto',
-          left: '50%',
-          transform: position === 'center' ? 'translate(-50%, -50%)' : 'translateX(-50%)',
-          maxWidth: '430px',
+          transform: position === 'center' ? 'translateY(-50%)' : 'none',
+          maxWidth: '420px',
         }}
       >
         <div
-          className="mx-4 pointer-events-auto max-w-sm mx-auto"
+          className="pointer-events-auto overflow-hidden"
           style={{
             background: 'rgba(22, 27, 34, 0.98)',
             borderRadius: '24px',
             border: '1px solid rgba(255, 255, 255, 0.08)',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+            paddingBottom: 'env(safe-area-inset-bottom)',
           }}
         >
           {/* Header with guide */}
           <div className="flex items-center gap-3 p-4 border-b border-white/[0.08]">
             {/* Guide Avatar */}
             <div
-              className="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
+              className="w-11 h-11 rounded-full flex items-center justify-center text-xl shrink-0"
               style={{
                 background: '#FFC72C',
               }}
@@ -77,9 +78,9 @@ export function TutorialBubble({
             </div>
 
             {/* Guide info */}
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <h3
-                className="text-base font-semibold"
+                className="text-sm font-semibold truncate"
                 style={{ fontFamily: "'Exo 2', sans-serif", color: '#E6EDF3' }}
               >
                 {guideName}
@@ -92,7 +93,7 @@ export function TutorialBubble({
             {/* Skip button */}
             <button
               onClick={onSkip}
-              className="text-xs px-3 py-1.5 rounded-lg transition-colors hover:bg-white/[0.08]"
+              className="text-xs px-2 py-1 rounded-lg transition-colors hover:bg-white/[0.08] shrink-0"
               style={{ color: '#8B949E' }}
             >
               ✕
@@ -103,14 +104,14 @@ export function TutorialBubble({
           <div className="p-4">
             {/* Title */}
             <h4
-              className="text-sm font-semibold mb-2"
+              className="text-sm font-semibold mb-2 truncate"
               style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}
             >
               {t(step.titleKey)}
             </h4>
 
             {/* Description */}
-            <p className="text-sm leading-relaxed mb-4" style={{ color: '#8B949E' }}>
+            <p className="text-sm leading-relaxed mb-4 line-clamp-3" style={{ color: '#8B949E' }}>
               {t(step.contentKey)}
             </p>
 
@@ -128,7 +129,7 @@ export function TutorialBubble({
             {/* Action button */}
             <button
               onClick={onNext}
-              className="w-full h-12 rounded-2xl font-semibold text-base transition-all active:scale-[0.98] flex items-center justify-center"
+              className="w-full h-11 rounded-xl font-semibold text-sm transition-all active:scale-[0.98] flex items-center justify-center"
               style={{
                 background: '#FFC72C',
                 color: '#0d1117',
@@ -140,7 +141,7 @@ export function TutorialBubble({
             {/* Skip link */}
             <button
               onClick={onSkip}
-              className="w-full mt-3 py-2 text-xs transition-colors"
+              className="w-full mt-2 py-1.5 text-xs transition-colors"
               style={{ color: '#8B949E' }}
             >
               {t('tutorial.skip_tutorial')}
