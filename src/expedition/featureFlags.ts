@@ -152,6 +152,14 @@ function hashString(str: string): number {
   return Math.abs(hash);
 }
 
+// Check feature flag from server (returns null if server unavailable)
+async function checkFlagFromServer(flag: FeatureFlag): Promise<boolean | null> {
+  // TODO: Implement server-side feature flag check
+  // For now, return null to fallback to local check
+  // In production, this would call your feature flag API
+  return null;
+}
+
 // Hook for React components
 export function useFeatureFlag(flag: FeatureFlag, userId?: string): boolean {
   const [enabled, setEnabled] = useState(false);

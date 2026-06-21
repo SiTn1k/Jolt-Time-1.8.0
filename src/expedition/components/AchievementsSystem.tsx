@@ -10,6 +10,7 @@ import { Card, Badge, Progress } from '../ui';
 import { useExpeditionStore } from '../store';
 import { useLiveOpsStore } from '../liveOpsStore';
 import { achievements, Achievement, AchievementCategory } from '../liveOpsData';
+import { useTranslation } from '../../i18n';
 
 const categoryIcons: Record<AchievementCategory, typeof Star> = {
   expedition: Map,

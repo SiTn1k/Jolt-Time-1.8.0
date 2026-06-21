@@ -437,62 +437,120 @@
     "achievement_all_collections_desc": "Complete all collections",
     "achievement_legendary_exhibit": "Legendary Exhibit",
     "achievement_legendary_exhibit_desc": "Display a legendary artifact",
-    "achievement.academy_level_5.name": "Academy Level 5",
-    "achievement.academy_level_5.desc": "Reach Academy level 5",
-    "achievement.academy_level_10.name": "Academy Level 10",
-    "achievement.academy_level_10.desc": "Reach Academy level 10",
-    "achievement.arc_1.name": "Arc 1",
-    "achievement.arc_1.desc": "Obtain your first arc",
-    "achievement.arc_5.name": "Arcs 5",
-    "achievement.arc_5.desc": "Obtain 5 arcs",
-    "achievement.collection_1.name": "Collection 1",
-    "achievement.collection_1.desc": "Complete 1 full collection",
-    "achievement.collection_5.name": "Collections 5",
-    "achievement.collection_5.desc": "Complete 5 full collections",
-    "achievement.collection_all.name": "All Collections",
-    "achievement.collection_all.desc": "Complete all collections",
-    "achievement.expedition_1.name": "First Expedition",
-    "achievement.expedition_1.desc": "Complete 1 expedition",
-    "achievement.expedition_10.name": "Expeditions 10",
-    "achievement.expedition_10.desc": "Complete 10 expeditions",
-    "achievement.expedition_50.name": "Expeditions 50",
-    "achievement.expedition_50.desc": "Complete 50 expeditions",
-    "achievement.expedition_100.name": "Expeditions 100",
-    "achievement.expedition_100.desc": "Complete 100 expeditions",
-    "achievement.hero_level_10.name": "Hero Level 10",
-    "achievement.hero_level_10.desc": "Level up a hero to level 10",
-    "achievement.hero_level_20.name": "Hero Level 20",
-    "achievement.hero_level_20.desc": "Level up a hero to level 20",
-    "achievement.hero_unlock_1.name": "First Hero",
-    "achievement.hero_unlock_1.desc": "Unlock your first hero",
-    "achievement.hero_unlock_5.name": "Heroes 5",
-    "achievement.hero_unlock_5.desc": "Unlock 5 heroes",
-    "achievement.hero_unlock_10.name": "Heroes 10",
-    "achievement.hero_unlock_10.desc": "Unlock 10 heroes",
-    "achievement.legendary_artifact.name": "Legendary Artifact",
-    "achievement.legendary_artifact.desc": "Obtain a legendary artifact",
-    "achievement.museum_10.name": "Museum 10",
-    "achievement.museum_10.desc": "Reach museum level 10",
-    "achievement.museum_50.name": "Museum 50",
-    "achievement.museum_50.desc": "Reach museum level 50",
-    "achievement.museum_first.name": "First Museum",
-    "achievement.museum_first.desc": "Open your first museum",
-    "achievement.npc_all_allied.name": "All NPC Allies",
-    "achievement.npc_all_allied.desc": "Max trust with all NPCs",
-    "achievement.npc_first.name": "First NPC",
-    "achievement.npc_first.desc": "Talk to your first NPC",
-    "achievement.npc_trust_3.name": "NPC Trust 3",
-    "achievement.npc_trust_3.desc": "Reach trust level 3 with an NPC",
-    "achievement.npc_trust_5.name": "NPC Trust 5",
-    "achievement.npc_trust_5.desc": "Reach trust level 5 with an NPC",
-    "achievement.quest_10.name": "Quests 10",
-    "achievement.quest_10.desc": "Complete 10 quests",
-    "achievement.quest_50.name": "Quests 50",
-    "achievement.quest_50.desc": "Complete 50 quests",
-    "achievement.reputation_1000.name": "Reputation 1000",
-    "achievement.reputation_1000.desc": "Accumulate 1000 reputation",
-    "achievement.reputation_10000.name": "Reputation 10000",
-    "achievement.reputation_10000.desc": "Accumulate 10000 reputation"
+    "achievement": {
+      "academy_level_5": {
+        "name": "Academy Level 5",
+        "desc": "Reach Academy level 5"
+      },
+      "academy_level_10": {
+        "name": "Academy Level 10",
+        "desc": "Reach Academy level 10"
+      },
+      "arc_1": {
+        "name": "Arc 1",
+        "desc": "Obtain your first arc"
+      },
+      "arc_5": {
+        "name": "Arcs 5",
+        "desc": "Obtain 5 arcs"
+      },
+      "collection_1": {
+        "name": "Collection 1",
+        "desc": "Complete 1 full collection"
+      },
+      "collection_5": {
+        "name": "Collections 5",
+        "desc": "Complete 5 full collections"
+      },
+      "collection_all": {
+        "name": "All Collections",
+        "desc": "Complete all collections"
+      },
+      "expedition_1": {
+        "name": "First Expedition",
+        "desc": "Complete 1 expedition"
+      },
+      "expedition_10": {
+        "name": "Expeditions 10",
+        "desc": "Complete 10 expeditions"
+      },
+      "expedition_50": {
+        "name": "Expeditions 50",
+        "desc": "Complete 50 expeditions"
+      },
+      "expedition_100": {
+        "name": "Expeditions 100",
+        "desc": "Complete 100 expeditions"
+      },
+      "hero_level_10": {
+        "name": "Hero Level 10",
+        "desc": "Level up a hero to level 10"
+      },
+      "hero_level_20": {
+        "name": "Hero Level 20",
+        "desc": "Level up a hero to level 20"
+      },
+      "hero_unlock_1": {
+        "name": "First Hero",
+        "desc": "Unlock your first hero"
+      },
+      "hero_unlock_5": {
+        "name": "Heroes 5",
+        "desc": "Unlock 5 heroes"
+      },
+      "hero_unlock_10": {
+        "name": "Heroes 10",
+        "desc": "Unlock 10 heroes"
+      },
+      "legendary_artifact": {
+        "name": "Legendary Artifact",
+        "desc": "Obtain a legendary artifact"
+      },
+      "museum_10": {
+        "name": "Museum 10",
+        "desc": "Reach museum level 10"
+      },
+      "museum_50": {
+        "name": "Museum 50",
+        "desc": "Reach museum level 50"
+      },
+      "museum_first": {
+        "name": "First Museum",
+        "desc": "Open your first museum"
+      },
+      "npc_all_allied": {
+        "name": "All NPC Allies",
+        "desc": "Max trust with all NPCs"
+      },
+      "npc_first": {
+        "name": "First NPC",
+        "desc": "Talk to your first NPC"
+      },
+      "npc_trust_3": {
+        "name": "NPC Trust 3",
+        "desc": "Reach trust level 3 with an NPC"
+      },
+      "npc_trust_5": {
+        "name": "NPC Trust 5",
+        "desc": "Reach trust level 5 with an NPC"
+      },
+      "quest_10": {
+        "name": "Quests 10",
+        "desc": "Complete 10 quests"
+      },
+      "quest_50": {
+        "name": "Quests 50",
+        "desc": "Complete 50 quests"
+      },
+      "reputation_1000": {
+        "name": "Reputation 1000",
+        "desc": "Accumulate 1000 reputation"
+      },
+      "reputation_10000": {
+        "name": "Reputation 10000",
+        "desc": "Accumulate 10000 reputation"
+      }
+    }
   },
   "npc": {
     "courtyard": "Courtyard",
@@ -1194,32 +1252,58 @@
     "badge_legend_desc": "Unique profile badge"
   },
   "challenge": {
-    "daily_quest.title": "Daily Quest",
-    "daily_quest.desc": "Complete any quest",
-    "daily_expedition_3.title": "Expeditions 3",
-    "daily_expedition_3.desc": "Complete 3 expeditions",
-    "daily_hero_unlock.title": "Hero Unlock",
-    "daily_hero_unlock.desc": "Unlock a new hero",
-    "daily_museum.title": "Museum Visitor",
-    "daily_museum.desc": "Accept a visitor in your museum",
-    "daily_npc_5.title": "NPC Trust 5",
-    "daily_npc_5.desc": "Talk to 5 NPCs",
-    "daily_rare_artifact.title": "Rare Artifact",
-    "daily_rare_artifact.desc": "Obtain a rare or legendary artifact",
-    "event_pokrova.title": "Pokrova",
-    "event_pokrova.desc": "Participate in the Pokrova event",
-    "weekly_quests_5.title": "Weekly Quests 5",
-    "weekly_quests_5.desc": "Complete 5 weekly quests",
-    "weekly_expedition_10.title": "Expeditions 10",
-    "weekly_expedition_10.desc": "Complete 10 expeditions",
-    "weekly_npc_trust.title": "NPC Allies",
-    "weekly_npc_trust.desc": "Max trust with 3 NPCs",
-    "weekly_arc.title": "Arcs 2",
-    "weekly_arc.desc": "Obtain 2 arcs",
-    "weekly_artifacts_15.title": "Artifacts 15",
-    "weekly_artifacts_15.desc": "Collect 15 artifacts",
-    "weekly_epic.title": "Epic Artifact",
-    "weekly_epic.desc": "Obtain an epic or legendary artifact"
+    "daily_quest": {
+      "title": "Daily Quest",
+      "desc": "Complete any quest"
+    },
+    "daily_expedition_3": {
+      "title": "Expeditions 3",
+      "desc": "Complete 3 expeditions"
+    },
+    "daily_hero_unlock": {
+      "title": "Hero Unlock",
+      "desc": "Unlock a new hero"
+    },
+    "daily_museum": {
+      "title": "Museum Visitor",
+      "desc": "Accept a visitor in your museum"
+    },
+    "daily_npc_5": {
+      "title": "NPC Trust 5",
+      "desc": "Talk to 5 NPCs"
+    },
+    "daily_rare_artifact": {
+      "title": "Rare Artifact",
+      "desc": "Obtain a rare or legendary artifact"
+    },
+    "event_pokrova": {
+      "title": "Pokrova",
+      "desc": "Participate in the Pokrova event"
+    },
+    "weekly_quests_5": {
+      "title": "Weekly Quests 5",
+      "desc": "Complete 5 weekly quests"
+    },
+    "weekly_expedition_10": {
+      "title": "Expeditions 10",
+      "desc": "Complete 10 expeditions"
+    },
+    "weekly_npc_trust": {
+      "title": "NPC Allies",
+      "desc": "Max trust with 3 NPCs"
+    },
+    "weekly_arc": {
+      "title": "Arcs 2",
+      "desc": "Obtain 2 arcs"
+    },
+    "weekly_artifacts_15": {
+      "title": "Artifacts 15",
+      "desc": "Collect 15 artifacts"
+    },
+    "weekly_epic": {
+      "title": "Epic Artifact",
+      "desc": "Obtain an epic or legendary artifact"
+    }
   },
   "boosters_shop": {
     "telegram_stars_real_payment": "Telegram Stars — real payment",

@@ -10,8 +10,10 @@ import { Card, Badge, Progress } from '../ui';
 import { useExpeditionStore } from '../store';
 import { useLiveOpsStore } from '../liveOpsStore';
 import { dailyChallenges, weeklyChallenges, Challenge, ChallengePeriod } from '../liveOpsData';
+import { useTranslation } from '../../i18n';
 
 function ChallengeCard({ challenge, period }: { challenge: Challenge; period: ChallengePeriod }) {
+  const { t } = useTranslation();
   const progress = useLiveOpsStore(s => 
     period === 'daily' 
       ? s.dailyChallengesProgress[challenge.id] 
@@ -62,7 +64,7 @@ function ChallengeCard({ challenge, period }: { challenge: Challenge; period: Ch
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
               <h4 className="text-sm font-medium text-[#E6EDF3] truncate">
-                {challenge.titleKey.replace('challenge.', '').replace(/_/g, ' ')}
+                {t(challenge.titleKey)}
               </h4>
               {claimed && (
                 <Badge className="bg-green-500/20 text-green-400 text-[10px]">
@@ -73,7 +75,7 @@ function ChallengeCard({ challenge, period }: { challenge: Challenge; period: Ch
             </div>
             
             <p className="text-xs text-[#8B949E] mt-0.5">
-              {challenge.descriptionKey.replace('challenge.', '').replace(/_/g, ' ')}
+              {t(challenge.descriptionKey)}
             </p>
             
             {/* Progress */}
