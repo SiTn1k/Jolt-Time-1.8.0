@@ -10,10 +10,13 @@
  * - 30-second non-skippable chest ads every 10 chests
  * 
  * Block ID: 35644
+ * Token: e73dc047768d42dba4d64432274c05c1
  */
 
 // AdsGram Block ID for reward ads (Telegram-approved exclusive block)
 export const ADSGRAM_BLOCK_ID = '35644';
+// AdsGram Token
+export const ADSGRAM_TOKEN = 'e73dc047768d42dba4d64432274c05c1';
 
 // XP Boost configuration - EXCLUSIVE reward (cannot be bought)
 export const XP_BOOST_MULTIPLIER = 3;
@@ -33,57 +36,51 @@ export interface AdShowResult {
   error?: string;
   boostActivated?: boolean;
   alreadyActive?: boolean;
+  userId?: string;
 }
 
 /**
- * AdsGram ShowPromiseResult type (based on SDK usage)
+ * AdsGram SDK types (Sad API)
  */
-interface ShowPromiseResult {
-  done: boolean;
-  error?: string;
-  state?: string;
-  description?: string;
+interface SadConfig {
+  blockId: string;
+  token: string;
+  onReward?: () => void;
+  onError?: (error: { message: string }) => void;
+  onClose?: () => void;
 }
 
-/**
- * Types for AdsGram SDK
- */
-interface AdsgramController {
-  show: () => Promise<ShowPromiseResult>;
+interface Sad {
+  showRewardedAd: (config: SadConfig) => Promise<{ success: boolean; error?: string }>;
 }
-
-type BlockId = string;
 
 declare global {
   interface Window {
-    Adsgram?: {
-      init: (config: { blockId: BlockId; debug?: boolean }) => AdsgramController;
-    };
+    Sad?: Sad;
   }
 }
 
 /**
- * Initialize AdsGram SDK
+ * Check if AdsGram SDK is loaded
  */
-export function initAdsgram(blockId: string = ADSGRAM_BLOCK_ID, debug = false): AdsgramController | null {
-  console.log('[adsgram] Initializing with blockId:', blockId);
+export function isAdsgramLoaded(): boolean {
+  return typeof window !== 'undefined' && !!window.Sad;
+}
+
+/**
+ * Initialize AdsGram SDK (Sad API)
+ */
+export function initAdsgram(): Sad | null {
+  console.log('[adsgram] Checking SDK...');
   
-  if (!window.Adsgram) {
-    console.error('[adsgram] SDK not loaded - window.Adsgram is undefined');
+  if (!window.Sad) {
+    console.error('[adsgram] SDK not loaded - window.Sad is undefined');
     console.log('[adsgram] Available window keys:', Object.keys(window).filter(k => k.toLowerCase().includes('ad') || k.toLowerCase().includes('ads')));
     return null;
   }
 
-  console.log('[adsgram] SDK found, initializing...');
-  
-  try {
-    const controller = window.Adsgram.init({ blockId, debug });
-    console.log('[adsgram] Controller created:', controller);
-    return controller;
-  } catch (err) {
-    console.error('[adsgram] Failed to initialize:', err);
-    return null;
-  }
+  console.log('[adsgram] SDK found!');
+  return window.Sad;
 }
 
 /**
@@ -138,67 +135,52 @@ export async function grantXpBoostFromServer(telegramId: number): Promise<{ succ
 }
 
 /**
- * Show reward ad and handle completion
+ * Show reward ad and handle completion (Sad API)
  */
 export async function showRewardAd(
-  controller: AdsgramController,
+  sad: Sad,
   telegramId: number
 ): Promise<AdShowResult> {
-  try {
+  return new Promise((resolve) => {
     console.log('[adsgram] Showing reward ad...');
-    const result = await controller.show();
-    console.log('[adsgram] Ad result:', JSON.stringify(result));
+    
+    sad.showRewardedAd({
+      blockId: ADSGRAM_BLOCK_ID,
+      token: ADSGRAM_TOKEN,
+      onReward: async () => {
+        console.log('[adsgram] Ad watched, granting reward via server...');
+        const grantResult = await grantXpBoostFromServer(telegramId);
+        console.log('[adsgram] Grant result:', JSON.stringify(grantResult));
 
-    if (result.done) {
-      console.log('[adsgram] Ad completed, granting reward via server...');
-      // User watched ad till the end - grant reward via server
-      const grantResult = await grantXpBoostFromServer(telegramId);
-      console.log('[adsgram] Grant result:', JSON.stringify(grantResult));
-
-      if (grantResult.success) {
-        return {
-          success: true,
-          boostActivated: true,
-        };
-      } else {
-        return {
+        if (grantResult.success) {
+          resolve({
+            success: true,
+            boostActivated: true,
+          });
+        } else {
+          resolve({
+            success: false,
+            error: grantResult.error || 'Failed to grant reward',
+            alreadyActive: grantResult.alreadyActive,
+          });
+        }
+      },
+      onError: (error) => {
+        console.error('[adsgram] Ad error:', error);
+        resolve({
           success: false,
-          error: grantResult.error || 'Failed to grant reward',
-          alreadyActive: grantResult.alreadyActive,
-        };
-      }
-    } else {
-      // User closed ad before completion
-      console.log('[adsgram] Ad was not completed (result.done = false)');
-      return {
-        success: false,
-        error: 'Рекламу не завершено. Подивись до кінця, щоб отримати нагороду.',
-      };
-    }
-  } catch (err) {
-    console.error('[adsgram] Error showing ad:', err);
-    const errorResult = err as ShowPromiseResult;
-
-    // Handle different error states
-    if (errorResult.state === 'load') {
-      return {
-        success: false,
-        error: 'Не вдалося завантажити рекламу. Спробуйте пізніше.',
-      };
-    }
-
-    if (errorResult.description?.includes('not found') || errorResult.description?.includes('no banner')) {
-      return {
-        success: false,
-        error: 'Реклама наразі недоступна. Спробуйте пізніше.',
-      };
-    }
-
-    return {
-      success: false,
-      error: errorResult.description || 'Сталася помилка при відтворенні реклами',
-    };
-  }
+          error: error?.message || 'Сталася помилка при відтворенні реклами',
+        });
+      },
+      onClose: () => {
+        console.log('[adsgram] Ad closed before completion');
+        resolve({
+          success: false,
+          error: 'Рекламу закрито до завершення',
+        });
+      },
+    });
+  });
 }
 
 /**

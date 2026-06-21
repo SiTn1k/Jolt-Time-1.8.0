@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Zap, Gift, AlertCircle, Loader2 } from 'lucide-react';
 import { useTranslation } from '../i18n';
 import { getTelegramUserId } from '../lib/telegram';
@@ -23,21 +23,21 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [remainingTime, setRemainingTime] = useState(0);
-  const controllerRef = useRef<ReturnType<typeof initAdsgram>>(null);
+  const [sdkReady, setSdkReady] = useState(false);
 
   // Check if x3 boost is active
   const boostActive = isXpBoostActive(activeBoosters);
 
-  // Initialize AdsGram controller
+  // Initialize AdsGram SDK
   useEffect(() => {
     console.log('[AdsGramButton] Initializing AdsGram SDK...');
-    const controller = initAdsgram();
-    if (!controller) {
-      console.error('[AdsGramButton] Failed to initialize AdsGram controller');
+    const sad = initAdsgram();
+    if (!sad) {
+      console.error('[AdsGramButton] Failed to initialize AdsGram SDK');
     } else {
-      console.log('[AdsGramButton] AdsGram controller initialized successfully');
+      console.log('[AdsGramButton] AdsGram SDK initialized successfully');
+      setSdkReady(true);
     }
-    controllerRef.current = controller;
   }, []);
 
   // Update remaining time every second
@@ -57,9 +57,9 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
   const handleShowAd = useCallback(async () => {
     if (isLoading || boostActive) return;
 
-    const controller = controllerRef.current;
-    if (!controller) {
-      console.error('[AdsGramButton] Controller is null');
+    const sad = initAdsgram();
+    if (!sad) {
+      console.error('[AdsGramButton] SDK not ready');
       setError('Реклама наразі недоступна. Спробуйте пізніше.');
       return;
     }
@@ -78,7 +78,7 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
     console.log('[AdsGramButton] Showing reward ad...');
 
     try {
-      const result = await showRewardAd(controller, telegramId);
+      const result = await showRewardAd(sad, telegramId);
       console.log('[AdsGramButton] Ad result:', result);
 
       if (result.success && result.boostActivated) {
