@@ -38,6 +38,7 @@ export function MuseumSystem({ isOpen, onClose }: MuseumSystemProps) {
   const removeArtifactFromExhibition = useExpeditionStore((s) => s.removeArtifactFromExhibition);
   const collectMuseumIncome = useExpeditionStore((s) => s.collectMuseumIncome);
   const purchaseMuseumUpgrade = useExpeditionStore((s) => s.purchaseMuseumUpgrade);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const pushToast = useExpeditionStore((s) => s.pushToast);
   const expandExhibitionSlots = useExpeditionStore((s) => s.expandExhibitionSlots);
   const joinEvent = useExpeditionStore((s) => s.joinEvent);

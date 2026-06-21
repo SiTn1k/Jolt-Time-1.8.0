@@ -170,7 +170,7 @@ export function applyReward(state: AdRewardState, reward: AdReward): AdRewardSta
       newState.activeBoosters.currency_boost_end = now + reward.duration;
       newState.activeBoosters.currency_boost_mult = reward.value;
       break;
-    case 'offline_income':
+    case 'offline_income': {
       // Calculate offline income based on last session time
       const lastActive = newState.lastActiveTimestamp || Date.now();
       const offlineMinutes = Math.floor((Date.now() - lastActive) / 60000);
@@ -180,6 +180,7 @@ export function applyReward(state: AdRewardState, reward: AdReward): AdRewardSta
         console.log(`[AdRewards] Offline income bonus: +${offlineBonus} (${offlineMinutes} minutes offline)`);
       }
       break;
+    }
     case 'artifact_chance_p0':
     case 'artifact_chance_p2':
       newState.activeBoosters.artifact_boost_end = now + reward.duration;

@@ -153,10 +153,11 @@ function hashString(str: string): number {
 }
 
 // Check feature flag from server (returns null if server unavailable)
-async function checkFlagFromServer(flag: FeatureFlag): Promise<boolean | null> {
+async function checkFlagFromServer(_flag: FeatureFlag): Promise<boolean | null> {
   // TODO: Implement server-side feature flag check
   // For now, return null to fallback to local check
   // In production, this would call your feature flag API
+  void _flag; // Parameter reserved for future use
   return null;
 }
 

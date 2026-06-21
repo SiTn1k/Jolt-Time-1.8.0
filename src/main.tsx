@@ -12,7 +12,7 @@ console.log('  Notification:', typeof Notification);
 console.log('  localStorage:', typeof localStorage);
 
 // Запуск debug утиліт
-import { initDebug, checkGlobals, logConstructorCall } from './utils/debug';
+import { initDebug } from './utils/debug';
 initDebug();
 
 // ===== ІМПОРТИ =====

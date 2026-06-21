@@ -23,7 +23,7 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [remainingTime, setRemainingTime] = useState(0);
-  const [sdkReady, setSdkReady] = useState(false);
+  const [, setSdkReady] = useState(false); // sdkReady state - set but not read
 
   // Check if x3 boost is active
   const boostActive = isXpBoostActive(activeBoosters);
@@ -36,7 +36,7 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
       console.error('[AdsGramButton] Failed to initialize AdsGram SDK');
     } else {
       console.log('[AdsGramButton] AdsGram SDK initialized successfully');
-      setSdkReady(true);
+      setSdkReady(true); // _sdkReady can be used for conditional rendering
     }
   }, []);
 

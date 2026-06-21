@@ -44,6 +44,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
   const claimReward = useLiveOpsStore(s => s.claimAchievementReward);
   const addKarbovanets = useExpeditionStore(s => s.addKarbovanets);
   const addXp = useExpeditionStore(s => s.addXp);
+  const { t } = useTranslation();
 
   const unlocked = progress?.unlocked || false;
   const color = categoryColors[achievement.category];
