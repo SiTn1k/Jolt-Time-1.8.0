@@ -93,14 +93,22 @@ export function Museum() {
         </Card>
 
         {/* Museum Value */}
-        <Card className="bg-gradient-to-br from-[#161B22] to-[#0D1117] border-white/10 p-4 mb-4">
-          <div className="text-center">
-            <div className="text-3xl mb-1" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>
-              {totalValue.toLocaleString()}
+        {museumArtifacts.length > 0 ? (
+          <Card className="bg-gradient-to-br from-[#161B22] to-[#0D1117] border-white/10 p-4 mb-4">
+            <div className="text-center">
+              <div className="text-3xl mb-1" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>
+                {totalValue.toLocaleString()}
+              </div>
+              <p className="text-xs text-muted-foreground">{t('museum.total_collection_value')}</p>
             </div>
-            <p className="text-xs text-muted-foreground">{t('museum.total_collection_value')}</p>
-          </div>
-        </Card>
+          </Card>
+        ) : (
+          <Card className="bg-white/[0.04] border-white/[0.08] rounded-2xl p-6 mb-4 text-center">
+            <Landmark className="w-8 h-8 mx-auto mb-2" style={{ color: '#9747FF' }} />
+            <p className="text-sm text-[#E6EDF3]">{t('objective.empty_museum')}</p>
+            <p className="text-xs text-[#8B949E] mt-1">{t('objective.empty_museum_hint')}</p>
+          </Card>
+        )}
 
         {/* Quick Actions */}
         <button

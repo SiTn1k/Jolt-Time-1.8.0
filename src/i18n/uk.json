@@ -1174,5 +1174,26 @@
     "artifact_exhibited": "Артефакт виставлено!",
     "npc_collect_nothing": "Поки нічого збирати",
     "npc_collected": "{{name}}: +{{karb}} карб., +{{rep}} репутації"
+  },
+  "objective": {
+    "current_objective": "Поточна ціль",
+    "museum_collection": "Колекція музею",
+    "complete_quest": "Завершити активний квест",
+    "start_expedition": "Запустити експедицію",
+    "restore_artifact": "Відновити артефакт",
+    "send_to_museum": "Відправити в музей",
+    "increase_reputation": "Підвищити репутацію",
+    "continue_exploring": "Продовжити дослідження",
+    "daily_reminder": "Сьогодні варто:",
+    "reminder_expedition": "завершити експедицію",
+    "reminder_museum": "відправити артефакт у музей",
+    "reminder_reputation": "підвищити репутацію",
+    "reminder_arc": "відкрити нову сюжетну арку",
+    "empty_expedition": "Запустіть першу експедицію",
+    "empty_expedition_hint": "Оберіть героїв та регіон нижче",
+    "empty_laboratory": "Лабораторія готова до нових знахідок",
+    "empty_laboratory_hint": "Знайдені артефакти з'являться тут",
+    "empty_museum": "Колекція ще не створена",
+    "empty_museum_hint": "Відправте артефакти з експедицій до музею"
   }
 }

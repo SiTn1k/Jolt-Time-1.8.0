@@ -1053,5 +1053,26 @@
     "artifact_exhibited": "Artifact exhibited!",
     "npc_collect_nothing": "Nothing to collect yet",
     "npc_collected": "{{name}}: +{{karb}} karb., +{{rep}} reputation"
+  },
+  "objective": {
+    "current_objective": "Current Objective",
+    "museum_collection": "Museum Collection",
+    "complete_quest": "Complete active quest",
+    "start_expedition": "Start an expedition",
+    "restore_artifact": "Restore an artifact",
+    "send_to_museum": "Send to museum",
+    "increase_reputation": "Increase reputation",
+    "continue_exploring": "Continue exploring",
+    "daily_reminder": "Today worth doing:",
+    "reminder_expedition": "complete an expedition",
+    "reminder_museum": "send artifact to museum",
+    "reminder_reputation": "increase reputation",
+    "reminder_arc": "unlock new story arc",
+    "empty_expedition": "Start your first expedition",
+    "empty_expedition_hint": "Select heroes and region below",
+    "empty_laboratory": "Laboratory ready for new finds",
+    "empty_laboratory_hint": "Found artifacts will appear here",
+    "empty_museum": "Collection not created yet",
+    "empty_museum_hint": "Send artifacts from expeditions to museum"
   }
 }

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useExpeditionStore } from '../store';
 import { buildings } from '../data';
 import { motion } from 'motion/react';
-import { TrendingUp, Coins, Eye, Send, BookOpen, MessageCircle } from 'lucide-react';
+import { TrendingUp, Coins, Eye, Send, BookOpen, MessageCircle, Target, Zap, Archive, Star, CheckCircle2 } from 'lucide-react';
 import { Card, Badge } from '../ui';
 import { NPCSystem } from '../components/NPCSystem';
 import { UkrainianPattern } from '../components/UkrainianPattern';
@@ -33,8 +33,41 @@ export function Academy() {
   const museumVisitors = useExpeditionStore((s) => s.museumVisitors);
   const historicalPrestige = useExpeditionStore((s) => s.historicalPrestige);
   const expeditions = useExpeditionStore((s) => s.expeditions);
+  const artifacts = useExpeditionStore((s) => s.artifacts);
+  const museumItems = useExpeditionStore((s) => s.museumItems);
+  const currentArc = useExpeditionStore((s) => s.storyState.currentArc);
 
   const activeExpeditions = expeditions.filter((e) => !e.collected).length;
+  const damagedArtifacts = artifacts.filter((a) => a.condition < 100);
+  const totalArtifacts = artifacts.length;
+
+  // Calculate museum collection percentage
+  const museumCollectionPercent = totalArtifacts > 0 
+    ? Math.round((museumItems.length / totalArtifacts) * 100) 
+    : 0;
+
+  // Generate current objective based on priorities
+  const getCurrentObjective = () => {
+    if (storyState.activeQuests.length > 0) {
+      return { priority: 1, text: t('objective.complete_quest'), icon: Target };
+    }
+    if (activeExpeditions === 0 && heroes.length > 0) {
+      return { priority: 2, text: t('objective.start_expedition'), icon: Zap };
+    }
+    if (damagedArtifacts.length > 0) {
+      return { priority: 3, text: t('objective.restore_artifact'), icon: Archive };
+    }
+    if (museumItems.length === 0 && totalArtifacts > 0) {
+      return { priority: 4, text: t('objective.send_to_museum'), icon: Star };
+    }
+    if (reputation < 100) {
+      return { priority: 5, text: t('objective.increase_reputation'), icon: TrendingUp };
+    }
+    return { priority: 6, text: t('objective.continue_exploring'), icon: CheckCircle2 };
+  };
+
+  const currentObjective = getCurrentObjective();
+  const heroes = useExpeditionStore((s) => s.heroes);
   
   // Check if Academy is unlocked (prestige >= threshold)
   const isAcademyUnlocked = historicalPrestige >= ACADEMY_PRESTIGE_THRESHOLD;
@@ -79,6 +112,22 @@ export function Academy() {
           </Badge>
         </div>
 
+        {/* Current Objective Card */}
+        <Card className="bg-white/[0.04] border-white/[0.08] rounded-3xl p-4 mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#FFC72C20' }}>
+              <currentObjective.icon className="w-5 h-5" style={{ color: '#FFC72C' }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[#8B949E] mb-0.5">{t('objective.current_objective')}</p>
+              <p className="text-sm font-medium text-[#E6EDF3] truncate">{currentObjective.text}</p>
+            </div>
+            <Badge variant="outline" className="text-[10px] shrink-0" style={{ borderColor: '#FFC72C', color: '#FFC72C' }}>
+              #{currentObjective.priority}
+            </Badge>
+          </div>
+        </Card>
+
         <div className="grid grid-cols-2 gap-3 mb-4">
           <Card className="border-white/10 p-3">
             <div className="flex items-center gap-2 mb-1">
@@ -120,6 +169,20 @@ export function Academy() {
             </div>
           </Card>
         </div>
+
+        {/* Museum Collection Progress */}
+        <Card className="bg-white/[0.04] border-white/[0.08] rounded-2xl p-3 mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-[#8B949E]">{t('objective.museum_collection')}</span>
+            <span className="text-sm font-medium" style={{ color: '#FFC72C' }}>{museumCollectionPercent}%</span>
+          </div>
+          <div className="h-1.5 bg-white/[0.08] rounded-full overflow-hidden">
+            <div 
+              className="h-full rounded-full transition-all"
+              style={{ width: `${museumCollectionPercent}%`, backgroundColor: '#FFC72C' }}
+            />
+          </div>
+        </Card>
 
         {/* Academy Progress with Milestones */}
         <AcademyProgress

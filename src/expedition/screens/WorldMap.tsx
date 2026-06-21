@@ -94,7 +94,7 @@ export function WorldMap() {
 
       <div className="p-4 pb-20">
         {/* Active expeditions */}
-        {activeExpeditions.length > 0 && (
+        {activeExpeditions.length > 0 ? (
           <div className="mb-4 space-y-2">
             <h2 className="text-sm" style={{ fontFamily: "'Exo 2', sans-serif" }}>
               {t('expedition.expedition_active')} ({activeExpeditions.length}/{useExpeditionStore.getState().expeditionSlots})
@@ -133,6 +133,12 @@ export function WorldMap() {
               );
             })}
           </div>
+        ) : (
+          <Card className="bg-white/[0.04] border-white/[0.08] rounded-2xl p-6 mb-4 text-center">
+            <MapPin className="w-8 h-8 mx-auto mb-2" style={{ color: '#FFC72C' }} />
+            <p className="text-sm text-[#E6EDF3]">{t('objective.empty_expedition')}</p>
+            <p className="text-xs text-[#8B949E] mt-1">{t('objective.empty_expedition_hint')}</p>
+          </Card>
         )}
 
         <motion.div key={selectedRegion.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
