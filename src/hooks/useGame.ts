@@ -1201,6 +1201,11 @@ export function useGame() {
   const artifactMultipliers = getArtifactMultipliers(state.completedArtifacts || [], state.artifactDupes || {});
   const boosterMultipliers = getBoosterMultipliers(state.activeBoosters || {});
 
+  // Update session ad timestamp when ad is shown/dismissed
+  const updateSessionAdTimestamp = useCallback((timestamp: number) => {
+    setState(prev => ({ ...prev, lastSessionAdAt: timestamp }));
+  }, []);
+
   return {
     state,
     epoch,
@@ -1244,5 +1249,7 @@ export function useGame() {
     useEnergy,
     getEnergyMultiplier,
     regenerateEnergy,
+    // Session Ad Tracking
+    updateSessionAdTimestamp,
   };
 }

@@ -324,6 +324,7 @@ export async function loadGameState(): Promise<GameState | null> {
           maxEnergy: 1000,
           lastOnlineAt: Date.now(),
           sessionStartAt: Date.now(),
+          lastSessionAdAt: 0,
           dailyAdViews: {},
         };
       }
@@ -379,6 +380,7 @@ function hydrateFromDb(data: Record<string, unknown>): GameState {
     maxEnergy: data.max_energy ?? 1000,
     lastOnlineAt: data.last_online_at ? new Date(data.last_online_at as string).getTime() : Date.now(),
     sessionStartAt: data.session_start_at ? new Date(data.session_start_at as string).getTime() : Date.now(),
+    lastSessionAdAt: data.last_session_ad_at ? new Date(data.last_session_ad_at as string).getTime() : 0,
     dailyAdViews: data.daily_ad_views || {},
   };
 
@@ -442,6 +444,7 @@ function getInitialState(): GameState {
     maxEnergy: 1000,
     lastOnlineAt: Date.now(),
     sessionStartAt: Date.now(),
+    lastSessionAdAt: 0,
     dailyAdViews: {},
   };
 }

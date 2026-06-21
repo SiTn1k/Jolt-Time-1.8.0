@@ -74,6 +74,7 @@ function App() {
     buyPrestigeUpgrade,
     // Energy System
     getEnergyMultiplier,
+    updateSessionAdTimestamp,
   } = useGame();
 
   const [activeTab, setActiveTab] = useState<Tab>('shop');
@@ -114,11 +115,11 @@ function App() {
   // Translation helper for static strings
   const tr = (key: string, params?: Record<string, string | number>) => t(key as never, params as never);
 
-  // Session Ad hook - triggers after 20 min of play
+  // Session Ad hook - triggers after 15 min of ACTIVE play
   const { shouldShowSessionAd, dismissSessionAd } = useSessionAdTrigger(
     state.level,
     state.sessionStartAt || Date.now(),
-    state.lastOnlineAt
+    state.lastSessionAdAt || 0
   );
 
   // Chest Ad hook - triggers every 10th chest
@@ -1285,8 +1286,14 @@ function App() {
               console.error('Session ad reward failed:', err);
               hapticNotification('warning');
             }
+            // Save the timestamp when session ad reward is claimed
+            updateSessionAdTimestamp(Date.now());
           }}
-          onClose={dismissSessionAd}
+          onClose={() => {
+            // Save the timestamp when session ad was dismissed (if not already saved via onReward)
+            updateSessionAdTimestamp(Date.now());
+            dismissSessionAd();
+          }}
         />
       )}
 
