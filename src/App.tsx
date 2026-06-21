@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useGame } from './hooks/useGame';
 import { useTranslation } from './i18n';
 import { TapArea } from './components/TapArea';
@@ -14,7 +14,6 @@ import { AdsGramButton } from './components/AdsGramButton';
 import { PrestigeButton, MuseumLaboratory } from './components/PrestigeSystem';
 import { SessionAdModal, ChestAdModal, EnergyRestoreAdButton, useSessionAdTrigger, useChestAdTrigger } from './components/AdSystem';
 import { OfflineRewardModal } from './components/OfflineRewardModal';
-import { ExpeditionApp } from './expedition/ExpeditionApp';
 import { AcademyUnlockModal } from './components/AcademyUnlockModal';
 import { EPOCHS, ARTIFACTS, getEpochById } from './data/epochs';
 import { initTelegramMiniApp, hapticImpact, hapticNotification, getTelegramWebApp, getTelegramUserId } from './lib/telegram';
@@ -25,6 +24,9 @@ import { Crown, ShoppingBag, Trophy, Gift, Loader2, Users, X, Shield, Zap, Star,
 import type { EpochId } from './types/game';
 import { formatNumber } from './lib/utils';
 import { getTodayDateStr } from './data/tasks';
+
+// Lazy load ExpeditionApp - only needed for prestigeLevel >= 2
+const ExpeditionApp = lazy(() => import('./expedition/ExpeditionApp').then(m => ({ default: m.ExpeditionApp })));
 
 type Tab = 'shop' | 'epochs' | 'artifacts' | 'referrals' | 'stats' | 'boosters';
 
@@ -128,7 +130,6 @@ function App() {
   useEffect(() => {
     const tg = initTelegramMiniApp();
     if (tg) {
-      console.log('Telegram WebApp initialized', tg.version, 'User:', tg.initDataUnsafe?.user?.id);
     }
 
     // Show tutorial for new players
@@ -294,17 +295,21 @@ function App() {
 
   // After the 2nd rebirth (prestige), show Academy Unlock modal first time
   if ((state.prestigeLevel || 0) >= 2) {
-    // Show unlock modal on first visit (modal overlays ExpeditionApp)
-    if (showAcademyUnlock) {
-      return (
+    // Lazy-loaded, wrapped in Suspense for loading state
+    return (
+      <Suspense fallback={
+        <div className="h-screen flex items-center justify-center bg-[#0D1117]">
+          <Loader2 className="w-8 h-8 animate-spin text-[#FFC72C]" />
+        </div>
+      }>
         <>
           <ExpeditionApp />
-          <AcademyUnlockModal isOpen={showAcademyUnlock} onClose={handleAcademyUnlockClose} />
+          {showAcademyUnlock && (
+            <AcademyUnlockModal isOpen={showAcademyUnlock} onClose={handleAcademyUnlockClose} />
+          )}
         </>
-      );
-    }
-    // After modal dismissed, show ExpeditionApp
-    return <ExpeditionApp />;
+      </Suspense>
+    );
   }
 
   return (

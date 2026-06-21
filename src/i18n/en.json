@@ -201,7 +201,87 @@
     "reward_xp": "experience",
     "reward_hero_fragment": "hero fragment",
     "reward_artifact": "artifact",
-    "reward_academy_xp": "academy experience"
+    "reward_academy_xp": "academy experience",
+    "arc5_2": {
+      "description": "Explore modern history",
+      "title": "Modern Ukraine"
+    },
+    "arc5_1": {
+      "description": "Begin independence quest",
+      "title": "Independence Journey"
+    },
+    "arc3_3": {
+      "title": "Church Treasures",
+      "description": "Find church historical items"
+    },
+    "arc3_2": {
+      "description": "Discover prince artifacts",
+      "title": "Prince's Legacy"
+    },
+    "arc5_3": {
+      "title": "Independence Achievement",
+      "description": "Complete independence arc"
+    },
+    "arc4_1": {
+      "title": "Cossack Heritage",
+      "description": "Explore Cossack era"
+    },
+    "arc1_3": {
+      "description": "Explore the ancient settlement",
+      "title": "Ancient Settlement"
+    },
+    "arc1_1": {
+      "description": "Begin your archaeological journey",
+      "title": "The First Steps"
+    },
+    "arc2_1": {
+      "title": "Scythian Gold",
+      "description": "Discover Scythian treasures"
+    },
+    "arc2_4": {
+      "title": "Museum Expansion",
+      "description": "Expand your collection"
+    },
+    "arc3_4": {
+      "title": "Academic Recognition",
+      "description": "Gain academic reputation"
+    },
+    "arc3_1": {
+      "description": "Explore Kyivan Rus history",
+      "title": "Kyivan Rus Origins"
+    },
+    "arc5_finale": {
+      "description": "Finale: United Ukraine",
+      "title": "Unity"
+    },
+    "arc2_3": {
+      "description": "Collect golden Scythian items",
+      "title": "Golden Artifacts"
+    },
+    "arc1_4": {
+      "description": "Establish your museum collection",
+      "title": "Museum Foundation"
+    },
+    "arc4_4": {
+      "description": "Achieve Cossack glory",
+      "title": "Cossack Glory"
+    },
+    "arc2_2": {
+      "description": "Learn about Scythian warriors",
+      "title": "Nomadic Warriors"
+    },
+    "arc1_2": {
+      "description": "Find Tripillian artifacts",
+      "title": "Tripillian Treasures"
+    },
+    "arc4_2": {
+      "title": "Zaporizhzhia Sich",
+      "description": "Visit Cossack settlements"
+    },
+    "arc4_3": {
+      "description": "Collect Cossack weapons",
+      "title": "Cossack Weapons"
+    }
   },
   "story": {
     "story_system": "Story System",
@@ -213,6 +293,38 @@
       "objective_prestige": "Prestige",
       "objective_build": "Build",
       "objective_collect": "Collect"
+    },
+    "arc6": {
+      "title": "Galicia-Volyn Principality",
+      "description": "Western lands"
+    },
+    "arc7": {
+      "title": "Ukrainian Renaissance",
+      "description": "Cultural flourishing"
+    },
+    "arc8": {
+      "title": "Legends of Ukrainian History",
+      "description": "Final arc"
+    },
+    "arc6_1": {
+      "title": "The Western Campaign",
+      "description": "Explore western territories"
+    },
+    "arc6_2": {
+      "title": "Cultural Exchange",
+      "description": "Discover cultural artifacts"
+    },
+    "arc7_1": {
+      "title": "Renaissance Beginnings",
+      "description": "Begin cultural journey"
+    },
+    "arc7_2": {
+      "title": "Artistic Treasures",
+      "description": "Collect artistic artifacts"
+    },
+    "arc8_1": {
+      "title": "The Grand Finale",
+      "description": "Complete the ultimate challenge"
     }
   },
   "museum": {
@@ -287,7 +399,14 @@
     "locked": "Locked",
     "active": "Active",
     "secret_achievement": "Secret achievement",
-    "event_suffix": "Event"
+    "event_suffix": "Event",
+    "achievements": "Achievements",
+    "exhibition_events": "Exhibition Events",
+    "exhibition_events_desc": "Participate in special exhibitions",
+    "join_event": "Join Event",
+    "participating": "Participating",
+    "event_active": "Event Active",
+    "event_completed": "Event Completed"
   },
   "npc": {
     "courtyard": "Courtyard",
@@ -372,7 +491,11 @@
     "unlocked": "Unlocked",
     "available": "Available",
     "max_level": "MAX",
-    "today": "today"
+    "today": "today",
+    "continue": "Continue",
+    "value": "Value",
+    "progress": "Progress",
+    "status": "Status"
   },
   "tabs": {
     "shop": "Shop",
@@ -499,7 +622,10 @@
     "day": "Day {day}",
     "streak": "Streak {count} days",
     "already_claimed": "Already claimed today",
-    "come_back_tomorrow": "Come back tomorrow!"
+    "come_back_tomorrow": "Come back tomorrow!",
+    "claim": "Claim",
+    "claimed": "Claimed",
+    "coming_back": "Come back tomorrow"
   },
   "daily_tasks": {
     "loading": "Loading tasks...",
@@ -522,7 +648,16 @@
     "player": "Player",
     "level": "Level",
     "total_xp": "Total XP",
-    "loading": "Loading leaderboard..."
+    "loading": "Loading leaderboard...",
+    "artifacts": "Artifacts",
+    "friends": "Friends",
+    "global": "Global",
+    "empty": "No data yet",
+    "score": "Score",
+    "reputation": "Reputation",
+    "hero_power": "Hero Power",
+    "prestige": "Prestige",
+    "weekly": "Weekly"
   },
   "tutorial": {
     "guide_name": "Young Researcher",
@@ -658,7 +793,8 @@
     "leaderboard_top_players": "Top Players",
     "leaderboard_play_more": "Play more to enter the rankings!",
     "leaderboard_refresh": "Refresh",
-    "leaderboard_no_data": "No data for this leaderboard"
+    "leaderboard_no_data": "No data for this leaderboard",
+    "story_system": "Story System"
   },
   "academy_unlock": {
     "title": "Academy of Time Unlocked!",
@@ -717,7 +853,9 @@
     "p1_prestige_milestone": "Discovery",
     "p2_prestige_milestone": "Explorer",
     "p3_prestige_milestone": "Master",
-    "p4_prestige_milestone": "Expert"
+    "p4_prestige_milestone": "Expert",
+    "academy_unlock": "Academy Unlock",
+    "prestige": "Prestige Milestone"
   },
   "teaser": {
     "locked_academy": "LOCKED",
@@ -1074,5 +1212,19 @@
     "empty_laboratory_hint": "Found artifacts will appear here",
     "empty_museum": "Collection not created yet",
     "empty_museum_hint": "Send artifacts from expeditions to museum"
+  },
+  "events": {
+    "active": "Active Events",
+    "upcoming": "Upcoming",
+    "rewards": "Rewards",
+    "time_left": "Time left",
+    "participate": "Participate",
+    "completed": "Completed",
+    "title": "Events",
+    "progress": "Progress"
+  },
+  "npc_rewards": {
+    "dialogue_unlocked": "New Dialogue Unlocked",
+    "quest_unlocked": "Quest Unlocked"
   }
 }

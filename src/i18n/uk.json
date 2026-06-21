@@ -165,7 +165,7 @@
     "tab_achievements": "Досягнення",
     "tab_events": "Події",
     "tab_rankings": "Рейтинги",
-    "your_rank": "Ваш рейтинг",
+    "your_rank": "Ваш ранг",
     "exhibition_slots": "Слоти виставок",
     "expand_slots": "Розширити слоти",
     "select_artifact": "Оберіть артефакт",
@@ -217,14 +217,15 @@
     "achievements": "Досягнення",
     "exhibition_events": "Виставкові події",
     "exhibition_events_desc": "Беріть участь у подіях з обмеженим часом для отримання ексклюзивних нагород та бонусів.",
-    "your_rank": "Ваш ранг",
     "unlocked": "Відкрито",
     "locked": "Заблоковано",
     "active": "Активна",
     "secret_achievement": "Секретне досягнення",
     "event_suffix": "Подія",
     "join_event": "Приєднатися",
-    "participating": "Берете участь"
+    "participating": "Берете участь",
+    "event_completed": "Event Completed",
+    "event_active": "Event Active"
   },
   "npc": {
     "courtyard": "Подвір'я",
@@ -598,7 +599,11 @@
     "claimed": "Забрано",
     "streak": "Серія",
     "day": "День",
-    "coming_back": "Повертайся завтра!"
+    "coming_back": "Повертайся завтра!",
+    "come_back_tomorrow": "Come back tomorrow!",
+    "already_claimed": "Already claimed today",
+    "claim_reward": "Claim Reward",
+    "check_in": "Daily Check-in"
   },
   "daily_tasks": {
     "loading": "Завдання завантажуються...",
@@ -626,7 +631,11 @@
     "reputation": "Репутація",
     "artifacts": "Артефакти",
     "hero_power": "Сила героїв",
-    "empty": "Немає даних"
+    "empty": "Немає даних",
+    "level": "Level",
+    "loading": "Loading leaderboard...",
+    "total_xp": "Total XP",
+    "your_rank": "Your Rank"
   },
   "tutorial": {
     "guide_name": "Молодий дослідник",
@@ -870,7 +879,15 @@
       "collector": "Колекціонер",
       "academy_master": "Володар Академії",
       "remaining": "Залишилось"
-    }
+    },
+    "story_desc": "Deep historical campaign",
+    "buildings_desc": "Покращуйте свою академію",
+    "buildings": "Buildings",
+    "expeditions_desc": "More challenging expeditions",
+    "story": "Campaign",
+    "heroes": "Heroes",
+    "heroes_desc": "Найміть легендарних героїв",
+    "expeditions": "Expeditions"
   },
   "story_events": {
     "academy_first_discovery": "Перше відкриття",
@@ -904,7 +921,47 @@
   },
   "story": {
     "story_system": "Система історії",
-    "npcs_quests": "NPC та квести"
+    "npcs_quests": "NPC та квести",
+    "quest": {
+      "objective_visit": "Visit",
+      "objective_speak": "Conversation",
+      "objective_build": "Побудувати",
+      "objective_collect": "Зібрати",
+      "objective_prestige": "Prestige",
+      "objective_expedition": "Expedition"
+    },
+    "arc7_2": {
+      "title": "Artistic Treasures",
+      "description": "Collect artistic artifacts"
+    },
+    "arc7": {
+      "title": "Ukrainian Renaissance",
+      "description": "Cultural flourishing"
+    },
+    "arc8_1": {
+      "title": "The Grand Finale",
+      "description": "Complete the ultimate challenge"
+    },
+    "arc6": {
+      "title": "Galicia-Volyn Principality",
+      "description": "Western lands"
+    },
+    "arc7_1": {
+      "title": "Renaissance Beginnings",
+      "description": "Begin cultural journey"
+    },
+    "arc8": {
+      "description": "Final arc",
+      "title": "Legends of Ukrainian History"
+    },
+    "arc6_2": {
+      "title": "Cultural Exchange",
+      "description": "Discover cultural artifacts"
+    },
+    "arc6_1": {
+      "description": "Explore western territories",
+      "title": "The Western Campaign"
+    }
   },
   "heroes": {
     "artifact": "Артефакт",
