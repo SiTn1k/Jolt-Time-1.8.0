@@ -8,6 +8,9 @@ export default defineConfig({
     include: ['react', 'react-dom', 'motion'],
   },
   build: {
+    // DEBUG MODE - Disable minification to see real errors
+    minify: false,
+    sourcemap: true,
     commonjsOptions: {
       include: [/react/, /node_modules/],
     },
