@@ -50,6 +50,9 @@ export function Academy() {
     ? Math.round(((museumItems || []).length / totalArtifacts) * 100) 
     : 0;
 
+  // Heroes - defined early to use in getCurrentObjective
+  const heroes = useExpeditionStore((s) => s.heroes || []);
+
   // Generate current objective based on priorities (Current Objective 2.0)
   const getCurrentObjective = () => {
     // Priority 1: Active story quest
@@ -89,7 +92,6 @@ export function Academy() {
   };
 
   const currentObjective = getCurrentObjective();
-  const heroes = useExpeditionStore((s) => s.heroes);
   
   // Check if Academy is unlocked (prestige >= threshold)
   const isAcademyUnlocked = historicalPrestige >= ACADEMY_PRESTIGE_THRESHOLD;
