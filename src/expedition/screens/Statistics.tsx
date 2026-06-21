@@ -125,7 +125,7 @@ export function Statistics() {
               <Crown className="w-10 h-10 text-[#FFD700]" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-[#FFD700]">Статистика</h2>
+              <h2 className="text-xl font-bold text-[#FFD700]">{t('statistics.title')}</h2>
               <p className="text-sm text-[#E6EDF3]/80">Твій прогрес в Академії</p>
             </div>
           </div>
@@ -173,7 +173,7 @@ export function Statistics() {
         <Card className="bg-[#161B22] border-white/5 p-4">
           <h3 className="text-sm font-semibold text-[#E6EDF3] mb-4 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-[#00E5FF]" />
-            Загальна статистика
+            {t('statistics.subtitle')}
           </h3>
           
           <div className="space-y-1">

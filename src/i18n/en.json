@@ -585,38 +585,38 @@
     },
     "danylo_romanovich": {
       "name": "Daniel Romanovych",
-      "role": "King of Galicia-Volhynia",
-      "biography": "The first King of Rus who united the Galicia and Volhynia principalities."
+      "role": "King",
+      "biography": "Last king of Ruthenia, son of Roman Mstyslavych."
     },
     "kobzar": {
       "name": "Kobzar",
-      "role": "Folk Singer",
-      "biography": "Traveling musician-storyteller who preserves folk memory in songs."
+      "role": "Traveling Singer",
+      "biography": "Bandura player preserving Cossack songs."
     },
     "shevchenko": {
       "name": "Taras Shevchenko",
-      "role": "Poet and Artist",
-      "biography": "Great national poet, symbol of Ukrainian spirit and fight for freedom."
+      "role": "Poet",
+      "biography": "Great Ukrainian poet and artist."
     },
     "petrykura": {
       "name": "Symon Petliura",
-      "role": "Head of Directorate of UNR",
-      "biography": "Military and political figure of the liberation struggle for Ukrainian independence."
+      "role": "Statesman",
+      "biography": "Leader of the Ukrainian People's Republic."
     },
     "ww2_researcher": {
-      "name": "WWII Researcher",
-      "role": "War Historian",
-      "biography": "Expert researching the tragic and heroic pages of World War II."
+      "name": "WW2 Researcher",
+      "role": "Historian",
+      "biography": "Researcher of World War II events."
     },
     "dziuba": {
       "name": "Ivan Dziuba",
-      "role": "Literary Critic",
-      "biography": "Distinguished literary scholar and human rights activist of the Sixtiers era."
+      "role": "Literary Scholar",
+      "biography": "Prominent Ukrainian literary scholar and culturalist."
     },
     "modern_historian": {
       "name": "Modern Historian",
-      "role": "Contemporary Ukraine Researcher",
-      "biography": "Young scholar studying modern Ukrainian history and democratic transformations."
+      "role": "Historian",
+      "biography": "Researcher of modern Ukrainian history."
     },
     "relationship": "Relationship",
     "trust_points": "Trust Points",
@@ -1559,5 +1559,13 @@
   "npc_rewards": {
     "dialogue_unlocked": "New Dialogue Unlocked",
     "quest_unlocked": "Quest Unlocked"
+  },
+  "statistics": {
+    "title": "Statistics",
+    "subtitle": "Overall Statistics",
+    "expeditions": "Expeditions",
+    "artifacts": "Artifacts",
+    "playtime": "Playtime",
+    "prestige": "Prestige"
   }
 }
