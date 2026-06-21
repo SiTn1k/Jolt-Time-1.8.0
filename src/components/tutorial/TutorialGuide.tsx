@@ -3,8 +3,10 @@
  * 
  * Main orchestrator for the Academy tutorial system.
  * Integrates with expedition store for state persistence.
+ * Uses React Portal to render bubble/overlay outside container hierarchy.
  */
 
+import { createPortal } from 'react-dom';
 import { useTranslation } from '../../i18n';
 import { useExpeditionStore } from '../../expedition/store';
 import { TutorialBubble } from './TutorialBubble';
@@ -115,7 +117,8 @@ export function TutorialGuide() {
   const guideName = t('tutorial.guide_name') || 'Молодий дослідник';
   const guideAvatar = '🧑‍🔬';
 
-  return (
+  // Render via Portal to escape overflow-hidden containers
+  const tutorialContent = (
     <>
       {/* Overlay with highlight */}
       <TutorialOverlay
@@ -136,4 +139,8 @@ export function TutorialGuide() {
       />
     </>
   );
+
+  // Use Portal to render outside container hierarchy
+  // This fixes the issue where overflow-hidden on parent breaks position:fixed
+  return createPortal(tutorialContent, document.body);
 }
