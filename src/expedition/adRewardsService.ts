@@ -6,7 +6,8 @@
  * P2+: Academy Currency, Expedition Speed, Museum Bonuses, Artifact Chance
  */
 
-import { ADSGRAM_BLOCK_ID, initAdsgram, showRewardAd, AdShowResult } from '../services/adsgram';
+import { ADSGRAM_BLOCK_ID, initAdsgram, showRewardAd, isAdsgramLoaded, AdShowResult } from '../services/adsgram';
+import { getTelegramUserId } from '../lib/telegram';
 
 export type AdRewardType = 
   // P0-P1 Rewards
@@ -296,35 +297,68 @@ let adsgramController: ReturnType<typeof initAdsgram> | null = null;
 /**
  * Initialize AdsGram SDK
  */
-export function initializeAdSystem(): void {
+export function initializeAdSystem(): boolean {
   if (!adsgramController) {
-    adsgramController = initAdsgram(ADSGRAM_BLOCK_ID, false);
+    adsgramController = initAdsgram();
+    if (!adsgramController) {
+      console.error('[AdRewards] Failed to initialize AdsGram SDK');
+      return false;
+    }
+    console.log('[AdRewards] AdsGram SDK initialized');
   }
+  return true;
+}
+
+/**
+ * Check if ad system is available
+ */
+export function isAdSystemAvailable(): boolean {
+  return isAdsgramLoaded();
 }
 
 /**
  * Watch an ad and get the selected reward
  */
 export async function watchAdAndClaimReward(
-  _reward: AdReward, // Reward type determines which boosters to activate
-  telegramId: number
+  reward: AdReward, // Reward type determines which boosters to activate
+  onReward?: () => void
 ): Promise<{ success: boolean; error?: string }> {
+  // Check if SDK is loaded
+  if (!isAdsgramLoaded()) {
+    console.error('[AdRewards] SDK not loaded');
+    return { success: false, error: 'Рекламна система тимчасово недоступна' };
+  }
+
+  // Initialize SDK if needed
   if (!adsgramController) {
-    initializeAdSystem();
+    const initialized = initializeAdSystem();
+    if (!initialized) {
+      return { success: false, error: 'Не вдалося ініціалізувати рекламу' };
+    }
+  }
+
+  const telegramId = getTelegramUserId();
+  if (!telegramId) {
+    return { success: false, error: 'Помилка автентифікації' };
   }
   
-  if (!adsgramController) {
-    return { success: false, error: 'Ad system not available' };
+  try {
+    // Show the ad
+    const result = await showRewardAd(adsgramController!, telegramId);
+    
+    if (!result.success) {
+      return { success: false, error: result.error || 'Рекламу не завершено' };
+    }
+    
+    // Reward was granted by server (in showRewardAd)
+    console.log('[AdRewards] Ad reward granted for:', reward.type);
+    onReward?.();
+    
+    return { success: true };
+  } catch (err) {
+    console.error('[AdRewards] Error watching ad:', err);
+    return { success: false, error: 'Сталася помилка при показі реклами' };
   }
-  
-  // Show the ad
-  const result: AdShowResult = await showRewardAd(adsgramController, telegramId);
-  
-  if (!result.success) {
-    return { success: false, error: result.error };
-  }
-  
-  return { success: true };
 }
 
 /**

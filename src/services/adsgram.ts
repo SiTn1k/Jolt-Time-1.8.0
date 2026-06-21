@@ -28,6 +28,49 @@ const getEdgeFunctionUrl = () => {
   return `${supabaseUrl}/functions/v1/adsgram-reward`;
 };
 
+// SDK loading state
+let sdkLoadPromise: Promise<void> | null = null;
+let sdkLoaded = false;
+
+/**
+ * Wait for SDK to be available
+ * Returns true if SDK is loaded, false if timed out
+ */
+export function waitForSdk(timeoutMs = 5000): Promise<boolean> {
+  if (sdkLoaded && typeof window !== 'undefined' && !!window.Sad) {
+    return Promise.resolve(true);
+  }
+
+  if (sdkLoadPromise) {
+    return sdkLoadPromise;
+  }
+
+  sdkLoadPromise = new Promise((resolve) => {
+    const startTime = Date.now();
+    
+    const check = () => {
+      if (typeof window !== 'undefined' && !!window.Sad) {
+        sdkLoaded = true;
+        console.log('[adsgram] SDK loaded after', Date.now() - startTime, 'ms');
+        resolve(true);
+        return;
+      }
+      
+      if (Date.now() - startTime > timeoutMs) {
+        console.error('[adsgram] SDK load timeout');
+        resolve(false);
+        return;
+      }
+      
+      setTimeout(check, 100);
+    };
+    
+    check();
+  });
+
+  return sdkLoadPromise;
+}
+
 /**
  * Result of ad show attempt
  */
@@ -69,17 +112,32 @@ export function isAdsgramLoaded(): boolean {
 
 /**
  * Initialize AdsGram SDK (Sad API)
+ * Uses waitForSdk to ensure SDK is loaded
  */
 export function initAdsgram(): Sad | null {
-  console.log('[adsgram] Checking SDK...');
+  console.log('[adsgram] Initializing SDK...');
+  
+  if (typeof window === 'undefined') {
+    console.error('[adsgram] Window not defined');
+    return null;
+  }
   
   if (!window.Sad) {
+    // Start async loading
+    waitForSdk(5000).then((loaded) => {
+      if (loaded) {
+        sdkLoaded = true;
+      }
+    });
+    
     console.error('[adsgram] SDK not loaded - window.Sad is undefined');
-    console.log('[adsgram] Available window keys:', Object.keys(window).filter(k => k.toLowerCase().includes('ad') || k.toLowerCase().includes('ads')));
+    console.log('[adsgram] SDK script should be loaded from: https://sad.adsgram.ai/js/sad.min.js');
+    console.log('[adsgram] Check network tab for failed script load');
     return null;
   }
 
   console.log('[adsgram] SDK found!');
+  sdkLoaded = true;
   return window.Sad;
 }
 
