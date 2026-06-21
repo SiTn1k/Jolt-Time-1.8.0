@@ -125,8 +125,8 @@ export function ExpeditionApp() {
         {screen === 'premium' && <Premium />}
       </div>
 
-      <nav className="bg-[#161B22] border-t border-white/10 shrink-0">
-        <div className="grid grid-cols-7 h-16">
+      <nav className="bg-[#161B22] border-t border-white/10 shrink-0 overflow-x-auto">
+        <div className="grid grid-cols-9 h-16">
           {navigation.map((item) => {
             const isActive = screen === item.id;
             const Icon = item.icon;

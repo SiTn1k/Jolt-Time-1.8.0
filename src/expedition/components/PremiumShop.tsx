@@ -54,10 +54,10 @@ function ShopItemCard({
           </div>
           <div className="flex-1">
             <h4 className="text-sm font-medium text-[#E6EDF3]">
-              {item.nameKey.replace('shop.', '').replace(/_/g, ' ')}
+              {t(item.nameKey)}
             </h4>
             <p className="text-xs text-[#8B949E] mt-0.5">
-              {item.descriptionKey.replace('shop.', '').replace(/_/g, ' ')}
+              {t(item.descriptionKey)}
             </p>
           </div>
         </div>
