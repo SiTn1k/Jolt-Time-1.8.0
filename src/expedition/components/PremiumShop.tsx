@@ -6,6 +6,7 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Star, Gift, Zap, Sparkles, Package, Lock, Check, ShoppingBag } from 'lucide-react';
+import { useTranslation } from '../../i18n';
 import { Card, Badge } from '../ui';
 import { 
   PREMIUM_SHOP_ITEMS, 
@@ -32,6 +33,8 @@ function ShopItemCard({
   canAfford: boolean;
   isOwned: boolean;
 }) {
+  const { t } = useTranslation();
+
   return (
     <motion.div
       whileHover={{ scale: canAfford && !isOwned ? 1.02 : 1 }}
