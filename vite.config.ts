@@ -11,5 +11,15 @@ export default defineConfig({
     commonjsOptions: {
       include: [/react/, /node_modules/],
     },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-motion': ['motion'],
+          'vendor-zustand': ['zustand'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 500,
   },
 });

@@ -183,7 +183,7 @@ export function useFeatureFlags(flags: FeatureFlag[], userId?: string): Record<F
       newStates[flag] = isFeatureEnabled(flag, userId);
     });
     setStates(newStates);
-  }, [flags.join(','), userId]);
+  }, [flags, userId]);
 
   return states;
 }
@@ -195,9 +195,8 @@ export async function updateFeatureFlag(
   rolloutPercentage?: number
 ): Promise<boolean> {
   // This would call an admin Edge Function
-  console.log(`[FeatureFlags] Would update ${flag}: enabled=${enabled}, rollout=${rolloutPercentage}`);
-  
-  // For now, just log and return success
+  // Admin logs should go to server-side logging
+  void flag; void enabled; void rolloutPercentage;
   return true;
 }
 

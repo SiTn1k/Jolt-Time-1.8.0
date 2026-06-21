@@ -33,30 +33,15 @@ export function useCloudSave() {
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastSaveRef = useRef<number>(0);
+  const getStoreStateRef = useRef<() => ReturnType<typeof useExpeditionStore.getState>>();
 
-  // Get store state for saving
-  const getStoreState = useExpeditionStore((state) => ({
-    academyLevel: state.academyLevel,
-    reputation: state.reputation,
-    karbovanets: state.karbovanets,
-    historicalPrestige: state.historicalPrestige,
-    starsBalance: state.starsBalance,
-    expeditionBoosts: state.expeditionBoosts,
-    premiumTickets: state.premiumTickets,
-    heroes: state.heroes,
-    artifacts: state.artifacts,
-    regions: state.regions,
-    expeditions: state.expeditions,
-    npcs: state.npcs,
-    museumState: state.museumState,
-    storyState: state.storyState,
-    buildingLevels: state.buildingLevels,
-    ownedCosmetics: state.ownedCosmetics,
-    ownedBadges: state.ownedBadges,
-    activeEffects: state.activeEffects,
-    adsWatched: state.adsWatched,
-    totalStarsSpent: state.totalStarsSpent,
-  }));
+  // Stable reference to get fresh state
+  const getStoreState = useCallback(() => useExpeditionStore.getState(), []);
+  
+  // Keep ref updated
+  useEffect(() => {
+    getStoreStateRef.current = getStoreState;
+  }, [getStoreState]);
 
   const setStoreState = useExpeditionStore((state) => state.setState);
 
@@ -154,18 +139,56 @@ export function useCloudSave() {
     }
   }, [setStoreState]);
 
+  // Stable callback for saveGame that won't cause dependency issues
+  const stableSaveGame = useCallback(async () => {
+    const now = Date.now();
+    if (now - lastSaveRef.current < DEBOUNCE_DELAY) return;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const saveData = getStoreState();
+      const deviceId = localStorage.getItem('device_id') || crypto.randomUUID();
+      localStorage.setItem('device_id', deviceId);
+
+      await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/save-game`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user.session?.access_token}`,
+          },
+          body: JSON.stringify({
+            userId: user.id,
+            saveData,
+            deviceId,
+            platform: 'telegram',
+          }),
+        }
+      );
+      lastSaveRef.current = Date.now();
+    } catch {
+      // Silent fail for auto-save
+    }
+  }, [getStoreState]);
+
   /**
    * Set up auto-save interval
    */
-  const startAutoSave = useCallback(() => {
-    if (saveIntervalRef.current) {
-      clearInterval(saveIntervalRef.current);
-    }
-
+  useEffect(() => {
     saveIntervalRef.current = setInterval(() => {
-      saveGame(false);
+      stableSaveGame();
     }, SAVE_INTERVAL);
-  }, [saveGame]);
+
+    return () => {
+      if (saveIntervalRef.current) {
+        clearInterval(saveIntervalRef.current);
+        saveIntervalRef.current = null;
+      }
+    };
+  }, [stableSaveGame]);
 
   /**
    * Stop auto-save
@@ -178,28 +201,32 @@ export function useCloudSave() {
   }, []);
 
   /**
-   * Save on page unload
+   * Save on page unload - uses ref to avoid dependency issues
    */
   useEffect(() => {
     const handleBeforeUnload = () => {
-      const saveData = getStoreState();
-      localStorage.setItem('last_save', JSON.stringify(saveData));
-      localStorage.setItem('last_save_at', Date.now().toString());
+      const saveData = getStoreStateRef.current?.();
+      if (saveData) {
+        localStorage.setItem('last_save', JSON.stringify(saveData));
+        localStorage.setItem('last_save_at', Date.now().toString());
+      }
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      handleBeforeUnload();
     };
-  }, [getStoreState]);
+  }, []);
 
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       stopAutoSave();
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
+      const timeoutId = saveTimeoutRef.current;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        saveTimeoutRef.current = null;
       }
     };
   }, [stopAutoSave]);
@@ -207,7 +234,7 @@ export function useCloudSave() {
   return {
     saveGame,
     loadGame,
-    startAutoSave,
+    startAutoSave: () => {}, // Deprecated, auto-save is always on
     stopAutoSave,
     hasPendingSave: lastSaveRef.current > 0,
     lastSaveAt: lastSaveRef.current || null,
