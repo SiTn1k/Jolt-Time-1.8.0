@@ -134,3 +134,44 @@ Priority system for guiding players:
 ## Phase History
 - Phase 16: TutorialBubble mobile fix (Portal rendering)
 - Phase 17: Player Journey & Progression
+- Phase 17-20: Content expansion, translations, lazy loading
+
+## Performance Optimizations (Phase 19)
+### Bundle Splitting
+```
+Main bundle: 486KB (initial load)
+ExpeditionApp: 111KB (lazy on prestige 2+)
+Store: 79KB (separate chunk)
+Museum: 33KB (separate chunk)
+```
+
+### Lazy Loading Implementation
+```tsx
+import { lazy, Suspense } from 'react';
+
+const ExpeditionApp = lazy(() => 
+  import('./expedition/ExpeditionApp').then(m => ({ default: m.ExpeditionApp }))
+);
+
+// Usage
+<Suspense fallback={<Loader />}>
+  <ExpeditionApp />
+</Suspense>
+```
+
+## Translation Status (Phase 18)
+- Total UK keys: 1026
+- Total EN keys: 1014
+- Coverage: 98%+ match
+- Remaining gaps: Arc 6-8 content placeholder keys
+
+## Content Structure
+### Story Arcs (8 total)
+1. Трипільська культура
+2. Скіфія
+3. Київська Русь
+4. Козаччина
+5. Незалежність
+6. Галицько-Волинське князівство (future)
+7. Українське відродження (future)
+8. Легенди української історії (final)
