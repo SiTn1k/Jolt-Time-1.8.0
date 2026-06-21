@@ -109,3 +109,28 @@ prestigeLevel 2+:
 - `expedition.*` - Expedition/Academy content
 - `tutorial.*` - Tutorial steps
 - `ad.*` - Ad-related strings
+- `objective.*` - Player objectives and reminders
+- `laboratory.*` - Lab/restoration system
+
+## Player Journey Features (Phase 17)
+### Current Objective System (Academy.tsx)
+Priority system for guiding players:
+1. Complete active quests
+2. Start expedition
+3. Restore damaged artifacts
+4. Send artifact to museum
+5. Increase reputation
+6. Continue exploring
+
+### Empty States
+- WorldMap: "Запустіть першу експедицію"
+- Museum: "Колекція ще не створена"
+- Laboratory: Existing states preserved
+
+### Museum Collection Progress
+- Shows percentage of artifacts in museum vs total found
+- Progress bar in Academy header
+
+## Phase History
+- Phase 16: TutorialBubble mobile fix (Portal rendering)
+- Phase 17: Player Journey & Progression
