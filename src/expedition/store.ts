@@ -133,6 +133,12 @@ interface GameState {
   adsWatched: number;
   totalStarsSpent: number;
 
+  // Save versioning & offline
+  saveVersion: number;
+  lastSaveAt: number;
+  lastOnlineAt: number;
+  migrationVersion: number;
+
   heroes: Hero[];
   artifacts: Artifact[];
   regions: Region[];
