@@ -964,7 +964,13 @@
     "super_boost": "Супер бустер",
     "series": "Серія: {streak} {days} поспіль",
     "coins": "Монет",
-    "close": "Закрити"
+    "close": "Закрити",
+    "daily_reward": "Щоденна нагорода",
+    "claim_reward": "Забрати нагороду",
+    "reward_received": "Нагороду отримано",
+    "day_reward": "Нагорода дня {day}",
+    "skip_info": "Пропустити",
+    "daily_tasks": "Щоденні завдання"
   },
   "referral": {
     "invite_friends": "Запроси друзів",

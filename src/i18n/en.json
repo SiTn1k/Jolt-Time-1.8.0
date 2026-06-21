@@ -843,7 +843,13 @@
     "super_boost": "Super boost",
     "series": "Series: {streak} {days} in a row",
     "coins": "Coins",
-    "close": "Close"
+    "close": "Close",
+    "daily_reward": "Daily Reward",
+    "claim_reward": "Claim Reward",
+    "reward_received": "Reward Received",
+    "day_reward": "Day {day} Reward",
+    "skip_info": "Skip",
+    "daily_tasks": "Daily Tasks"
   },
   "referral": {
     "invite_friends": "Invite Friends",
