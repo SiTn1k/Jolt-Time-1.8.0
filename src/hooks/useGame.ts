@@ -34,6 +34,60 @@ const REMOTE_SAVE_INTERVAL = 15000;
 const MAX_LEVEL = 999;
 const TAB_ID = `tab_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
+// =====================================================
+// SERVER ENERGY: Debounced sync for server-authoritative energy
+// =====================================================
+let consumeEnergyDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+let lastConsumeEnergyCall = 0;
+
+async function consumeEnergyServer(telegramId: number, initData: string): Promise<{ energy: number } | null> {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/consume-energy`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ initData, amount: 1 })
+    });
+
+    if (!response.ok) {
+      console.error('consumeEnergyServer failed:', response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    if (data.success && data.energy !== undefined) {
+      return { energy: data.energy };
+    }
+    return null;
+  } catch (err) {
+    console.error('consumeEnergyServer error:', err);
+    return null;
+  }
+}
+
+function debouncedConsumeEnergy(
+  telegramId: number,
+  initData: string,
+  callback: (energy: number) => void
+): void {
+  // Throttle to prevent excessive calls
+  const now = Date.now();
+  if (now - lastConsumeEnergyCall < 500) {
+    return; // Skip if called too recently
+  }
+  lastConsumeEnergyCall = now;
+
+  if (consumeEnergyDebounceTimer) {
+    clearTimeout(consumeEnergyDebounceTimer);
+  }
+
+  consumeEnergyDebounceTimer = setTimeout(async () => {
+    const result = await consumeEnergyServer(telegramId, initData);
+    if (result) {
+      callback(result.energy);
+    }
+  }, 500);
+}
+
 /**
  * XP curve: tuned for ~15 hours to reach Epoch 3 (level 100).
  *
@@ -579,6 +633,7 @@ export function useGame() {
 
   const tap = useCallback((x: number, y: number) => {
     const eventId = Math.random().toString(36).substr(2, 9);
+    const telegramId = getTelegramUserId();
 
     setState(prev => {
       const { xp: artXpMult } = getArtifactMultipliers(prev.completedArtifacts || [], prev.artifactDupes || {});
@@ -616,12 +671,12 @@ export function useGame() {
           }
         : tasks;
 
-      // Use energy if prestige >= 1 and energy > 0 (consume 1 per tap)
+      // Optimistic energy update (will be synced with server)
       const currentEnergy = prev.energy || 0;
       const maxEnergy = prev.maxEnergy || 1000;
       const newEnergy = hasEnergyBoost
         ? Math.max(0, currentEnergy - 1)
-        : Math.min(maxEnergy, currentEnergy); // Regenerate when not using x5
+        : Math.min(maxEnergy, currentEnergy);
 
       return {
         ...prev,
@@ -631,7 +686,18 @@ export function useGame() {
         energy: newEnergy,
       };
     });
-  }, []);
+
+    // SECURITY: Sync energy consumption with server (debounced)
+    // This prevents clients from manipulating local state to get infinite energy
+    if (telegramId && (state.prestigeLevel || 0) >= 1 && (state.energy || 0) > 0) {
+      const initData = getRawInitData();
+      if (initData) {
+        debouncedConsumeEnergy(telegramId, initData, (serverEnergy) => {
+          setState(prev => ({ ...prev, energy: serverEnergy }));
+        });
+      }
+    }
+  }, [state.prestigeLevel, state.energy]);
 
   const buyGenerator = useCallback((generatorId: string) => {
     const generator = epoch.generators.find(g => g.id === generatorId);
