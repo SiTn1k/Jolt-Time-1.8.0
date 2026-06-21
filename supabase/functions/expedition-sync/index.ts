@@ -379,8 +379,9 @@ async function completeExpedition(
   }
 
   // Verify hero was assigned to this expedition
-  const assignedHeroId = expedition.assignedHeroId as string;
-  if (assignedHeroId !== hero_id) {
+  // Note: expedition stores heroes as an array, not assignedHeroId
+  const expeditionHeroes = expedition.heroes as string[];
+  if (!expeditionHeroes || !expeditionHeroes.includes(hero_id)) {
     return jsonResponse({ error: "Hero not assigned to this expedition" }, 400);
   }
 
