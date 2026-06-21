@@ -39,27 +39,27 @@ function checkRateLimit(telegramId: number): { allowed: boolean; remaining: numb
 // =====================================================
 // SECURITY: HMAC-SHA256 initData validation
 // =====================================================
-function validateInitData(initData: string): { valid: boolean; userId: number | null; error?: string } {
+function validateInitData(initData: string): { success: true; telegram_id: number } | { success: false; error: string } {
   if (!BOT_TOKEN) {
     console.error("SECURITY: TELEGRAM_BOT_TOKEN not configured!");
-    return { valid: false, userId: null, error: "Server misconfiguration" };
+    return { success: false, error: "Server misconfiguration" };
   }
 
   const params = new URLSearchParams(initData);
   const hash = params.get("hash");
   if (!hash) {
-    return { valid: false, userId: null, error: "Missing hash" };
+    return { success: false, error: "Missing hash" };
   }
 
   // Check auth_date freshness
   const authDateStr = params.get("auth_date");
   if (!authDateStr) {
-    return { valid: false, userId: null, error: "Missing auth_date" };
+    return { success: false, error: "Missing auth_date" };
   }
   const authDate = parseInt(authDateStr, 10);
   const ageSeconds = Math.floor(Date.now() / 1000) - authDate;
   if (isNaN(authDate) || ageSeconds > 86400 || ageSeconds < 0) {
-    return { valid: false, userId: null, error: "initData expired or invalid" };
+    return { success: false, error: "initData expired or invalid" };
   }
 
   // Build data_check_string
@@ -71,7 +71,7 @@ function validateInitData(initData: string): { valid: boolean; userId: number | 
   const computedHash = createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
 
   if (computedHash !== hash) {
-    return { valid: false, userId: null, error: "HMAC validation failed" };
+    return { success: false, error: "HMAC validation failed" };
   }
 
   // Extract user.id
@@ -79,13 +79,16 @@ function validateInitData(initData: string): { valid: boolean; userId: number | 
   if (userStr) {
     try {
       const user = JSON.parse(userStr);
-      return { valid: true, userId: user.id ?? null };
+      if (user.id) {
+        return { success: true, telegram_id: user.id };
+      }
+      return { success: false, error: "Missing user.id in initData" };
     } catch {
-      return { valid: false, userId: null, error: "Invalid user JSON" };
+      return { success: false, error: "Invalid user JSON" };
     }
   }
 
-  return { valid: false, userId: null, error: "No user in initData" };
+  return { success: false, error: "No user in initData" };
 }
 
 /**
@@ -100,8 +103,7 @@ function validateInitData(initData: string): { valid: boolean; userId: number | 
  */
 
 interface OpenChestRequest {
-  telegram_id: number;
-  init_data?: string; // Required for validation
+  initData: string; // Required for HMAC validation
   epoch_id: string;
   chest_type?: "skychest" | "daily";
   epoch_index?: number;
@@ -308,25 +310,26 @@ Deno.serve(async (req: Request) => {
 
   try {
     const body: OpenChestRequest = await req.json();
-    const { telegram_id, init_data, epoch_id, chest_type = "daily", epoch_index = 0 } = body;
+    const { initData, epoch_id, chest_type = "daily", epoch_index = 0 } = body;
 
     // =====================================================
-    // SECURITY: Validate initData
+    // SECURITY: Validate initData BEFORE any DB operations
     // =====================================================
-    if (!init_data) {
-      return jsonResponse({ error: "Missing init_data for validation" }, 401);
+    if (!initData) {
+      return jsonResponse({ error: "Missing initData for validation" }, 403);
     }
 
-    const validation = validateInitData(init_data);
-    if (!validation.valid || !validation.userId) {
-      console.error(`SECURITY: initData validation failed for telegram_id=${telegram_id}: ${validation.error}`);
-      return jsonResponse({ error: validation.error || "Authentication failed" }, 401);
+    const validated = validateInitData(initData);
+    if (!validated.success) {
+      console.error(`SECURITY: initData validation failed: ${validated.error}`);
+      return jsonResponse({ error: validated.error || "Invalid initData" }, 403);
     }
 
-    // Verify telegram_id matches validated user
-    if (validation.userId !== telegram_id) {
-      console.error(`SECURITY: telegram_id mismatch! Body=${telegram_id}, Validated=${validation.userId}`);
-      return jsonResponse({ error: "User ID mismatch" }, 403);
+    // Use validated telegram_id from HMAC check
+    const telegram_id = validated.telegram_id;
+
+    if (!telegram_id) {
+      return jsonResponse({ error: "Invalid telegram_id from validation" }, 403);
     }
 
     // =====================================================
@@ -336,10 +339,6 @@ Deno.serve(async (req: Request) => {
     if (!rateCheck.allowed) {
       console.warn(`SECURITY: Rate limit exceeded for telegram_id=${telegram_id}`);
       return jsonResponse({ error: "Rate limit exceeded. Try again later." }, 429);
-    }
-
-    if (!telegram_id || typeof telegram_id !== "number" || telegram_id <= 0) {
-      return jsonResponse({ error: "Invalid telegram_id" }, 400);
     }
 
     if (!epoch_id) {

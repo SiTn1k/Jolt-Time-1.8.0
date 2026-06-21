@@ -64,7 +64,6 @@ export async function rpcBuyGenerator(generatorId: string): Promise<RpcResult> {
  * The server updates artifact_parts/artifact_levels/completed_artifacts in DB.
  */
 export async function rpcOpenChest(
-  telegramId: number,
   epochId: string,
   chestType: 'daily' | 'skychest' = 'daily',
   epochIndex: number = 0,
@@ -82,15 +81,14 @@ export async function rpcOpenChest(
 }> {
   if (!supabase) return { ok: false, error: 'No Supabase connection' };
 
-  const init_data = getRawInitData();
-  if (!init_data) return { ok: false, error: 'Not running in Telegram' };
+  const initData = getRawInitData();
+  if (!initData) return { ok: false, error: 'Not running in Telegram' };
 
   try {
-    // SECURITY: Pass init_data for server-side HMAC validation
+    // SECURITY: Pass initData for server-side HMAC validation
     const { data, error } = await supabase.functions.invoke('open-chest', {
       body: { 
-        telegram_id: telegramId, 
-        init_data, // Pass init_data for validation
+        initData, // Only initData needed - telegram_id extracted from HMAC
         epoch_id: epochId, 
         chest_type: chestType, 
         epoch_index: epochIndex 

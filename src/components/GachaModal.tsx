@@ -4,7 +4,6 @@ import { ARTIFACTS, getArtifactsForEpoch, EPOCHS } from '../data/epochs';
 import { ARTIFACT_PARTS_PER_LEVEL } from '../types/game';
 import { hapticImpact, hapticNotification } from '../lib/telegram';
 import { rpcOpenChest } from '../lib/rpc';
-import { getTelegramUserId } from '../lib/telegram';
 import { X, Sparkles, Zap, Loader2, Gift, Gem, Landmark, Crown, Sword, ScrollText, Coins, Theater, AlertCircle } from 'lucide-react';
 
 interface GachaReward {
@@ -86,15 +85,9 @@ export function GachaModal({
     setPhase('rolling');
 
     // Call server for the actual reward
-    const telegramId = getTelegramUserId();
-    if (!telegramId) {
-      setErrorMessage('Помилка: немає Telegram ID');
-      setPhase('error');
-      return;
-    }
-
+    // initData is automatically passed from getRawInitData() in rpcOpenChest
     const epochIndex = EPOCHS.findIndex(e => e.id === epoch.id);
-    const result = await rpcOpenChest(telegramId, epoch.id, 'daily', epochIndex);
+    const result = await rpcOpenChest(epoch.id, 'daily', epochIndex);
 
     if (!result.ok || !result.rewards || result.rewards.length === 0) {
       setErrorMessage(result.error || 'Не вдалося відкрити скриню');
