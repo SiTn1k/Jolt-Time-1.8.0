@@ -455,6 +455,122 @@ export const LEGENDARY_EXHIBITIONS: LegendaryExhibition[] = [
     oneTimeReward: { type: 'karbovanets', amount: 100000 },
     displayArtifact: 'heritage',
   },
+
+  // ========== ARC 6-7 COLLECTIONS: Галичина та Бароко ==========
+  {
+    id: 'collection_galychyna',
+    nameKey: 'museum.collection_galychyna',
+    era: 'Галицько-Волинська',
+    artifacts: ['корона', 'печатка', 'літопис', 'золото', 'регалії'],
+    requiredCount: 5,
+    bonus: {
+      reputationBonus: 2500,
+      visitorBonus: 30,
+      incomeBonus: 20,
+      karbovanetsBonus: 8000,
+      xpBonus: 8,
+      expeditionSpeedBonus: 5,
+      npcTrustBonus: 1,
+    },
+    icon: '🦁',
+    tier: 2,
+  },
+  {
+    id: 'collection_baroque',
+    nameKey: 'museum.collection_baroque',
+    era: 'Бароко',
+    artifacts: ['ікона', 'розпис', 'трактат', 'архітектура', 'музика'],
+    requiredCount: 5,
+    bonus: {
+      reputationBonus: 3000,
+      visitorBonus: 35,
+      incomeBonus: 25,
+      karbovanetsBonus: 10000,
+      xpBonus: 10,
+      npcTrustBonus: 2,
+    },
+    icon: '🎨',
+    tier: 2,
+  },
+
+  // ========== ARC 8 COLLECTION: Культурне відродження ==========
+  {
+    id: 'collection_national_awakening',
+    nameKey: 'museum.collection_national_awakening',
+    era: 'Відродження',
+    artifacts: ['рукаопис', 'прапор', 'вишивка', 'поезія', 'живопис'],
+    requiredCount: 5,
+    bonus: {
+      reputationBonus: 4000,
+      visitorBonus: 40,
+      incomeBonus: 30,
+      karbovanetsBonus: 15000,
+      xpBonus: 12,
+      expeditionSpeedBonus: 8,
+      npcTrustBonus: 2,
+    },
+    icon: '✒️',
+    tier: 2,
+  },
+
+  // ========== ARC 9 COLLECTION: Революція ==========
+  {
+    id: 'collection_revolution',
+    nameKey: 'museum.collection_revolution',
+    era: 'Революція',
+    artifacts: ['грамота', 'акт', 'герб', 'прапор', 'документ'],
+    requiredCount: 5,
+    bonus: {
+      reputationBonus: 5000,
+      visitorBonus: 50,
+      incomeBonus: 35,
+      karbovanetsBonus: 20000,
+      xpBonus: 15,
+      expeditionSpeedBonus: 10,
+      npcTrustBonus: 3,
+    },
+    icon: '⚔️',
+    tier: 3,
+  },
+
+  // ========== ARC 10 COLLECTION: Пам'ять ==========
+  {
+    id: 'collection_memory',
+    nameKey: 'museum.collection_memory',
+    era: 'Пам\'ять',
+    artifacts: ['свідчення', 'меморіал', 'документ', 'фото', 'медаль'],
+    requiredCount: 5,
+    bonus: {
+      reputationBonus: 6000,
+      visitorBonus: 55,
+      incomeBonus: 40,
+      karbovanetsBonus: 25000,
+      xpBonus: 15,
+      npcTrustBonus: 3,
+    },
+    icon: '🎖️',
+    tier: 3,
+  },
+
+  // ========== ARC 11-12 COLLECTION: Сучасність ==========
+  {
+    id: 'collection_modern',
+    nameKey: 'museum.collection_modern',
+    era: 'Сучасність',
+    artifacts: ['символ', 'прапор', 'фото', 'документ', 'матеріал'],
+    requiredCount: 5,
+    bonus: {
+      reputationBonus: 8000,
+      visitorBonus: 65,
+      incomeBonus: 50,
+      karbovanetsBonus: 35000,
+      xpBonus: 20,
+      expeditionSpeedBonus: 15,
+      npcTrustBonus: 5,
+    },
+    icon: '⭐',
+    tier: 3,
+  },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════

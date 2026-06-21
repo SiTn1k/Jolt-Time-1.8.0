@@ -130,6 +130,7 @@ export interface ArcMetadata {
 }
 
 export const STORY_ARCS: ArcMetadata[] = [
+  // ========== ARC 1: Трипільська культура ==========
   {
     arcNumber: 1,
     name: 'Трипільська культура',
@@ -141,6 +142,7 @@ export const STORY_ARCS: ArcMetadata[] = [
     regionIds: ['region-1'],
     estimatedDuration: '1-2 days',
   },
+  // ========== ARC 2: Скіфія ==========
   {
     arcNumber: 2,
     name: 'Скіфія',
@@ -155,6 +157,7 @@ export const STORY_ARCS: ArcMetadata[] = [
     regionIds: ['region-2'],
     estimatedDuration: '3-5 days',
   },
+  // ========== ARC 3: Київська Русь ==========
   {
     arcNumber: 3,
     name: 'Київська Русь',
@@ -170,6 +173,7 @@ export const STORY_ARCS: ArcMetadata[] = [
     regionIds: ['region-3'],
     estimatedDuration: '1 week',
   },
+  // ========== ARC 4: Козаччина ==========
   {
     arcNumber: 4,
     name: 'Козаччина',
@@ -185,6 +189,7 @@ export const STORY_ARCS: ArcMetadata[] = [
     regionIds: ['region-4'],
     estimatedDuration: '1-2 weeks',
   },
+  // ========== ARC 5: Незалежність ==========
   {
     arcNumber: 5,
     name: 'Незалежність',
@@ -196,58 +201,129 @@ export const STORY_ARCS: ArcMetadata[] = [
       reputation: 2000,
       museumCollections: 3,
     },
-    npcIds: ['story-knyaz-vladimir', 'story-monk-pereyaslav'],
+    npcIds: ['story-knyaz-vladimir', 'story-monk-pereyaslav', 'story-museum-curator'],
     regionIds: ['region-5'],
     estimatedDuration: '1-2 weeks',
   },
-  // Future arcs - prepared for expansion
+  // ========== ARC 6: Галицько-Волинське князівство ==========
   {
     arcNumber: 6,
     name: 'Галицько-Волинське князівство',
-    description: 'Західні землі',
+    description: 'Західні землі та коронація',
     icon: '🦁',
     color: '#EF4444',
     requirements: {
       completedArcs: [5],
       reputation: 5000,
-      prestige: 1000,
-      museumCollections: 5,
+      artifacts: 30,
+      museumCollections: 4,
     },
-    npcIds: [],
-    regionIds: [],
+    npcIds: ['story-danylo-romanovich'],
+    regionIds: ['region-halych', 'region-kamianets'],
     estimatedDuration: '2-3 weeks',
   },
+  // ========== ARC 7: Українське бароко ==========
   {
     arcNumber: 7,
-    name: 'Українське відродження',
-    description: 'Культурний розквіт',
+    name: 'Українське бароко',
+    description: 'Культурний розквіт XVII-XVIII ст.',
     icon: '🎨',
     color: '#EC4899',
     requirements: {
       completedArcs: [6],
       reputation: 10000,
-      prestige: 5000,
       artifacts: 50,
+      relationshipLevel: { 'story-kobzar': 2 },
     },
-    npcIds: [],
-    regionIds: [],
-    estimatedDuration: '2-4 weeks',
+    npcIds: ['story-kobzar'],
+    regionIds: ['region-chyhyryn', 'region-baturyn'],
+    estimatedDuration: '2-3 weeks',
   },
+  // ========== ARC 8: Культурне відродження ==========
   {
     arcNumber: 8,
-    name: 'Легенди української історії',
-    description: 'Фінальний арк',
+    name: 'Культурне відродження',
+    description: 'Український національний рух XIX ст.',
+    icon: '✒️',
+    color: '#2E8B57',
+    requirements: {
+      completedArcs: [7],
+      reputation: 15000,
+      artifacts: 70,
+      museumCollections: 5,
+    },
+    npcIds: ['story-shevschenko'],
+    regionIds: ['region-kyiv-rus-extended', 'region-lviv'],
+    estimatedDuration: '2-4 weeks',
+  },
+  // ========== ARC 9: Українська революція ==========
+  {
+    arcNumber: 9,
+    name: 'Українська революція',
+    description: '1917-1921 роки боротьби',
+    icon: '⚔️',
+    color: '#000080',
+    requirements: {
+      completedArcs: [8],
+      reputation: 20000,
+      artifacts: 100,
+      relationshipLevel: { 'story-petrykura': 2 },
+    },
+    npcIds: ['story-petrykura'],
+    regionIds: ['region-kyiv-1918', 'region-zaporizhia-extended'],
+    estimatedDuration: '3-4 weeks',
+  },
+  // ========== ARC 10: Друга світова війна ==========
+  {
+    arcNumber: 10,
+    name: 'Друга світова війна',
+    description: '1939-1945 роки випробувань',
+    icon: '🎖️',
+    color: '#4A4A4A',
+    requirements: {
+      completedArcs: [9],
+      reputation: 25000,
+      artifacts: 120,
+      museumCollections: 6,
+    },
+    npcIds: ['story-ww2-researcher'],
+    regionIds: ['region-babi-yar', 'region-kyiv-ww2'],
+    estimatedDuration: '3-4 weeks',
+  },
+  // ========== ARC 11: Шістдесятники ==========
+  {
+    arcNumber: 11,
+    name: 'Шістдесятники',
+    description: 'Дисидентський рух та культурне відродження',
+    icon: '📚',
+    color: '#FF6347',
+    requirements: {
+      completedArcs: [10],
+      reputation: 30000,
+      artifacts: 150,
+      relationshipLevel: { 'story-dziuba': 2 },
+    },
+    npcIds: ['story-dziuba'],
+    regionIds: ['region-kyiv-60s', 'region-lviv-intellectual'],
+    estimatedDuration: '3-4 weeks',
+  },
+  // ========== ARC 12: Сучасна Україна ==========
+  {
+    arcNumber: 12,
+    name: 'Сучасна Україна',
+    description: 'Незалежність та європейський вибір',
     icon: '⭐',
     color: '#FFD700',
     requirements: {
-      completedArcs: [7],
-      reputation: 20000,
-      prestige: 10000,
+      completedArcs: [11],
+      reputation: 40000,
+      artifacts: 200,
       museumCollections: 8,
+      relationshipLevel: { 'story-modern-historian': 2 },
     },
-    npcIds: [],
-    regionIds: [],
-    estimatedDuration: '1 month+',
+    npcIds: ['story-modern-historian'],
+    regionIds: ['region-maidan', 'region-kyiv-modern'],
+    estimatedDuration: '4+ weeks',
   },
 ];
 
@@ -337,8 +413,9 @@ export interface StoryProgress {
   completedArcs: number[];
 }
 
-// NPC Story Data for MVP (5 NPCs)
+// NPC Story Data - Extended for Long-term Content (12 NPCs for 12 arcs)
 export const storyNpcs: StoryNpc[] = [
+  // ========== ARC 1-3 NPC: Князь Володимир ==========
   {
     id: 'story-knyaz-vladimir',
     nameKey: 'npc.knyaz_vladimir.name',
@@ -360,6 +437,7 @@ export const storyNpcs: StoryNpc[] = [
         3: ['Я радий бачити друга в моїх палатах. Продовжуй збирати артефакти!'],
         4: ['Ти показав себе гідним довіри! Академія може запросити тебе скоро.'],
         5: ['Разом ми відкриємо таємниці Русі! Академія пишатиметься тобою!'],
+        6: ['Легендарний союзнику! Твоє ім\'я впишуть у літописи!'],
       },
     },
     questIds: ['quest-vladimir-1', 'quest-vladimir-2'],
@@ -369,6 +447,7 @@ export const storyNpcs: StoryNpc[] = [
       3: 'quest-vladimir-1',
       4: 'hero-olga-unlock',
       5: 'artifact-rus-weapon',
+      6: 'artifact-byzantine-treasures',
     },
   },
   {
@@ -497,11 +576,264 @@ export const storyNpcs: StoryNpc[] = [
       3: 'quest-curator-1',
       4: 'museum-visitor-bonus',
       5: 'artifact-premium-display',
+      6: 'artifact-legendary-exhibit',
+    },
+  },
+
+  // ========== ARC 6 NPC: Літописець Данило ==========
+  {
+    id: 'story-danylo-romanovich',
+    nameKey: 'npc.danylo_romanovich.name',
+    role: 'knyaz',
+    roleKey: 'npc.danylo_romanovich.role',
+    portrait: '🦁',
+    backgroundColor: '#8B0000',
+    rarity: 'legendary',
+    biographyKey: 'npc.danylo_romanovich.biography',
+    dialogues: {
+      greeting: [
+        'Вітаю у Холмі!',
+        'Галицько-Волинська земля кличе!',
+        'Слава королівству!',
+      ],
+      relationship: {
+        1: ['Ти прийшов з далекого Києва?'],
+        2: ['Твоя відвага вражає!'],
+        3: ['Разом ми збудуємо сильну державу!'],
+        4: ['Допоможи мені об\'єднати західні землі!'],
+        5: ['Ти став частиною нашої родини!'],
+        6: ['Коронаційні дари чекають на тебе!'],
+      },
+    },
+    questIds: ['quest-danylo-1', 'quest-danylo-2'],
+    unlocksAtRelationship: {
+      1: null,
+      2: 'dialogue_galych_1',
+      3: 'quest-danylo-1',
+      4: 'region-halych-unlock',
+      5: 'hero-vasylkiv-rostyslav',
+      6: 'artifact-korona',
+    },
+  },
+
+  // ========== ARC 7 NPC: Кобзар Тарас ==========
+  {
+    id: 'story-kobzar',
+    nameKey: 'npc.kobzar.name',
+    role: 'guard',
+    roleKey: 'npc.kobzar.role',
+    portrait: '🎸',
+    backgroundColor: '#6B4423',
+    rarity: 'epic',
+    biographyKey: 'npc.kobzar.biography',
+    dialogues: {
+      greeting: [
+        'Слухаю тебе, синку...',
+        'Гей, козаче!',
+        'Розкажи про свої мандри!',
+      ],
+      relationship: {
+        1: ['Чуєш, що співає вітер?'],
+        2: ['Твоя історія заслуговує на пісню!'],
+        3: ['Кобза пам\'ятає всі битви!'],
+        4: ['Сліпий кобзар — то жива історія!'],
+        5: ['Разом ми збережемо пам\'ять!'],
+        6: ['Легенди оживають у твоїх справах!'],
+      },
+    },
+    questIds: ['quest-kobzar-1', 'quest-kobzar-2'],
+    unlocksAtRelationship: {
+      1: null,
+      2: 'dialogue_baroque_1',
+      3: 'quest-kobzar-1',
+      4: 'hero-kobzar-legends',
+      5: 'artifact-kobza-rare',
+      6: 'bonus-legend-songs',
+    },
+  },
+
+  // ========== ARC 8 NPC: Історик Шевченко ==========
+  {
+    id: 'story-shevschenko',
+    nameKey: 'npc.shevchenko.name',
+    role: 'researcher',
+    roleKey: 'npc.shevchenko.role',
+    portrait: '✒️',
+    backgroundColor: '#2E8B57',
+    rarity: 'legendary',
+    biographyKey: 'npc.shevchenko.biography',
+    dialogues: {
+      greeting: [
+        'Браття мої, любі!',
+        'Вітаю, земляче!',
+        'Як справи у рідного краю?',
+      ],
+      relationship: {
+        1: ['Слово — то кров, то сльози...'],
+        2: ['Рідний край кличе нас!'],
+        3: ['Україна понад усе!'],
+        4: ['Разом ми відродимо культуру!'],
+        5: ['Кобзарями не народжуються!'],
+        6: ['Твоє ім\'я впишуть у нові Кобзарі!'],
+      },
+    },
+    questIds: ['quest-shevschenko-1', 'quest-shevschenko-2'],
+    unlocksAtRelationship: {
+      1: null,
+      2: 'dialogue_rennaissance_1',
+      3: 'quest-shevschenko-1',
+      4: 'hero-poet-national',
+      5: 'artifact-kobzar manuscripts',
+      6: 'bonus-national-awakening',
+    },
+  },
+
+  // ========== ARC 9 NPC: Гетьман Петлюра ==========
+  {
+    id: 'story-petrykura',
+    nameKey: 'npc.petrykura.name',
+    role: 'hetman',
+    roleKey: 'npc.petrykura.role',
+    portrait: '⚔️',
+    backgroundColor: '#000080',
+    rarity: 'epic',
+    biographyKey: 'npc.petrykura.biography',
+    dialogues: {
+      greeting: [
+        'Слава Україні!',
+        'Вітаю, воїне!',
+        'Боротьба триває!',
+      ],
+      relationship: {
+        1: ['Украинская Народная Республика...'],
+        2: ['Ми боремося за незалежність!'],
+        3: ['Кожен день — це подвиг!'],
+        4: ['Разом до перемоги!'],
+        5: ['Історія оцінить наші зусилля!'],
+        6: ['Незалежність — наше право!'],
+      },
+    },
+    questIds: ['quest-petrykura-1', 'quest-petrykura-2'],
+    unlocksAtRelationship: {
+      1: null,
+      2: 'dialogue_revolution_1',
+      3: 'quest-petrykura-1',
+      4: 'region-kyiv-1918-unlock',
+      5: 'artifact-uanr-documents',
+      6: 'bonus-revolution-spirit',
+    },
+  },
+
+  // ========== ARC 10 NPC: Дослідник Другої Світової ==========
+  {
+    id: 'story-ww2-researcher',
+    nameKey: 'npc.ww2_researcher.name',
+    role: 'researcher',
+    roleKey: 'npc.ww2_researcher.role',
+    portrait: '🎖️',
+    backgroundColor: '#4A4A4A',
+    rarity: 'rare',
+    biographyKey: 'npc.ww2_researcher.biography',
+    dialogues: {
+      greeting: [
+        'Історію не можна забувати...',
+        'Вітаю, досліднику!',
+        'Пам\'ятаємо всіх загиблих!',
+      ],
+      relationship: {
+        1: ['Ці артефакти розповідають історію...'],
+        2: ['Свідчення очевидців — безцінні!'],
+        3: ['Воїнів-героїв треба вшановувати!'],
+        4: ['Відбудова — то теж подвиг!'],
+        5: ['Разом збережемо пам\'ять!'],
+        6: ['Герої ВВВ живуть у наших серцях!'],
+      },
+    },
+    questIds: ['quest-ww2-1', 'quest-ww2-2'],
+    unlocksAtRelationship: {
+      1: null,
+      2: 'dialogue_ww2_1',
+      3: 'quest-ww2-1',
+      4: 'region-babi Yar-unlock',
+      5: 'artifact-ww2-medals',
+      6: 'bonus-memorial-protection',
+    },
+  },
+
+  // ========== ARC 11 NPC: Шістдесятник Дзюба ==========
+  {
+    id: 'story-dziuba',
+    nameKey: 'npc.dziuba.name',
+    role: 'researcher',
+    roleKey: 'npc.dziuba.role',
+    portrait: '📚',
+    backgroundColor: '#FF6347',
+    rarity: 'epic',
+    biographyKey: 'npc.dziuba.biography',
+    dialogues: {
+      greeting: [
+        'Вітаю, шукачу правди!',
+        'Дисиденти — то совість нації!',
+        'Шістдесятники змінили Україну!',
+      ],
+      relationship: {
+        1: ['Інтелігенція — рушій змін!'],
+        2: ['Віриш у майбутнє України?'],
+        3: ['Разом за українську культуру!'],
+        4: ['Дисидентський рух — то мужність!'],
+        5: ['Пам\'ять про шістдесятників жива!'],
+        6: ['Ти — частина нової хвилі!'],
+      },
+    },
+    questIds: ['quest-dziuba-1', 'quest-dziuba-2'],
+    unlocksAtRelationship: {
+      1: null,
+      2: 'dialogue_sixtiers_1',
+      3: 'quest-dziuba-1',
+      4: 'hero-dissident-poet',
+      5: 'artifact-samvydav',
+      6: 'bonus-cultural-awakening',
+    },
+  },
+
+  // ========== ARC 12 NPC: Сучасний історик ==========
+  {
+    id: 'story-modern-historian',
+    nameKey: 'npc.modern_historian.name',
+    role: 'researcher',
+    roleKey: 'npc.modern_historian.role',
+    portrait: '🔬',
+    backgroundColor: '#4169E1',
+    rarity: 'legendary',
+    biographyKey: 'npc.modern_historian.biography',
+    dialogues: {
+      greeting: [
+        'Історія пишеться сьогодні!',
+        'Вітаю, колего!',
+        'Кожен день — то історична мить!',
+      ],
+      relationship: {
+        1: ['Сучасна Україна — то окрема епоха!'],
+        2: ['Незалежність 1991 — переломний момент!'],
+        3: ['Революція Гідності — то наша гордість!'],
+        4: ['Разом до європейського майбутнього!'],
+        5: ['Історія Євромайдану — то жива пам\'ять!'],
+        6: ['Ти — історик нової доби!'],
+      },
+    },
+    questIds: ['quest-modern-1', 'quest-modern-2'],
+    unlocksAtRelationship: {
+      1: null,
+      2: 'dialogue_modern_1',
+      3: 'quest-modern-1',
+      4: 'region-maidan-unlock',
+      5: 'artifact-modern-documents',
+      6: 'bonus-historical-legacy',
     },
   },
 ];
 
-// Story Quests - 30+ quests across 5 story arcs
+// Story Quests - 100+ quests across 12 story arcs
 export const storyQuests: StoryQuest[] = [
   // ========== ARC 1: TRYPILLIA ==========
   {
