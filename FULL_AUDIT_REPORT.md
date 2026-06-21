@@ -797,3 +797,24 @@ sed -i 's/} catch (err) {/} catch {/g' src/components/OfflineRewardModal.tsx
 **Звіт складено:** 2026-06-20  
 **Аудитор:** OpenHands Agent  
 **Наступний аудит:** Перед релізом 1.9.0
+
+---
+
+## APPENDIX: STABILITY & UI AUDITS (2026-06-20)
+
+### STABILITY AUDIT
+See: `STABILITY_AUDIT_REPORT.md`
+- Expedition collect bug fixed
+- Crash recovery added
+- Race conditions fixed
+
+### UI REFACTOR
+See: `UI_REFACTOR_REPORT.md`
+- NPC System refactor (Monobank style)
+- Card system unified
+- Neon borders removed
+- Typography consistent
+
+### PHASE 15 BLOCKERS
+- None (all bugs fixed)
+
