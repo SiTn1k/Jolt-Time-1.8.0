@@ -10,8 +10,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const CURRENT_SAVE_VERSION = 1;
-const CURRENT_CONTENT_VERSION = 1;
+const CURRENT_SAVE_VERSION = 2;
+const CURRENT_CONTENT_VERSION = 2;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -142,8 +142,8 @@ function migrateSaveData(data: SaveData, fromVersion: number): SaveData {
   let migratedData = { ...data };
   let version = fromVersion;
 
-  // Migration from version 0 to 1 (example)
-  if (version < 1) {
+  // Migration from version 0/1 to 2
+  if (version < 2) {
     migratedData = {
       ...migratedData,
       // Add new fields with defaults
@@ -164,12 +164,20 @@ function migrateSaveData(data: SaveData, fromVersion: number): SaveData {
       activeEffects: migratedData.activeEffects || [],
       adsWatched: migratedData.adsWatched || 0,
       totalStarsSpent: migratedData.totalStarsSpent || 0,
+      // V2: Add saveVersion field
+      saveVersion: 2,
+      migrationVersion: 2,
+      // V2: Add museum income tracking
+      lastMuseumIncome: migratedData.lastMuseumIncome || null,
+      // V2: Add notification state
+      notificationFlags: migratedData.notificationFlags || [],
+      // V2: Add game events history
+      gameEventsHistory: migratedData.gameEventsHistory || [],
     };
-    version = 1;
+    version = 2;
   }
 
   // Future migrations go here
-  // if (version < 2) { ... version = 2; }
   // if (version < 3) { ... version = 3; }
 
   return migratedData;

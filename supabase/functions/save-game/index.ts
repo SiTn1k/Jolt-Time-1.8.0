@@ -93,8 +93,8 @@ interface SaveGameRequest {
   platform?: string;
 }
 
-const CURRENT_SAVE_VERSION = 1;
-const CURRENT_CONTENT_VERSION = 1;
+const CURRENT_SAVE_VERSION = 2;
+const CURRENT_CONTENT_VERSION = 2;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
