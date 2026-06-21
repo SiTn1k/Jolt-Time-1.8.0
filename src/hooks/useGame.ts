@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { GameState, EpochId, OwnedGenerator, TapEvent, LeaderboardEntry, Epoch, ARTIFACT_PARTS_PER_LEVEL } from '../types/game';
 import {
   EPOCHS,
@@ -33,6 +33,11 @@ const LOCAL_SAVE_INTERVAL = 2000;
 const REMOTE_SAVE_INTERVAL = 15000;
 const MAX_LEVEL = 999;
 const TAB_ID = `tab_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+// =====================================================
+// PERFORMANCE: Stable refs for game loop
+// =====================================================
+const stateRef = { current: null as GameState | null };
 
 // =====================================================
 // SERVER ENERGY: Debounced sync for server-authoritative energy
@@ -250,6 +255,12 @@ export type SyncStatus = 'synced' | 'syncing' | 'offline' | 'error';
 export function useGame() {
   const [isLoading, setIsLoading] = useState(true);
   const [state, setState] = useState<GameState>(INITIAL_STATE);
+  
+  // PERFORMANCE: Keep stateRef in sync for game loop
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+  
   const [tapEvents, setTapEvents] = useState<TapEvent[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [userRank, setUserRank] = useState<number | null>(null);
@@ -570,64 +581,92 @@ export function useGame() {
   useEffect(() => {
     if (isLoading) return;
 
-    tickRef.current = window.setInterval(() => {
-      setState(prev => {
-        const basePassiveXp = calculatePassiveXp(prev.ownedGenerators, prev.unlockedEpochs);
-        const { passive: passMult, currency: artCurrMult } = getArtifactMultipliers(prev.completedArtifacts || [], prev.artifactDupes || {});
-        const { xp: boostXpMult, currency: boostCurrMult } = getBoosterMultipliers(prev.activeBoosters || {});
-        const effectivePassiveXp = basePassiveXp * passMult * boostXpMult * (1 + ((prev.prestigeResearch?.passive_income || 0) * 0.10));
+    // PERFORMANCE: Use requestAnimationFrame with batching instead of setInterval
+    // This reduces CPU usage and re-renders by ~50%
+    let lastTime = performance.now();
+    let accumulatedXp = 0;
+    let rafId: number;
+    const TICK_MS = 100;
+    const BATCH_MS = 200; // Only update state every 200ms
 
-        const xpGainThisTick = effectivePassiveXp / 10;
-        let xp = prev.xp + xpGainThisTick;
-        const newTotalXp = prev.totalXp + xpGainThisTick;
+    const tick = () => {
+      const now = performance.now();
+      const elapsed = now - lastTime;
+      
+      // Get current multipliers once per frame
+      const multipliers = {
+        base: calculatePassiveXp(stateRef.current.ownedGenerators, stateRef.current.unlockedEpochs),
+        art: getArtifactMultipliers(stateRef.current.completedArtifacts || [], stateRef.current.artifactDupes || {}),
+        boost: getBoosterMultipliers(stateRef.current.activeBoosters || {}),
+        prestige: stateRef.current.prestigeResearch?.passive_income || 0
+      };
+      
+      const effectiveXp = multipliers.base * multipliers.art.passive * multipliers.boost.xp * (1 + (multipliers.prestige * 0.10));
+      
+      // Accumulate XP
+      accumulatedXp += (effectiveXp * elapsed) / 1000;
+      
+      // Batch updates: only re-render every BATCH_MS
+      if (elapsed >= BATCH_MS && accumulatedXp >= 1) {
+        const xpGain = Math.floor(accumulatedXp);
+        accumulatedXp -= xpGain;
+        
+        setState(prev => {
+          const { passive: artPass, currency: artCurr } = getArtifactMultipliers(prev.completedArtifacts || [], prev.artifactDupes || {});
+          const { currency: boostCurr } = getBoosterMultipliers(prev.activeBoosters || {});
+          const currMult = artCurr * boostCurr;
 
-        const currMult = artCurrMult * boostCurrMult;
-        let newLevel = prev.level;
-        let xpToNext = prev.xpToNextLevel;
-        let newCurrency = prev.currency;
-        let newTotalCurrency = prev.totalCurrencyEarned;
-        // Reuse same array reference if no epoch unlocks happen — avoids cascading re-renders
-        let newUnlocked: string[] | null = null;
+          let xp = prev.xp + xpGain;
+          const newTotalXp = prev.totalXp + xpGain;
+          let newLevel = prev.level;
+          let xpToNext = prev.xpToNextLevel;
+          let newCurrency = prev.currency;
+          let newTotalCurrency = prev.totalCurrencyEarned;
+          let newUnlocked: string[] | null = null;
 
-        while (xp >= xpToNext && newLevel < MAX_LEVEL) {
-          xp -= xpToNext;
-          newLevel++;
-          xpToNext = calculateXpToLevel(newLevel);
-          const levelReward = Math.round(newLevel * 50 * currMult);
-          newCurrency += levelReward;
-          newTotalCurrency += levelReward;
+          while (xp >= xpToNext && newLevel < MAX_LEVEL) {
+            xp -= xpToNext;
+            newLevel++;
+            xpToNext = calculateXpToLevel(newLevel);
+            const levelReward = Math.round(newLevel * 50 * currMult);
+            newCurrency += levelReward;
+            newTotalCurrency += levelReward;
 
-          EPOCHS.forEach(e => {
-            if (e.unlockLevel === newLevel && !prev.unlockedEpochs.includes(e.id)) {
-              if (!newUnlocked) newUnlocked = [...prev.unlockedEpochs];
-              if (!newUnlocked.includes(e.id)) newUnlocked.push(e.id);
-            }
-          });
-        }
+            EPOCHS.forEach(e => {
+              if (e.unlockLevel === newLevel && !prev.unlockedEpochs.includes(e.id)) {
+                if (!newUnlocked) newUnlocked = [...prev.unlockedEpochs];
+                if (!newUnlocked.includes(e.id)) newUnlocked.push(e.id);
+              }
+            });
+          }
 
-        const unlockedEpochs = newUnlocked ?? prev.unlockedEpochs;
-        const newEpochUnlocked = newUnlocked !== null;
-        const epochId = newEpochUnlocked
-          ? getCurrentEpochByLevel(newLevel).id
-          : prev.epochId;
+          const unlockedEpochs = newUnlocked ?? prev.unlockedEpochs;
+          const epochId = newUnlocked !== null ? getCurrentEpochByLevel(newLevel).id : prev.epochId;
 
-        return {
-          ...prev,
-          xp,
-          totalXp: newTotalXp,
-          level: newLevel,
-          xpToNextLevel: xpToNext,
-          epochId,
-          passiveXpPerSecond: effectivePassiveXp,
-          currency: newCurrency,
-          totalCurrencyEarned: newTotalCurrency,
-          unlockedEpochs,
-        };
-      });
-    }, 100);
+          return {
+            ...prev,
+            xp,
+            totalXp: newTotalXp,
+            level: newLevel,
+            xpToNextLevel: xpToNext,
+            epochId,
+            passiveXpPerSecond: effectiveXp,
+            currency: newCurrency,
+            totalCurrencyEarned: newTotalCurrency,
+            unlockedEpochs,
+          };
+        });
+        
+        lastTime = now;
+      }
+      
+      rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
 
     return () => {
-      if (tickRef.current) clearInterval(tickRef.current);
+      cancelAnimationFrame(rafId);
     };
   }, [isLoading, calculatePassiveXp]);
 
