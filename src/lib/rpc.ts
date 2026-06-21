@@ -165,21 +165,67 @@ export async function rpcTrackSession(
 }
 
 /**
- * Validate initData on the server. Returns { valid, user_id } or error.
- * Useful for one-shot validation at app startup or before critical actions.
+ * Validate initData on the server using HMAC-SHA256.
+ * Returns { valid, user_id } or error.
+ * 
+ * Uses the /functions/v1/validate-telegram edge function.
+ * 
+ * @example
+ * const result = await rpcValidateInitData();
+ * if (result.valid) {
+ *   console.log('User ID:', result.user_id);
+ * } else {
+ *   console.error('Validation failed:', result.error);
+ * }
  */
-export async function rpcValidateInitData(): Promise<{ valid: boolean; user_id?: number; error?: string }> {
+export async function rpcValidateInitData(): Promise<{
+  valid: boolean;
+  user_id?: number;
+  user?: {
+    id: number;
+    first_name?: string;
+    last_name?: string;
+    username?: string;
+    language_code?: string;
+    is_premium?: boolean;
+  };
+  error?: string;
+}> {
   if (!supabase) return { valid: false, error: 'No Supabase connection' };
 
   const init_data = getRawInitData();
   if (!init_data) return { valid: false, error: 'Not running in Telegram' };
 
   try {
-    const { data, error } = await supabase.functions.invoke('validate-init-data', {
-      body: { init_data },
+    // Use the new validate-telegram edge function
+    const { data, error } = await supabase.functions.invoke('validate-telegram', {
+      body: { initData: init_data },
     });
 
-    if (error) return { valid: false, error: error.message };
+    if (error) {
+      console.error('rpcValidateInitData error:', error);
+      return { valid: false, error: error.message };
+    }
+
+    // Handle response from validate-telegram
+    if (data && typeof data === 'object' && 'success' in data) {
+      const result = data as { success: boolean; telegram_id?: number; user?: object; error?: string };
+      
+      if (result.success && result.telegram_id) {
+        return {
+          valid: true,
+          user_id: result.telegram_id,
+          user: result.user as { id: number; first_name?: string; last_name?: string; username?: string; language_code?: string; is_premium?: boolean },
+        };
+      } else {
+        return {
+          valid: false,
+          error: result.error || 'Validation failed',
+        };
+      }
+    }
+
+    // Fallback for old format
     return data as { valid: boolean; user_id?: number; error?: string };
   } catch (e) {
     console.error('rpcValidateInitData error:', e);
