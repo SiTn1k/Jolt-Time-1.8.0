@@ -1086,14 +1086,41 @@ export function useGame() {
         lastSavedAt: Date.now(),
         lastOnlineAt: Date.now(),
         sessionStartAt: Date.now(),
+        lastSessionAdAt: 0, // Reset session ad tracking on prestige
         // Reset daily ad views on prestige
         dailyAdViews: {},
       }));
 
       // Reset expedition store state (museum, expeditions, buildings)
       // Import here to avoid circular dependency
-      const { resetExpeditionOnPrestige } = await import('../expedition/store');
+      const { resetExpeditionOnPrestige, useExpeditionStore } = await import('../expedition/store');
       resetExpeditionOnPrestige();
+
+      // Sync expedition state to server after prestige reset
+      const expeditionStore = useExpeditionStore.getState();
+      const { academySync } = await import('../expedition/expeditionSync');
+      await academySync.forceFullSync(
+        {
+          academyLevel: expeditionStore.academyLevel,
+          reputation: expeditionStore.reputation,
+          karbovanets: expeditionStore.karbovanets,
+          historicalPrestige: data.prestige_level,
+          heroes: expeditionStore.heroes,
+          artifacts: expeditionStore.artifacts,
+          regions: expeditionStore.regions,
+          expeditions: expeditionStore.expeditions,
+          npcs: expeditionStore.npcs,
+          expeditionSlots: expeditionStore.expeditionSlots,
+          lastTick: expeditionStore.lastTick,
+          incomeBuffer: expeditionStore.incomeBuffer,
+          buildingLevels: expeditionStore.buildingLevels,
+          buildingUpgradeEndTimes: expeditionStore.buildingUpgradeEndTimes,
+        },
+        expeditionStore.storyState,
+        expeditionStore.museumState,
+        expeditionStore.reputation,
+        expeditionStore.museumVisitors
+      );
 
       hapticNotification('success');
       return true;
