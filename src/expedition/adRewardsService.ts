@@ -171,7 +171,14 @@ export function applyReward(state: AdRewardState, reward: AdReward): AdRewardSta
       newState.activeBoosters.currency_boost_mult = reward.value;
       break;
     case 'offline_income':
-      // Trigger offline income calculation
+      // Calculate offline income based on last session time
+      const lastActive = newState.lastActiveTimestamp || Date.now();
+      const offlineMinutes = Math.floor((Date.now() - lastActive) / 60000);
+      const offlineBonus = Math.min(Math.floor(newState.karbovanets * 0.1 * (offlineMinutes / 60)), 100000);
+      if (offlineBonus > 0) {
+        newState.karbovanets += offlineBonus;
+        console.log(`[AdRewards] Offline income bonus: +${offlineBonus} (${offlineMinutes} minutes offline)`);
+      }
       break;
     case 'artifact_chance_p0':
     case 'artifact_chance_p2':
