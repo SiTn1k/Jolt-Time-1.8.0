@@ -6,7 +6,6 @@
 import { motion } from 'framer-motion';
 import { Lock, Star, Map, Users, Landmark, BookOpen, Gift, TrendingUp, Sparkles } from 'lucide-react';
 import { Card, Badge } from '../expedition/ui';
-import { useTranslation } from '../i18n';
 
 // Academy milestones that unlock content
 const MILESTONES = [
@@ -40,8 +39,6 @@ interface AcademyPreviewProps {
 }
 
 export function AcademyPreview({ currentPrestige, requiredPrestige = 2 }: AcademyPreviewProps) {
-  const { t } = useTranslation();
-  
   const isUnlocked = currentPrestige >= requiredPrestige;
   const progressPercent = Math.min(100, (currentPrestige / requiredPrestige) * 100);
 

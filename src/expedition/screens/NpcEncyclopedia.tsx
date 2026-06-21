@@ -4,11 +4,17 @@
 // ═══════════════════════════════════════════════════════════════════════
 
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { MessageCircle, Heart, Gift, Star, Lock, Check, Zap } from 'lucide-react';
+import { MessageCircle, Heart } from 'lucide-react';
 import { Card, Badge } from '../ui';
 import { useExpeditionStore } from '../store';
-import { NPC_RELATIONSHIP_REWARDS, getNpcLevelReward } from '../metaProgressionData';
+import { getNpcLevelReward } from '../metaProgressionData';
+import type { Npc } from '../data';
+
+// Extended NPC type for encyclopedia with relationship data
+interface NpcWithTrust extends Npc {
+  trustLevel?: number;
+  trust?: number;
+}
 
 // Relationship level colors and names
 const RELATIONSHIP_CONFIG = {
@@ -31,7 +37,7 @@ function NpcCard({
   npc, 
   relationship 
 }: { 
-  npc: any; 
+  npc: NpcWithTrust; 
   relationship?: RelationshipLevel;
 }) {
   const config = RELATIONSHIP_CONFIG[relationship?.level || 'stranger'];
@@ -146,7 +152,6 @@ function NpcCard({
 
 export function NpcEncyclopedia() {
   const npcs = useExpeditionStore(s => s.npcs);
-  const reputation = useExpeditionStore(s => s.reputation);
 
   const [filter, setFilter] = useState<'all' | 'active' | 'locked'>('all');
 

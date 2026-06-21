@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useExpeditionStore } from '../store';
 import { buildings } from '../data';
 import { motion } from 'motion/react';
-import { TrendingUp, Coins, Eye, Send, BookOpen, MessageCircle, Target, Zap, Archive, Star, CheckCircle2 } from 'lucide-react';
+import { TrendingUp, Coins, Eye, Send, BookOpen, MessageCircle, Target, Zap, Archive, CheckCircle2 } from 'lucide-react';
 import { Card, Badge } from '../ui';
 import { NPCSystem } from '../components/NPCSystem';
 import { UkrainianPattern } from '../components/UkrainianPattern';
@@ -37,6 +37,7 @@ export function Academy() {
   const artifacts = useExpeditionStore((s) => s.artifacts);
   const museumItems = useExpeditionStore((s) => s.museumItems);
   const currentArc = useExpeditionStore((s) => s.storyState.currentArc);
+  void currentArc; // Used for future story expansion
 
   const activeExpeditions = expeditions.filter((e) => !e.collected).length;
   const damagedArtifacts = artifacts.filter((a) => a.condition < 100);
@@ -63,8 +64,8 @@ export function Academy() {
     }
     // Priority 4: Available daily challenge
     const dailyChallenges = useLiveOpsStore.getState().dailyChallengesProgress;
-    const hasUnclaimedDaily = Object.entries(dailyChallenges).some(
-      ([id, progress]) => progress?.completed && !progress?.claimed
+    const hasUnclaimedDaily = Object.values(dailyChallenges).some(
+      (progress) => progress?.completed && !progress?.claimed
     );
     if (hasUnclaimedDaily) {
       return { priority: 4, text: t('objective.claim_daily_reward'), icon: Gift, color: '#10B981' };

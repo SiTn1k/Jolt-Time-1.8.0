@@ -1,7 +1,7 @@
 // tests/unit/expedition.test.ts
 // Integration tests for expedition system
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 // Mock Supabase client
 vi.mock('../../src/lib/supabase', () => ({
@@ -122,7 +122,7 @@ describe('Expedition System Tests', () => {
         { name: 'legendary', weight: 3 }
       ];
 
-      let counts = { common: 0, rare: 0, epic: 0, legendary: 0 };
+      const counts = { common: 0, rare: 0, epic: 0, legendary: 0 };
       const trials = 10000;
 
       for (let i = 0; i < trials; i++) {
@@ -132,7 +132,7 @@ describe('Expedition System Tests', () => {
         for (const r of rarities) {
           cumulative += r.weight;
           if (roll < cumulative) {
-            counts[r.name as keyof typeof counts]++;
+            (counts as Record<string, number>)[r.name]++;
             break;
           }
         }

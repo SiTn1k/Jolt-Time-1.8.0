@@ -26,7 +26,7 @@ export function ExpeditionAdsButton({ onComplete, onError }: ExpeditionAdsButton
       if (success) {
         onComplete();
       }
-    } catch (err) {
+    } catch {
       onError?.('Помилка показу реклами');
     } finally {
       setLoading(false);

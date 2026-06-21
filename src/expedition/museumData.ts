@@ -715,7 +715,7 @@ export function calculateMuseumIncome(museumState: MuseumState, exhibitedArtifac
  * Calculate total income bonus percentage from completed collections
  */
 export function getCollectionIncomeBonus(completedCollectionIds: string[]): number {
-  let total = 0;
+  const total = 0;
   for (const collection of museumCollections) {
     if (completedCollectionIds.includes(collection.id)) {
       total += collection.bonus.incomeBonus;
@@ -774,7 +774,7 @@ export const initialMuseumState: MuseumState = {
  * Calculate total museum bonuses from all completed collections
  */
 export function calcTotalMuseumBonus(completedCollectionIds: string[]): MuseumBonus {
-  let total: MuseumBonus = {
+  const total: MuseumBonus = {
     reputationBonus: 0,
     visitorBonus: 0,
     incomeBonus: 0,

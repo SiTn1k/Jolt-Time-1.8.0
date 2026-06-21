@@ -3,8 +3,6 @@
 // Telegram Stars, Premium Shop, Rewarded Ads
 // ═══════════════════════════════════════════════════════════════════════
 
-import { Rarity } from './data';
-
 // ═══════════════════════════════════════════════════════════════════════
 // ADVERTISING SYSTEM
 // Rewarded ads integration for both game parts

@@ -5,18 +5,17 @@
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { BookOpen, Users, MessageCircle, Map, Scroll, Landmark, Package } from 'lucide-react';
+import { BookOpen, Package } from 'lucide-react';
 import { Card, Badge } from '../ui';
 import { useExpeditionStore } from '../store';
 import { CODEX_SECTIONS, type CodexSection } from '../playerGuidanceData';
+import type { Hero, Npc, Region } from '../data';
 
 export function Codex() {
   const [activeSection, setActiveSection] = useState<CodexSection>('heroes');
   const heroes = useExpeditionStore(s => s.heroes);
   const npcs = useExpeditionStore(s => s.npcs);
   const regions = useExpeditionStore(s => s.regions);
-
-  const sectionConfig = CODEX_SECTIONS.find(s => s.id === activeSection)!;
 
   const renderContent = () => {
     switch (activeSection) {
@@ -90,7 +89,7 @@ export function Codex() {
   );
 }
 
-function HeroesContent({ heroes }: { heroes: any[] }) {
+function HeroesContent({ heroes }: { heroes: Hero[] }) {
   const unlockedCount = heroes.filter(h => h.unlocked).length;
   
   return (
@@ -150,7 +149,7 @@ function HeroesContent({ heroes }: { heroes: any[] }) {
   );
 }
 
-function NpcsContent({ npcs }: { npcs: any[] }) {
+function NpcsContent({ npcs }: { npcs: Npc[] }) {
   const activeCount = npcs.filter(n => (n.trust || 0) > 0).length;
   
   return (
@@ -195,7 +194,7 @@ function NpcsContent({ npcs }: { npcs: any[] }) {
   );
 }
 
-function RegionsContent({ regions }: { regions: any[] }) {
+function RegionsContent({ regions }: { regions: Region[] }) {
   const unlockedCount = regions.filter(r => r.unlocked).length;
   
   return (

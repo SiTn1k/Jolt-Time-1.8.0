@@ -188,13 +188,6 @@ export function useFeatureFlags(flags: FeatureFlag[], userId?: string): Record<F
   return states;
 }
 
-// Server-side flag check (placeholder for future)
-async function checkFlagFromServer(flag: FeatureFlag): Promise<boolean | null> {
-  // Future: Fetch from Supabase Edge Function or CDN
-  // For now, return null to use local check
-  return null;
-}
-
 // Update flag configuration (admin only - would be server-side)
 export async function updateFeatureFlag(
   flag: FeatureFlag,

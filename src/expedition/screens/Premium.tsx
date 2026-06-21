@@ -4,8 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════
 
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { Star, Sparkles, Zap } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { PremiumShop } from '../components/PremiumShop';
 import { useExpeditionStore } from '../store';
 

@@ -5,8 +5,8 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
-import { X, Bell, Check, CheckCheck, Trash2, Filter } from 'lucide-react';
-import { Card, Badge } from '../ui';
+import { X, Bell, CheckCheck, Trash2, Filter } from 'lucide-react';
+import { Badge } from '../ui';
 import { 
   type NotificationHistory,
   type NotificationFlag,

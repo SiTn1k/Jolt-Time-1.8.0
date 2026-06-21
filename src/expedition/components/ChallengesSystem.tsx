@@ -5,7 +5,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
-import { Trophy, Clock, Star, Gift, Zap, Target, Check, ChevronRight } from 'lucide-react';
+import { Trophy, Clock, Star, Gift, Zap, Target, Check } from 'lucide-react';
 import { Card, Badge, Progress } from '../ui';
 import { useExpeditionStore } from '../store';
 import { useLiveOpsStore } from '../liveOpsStore';

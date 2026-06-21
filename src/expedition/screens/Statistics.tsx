@@ -12,7 +12,6 @@ import { Card, Badge } from '../ui';
 import { useExpeditionStore } from '../store';
 import { useLiveOpsStore } from '../liveOpsStore';
 import { achievements } from '../liveOpsData';
-import { AchievementsSystem } from '../components/AchievementsSystem';
 
 interface StatCardProps {
   icon: React.ReactNode;

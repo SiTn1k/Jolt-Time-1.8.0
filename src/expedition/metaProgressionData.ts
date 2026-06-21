@@ -3,8 +3,6 @@
 // Prestige rewards, cloud save, offline progress, seasonal events
 // ═══════════════════════════════════════════════════════════════════════
 
-import { Rarity } from './data';
-
 // ═══════════════════════════════════════════════════════════════════════
 // PRESTIGE REWARDS EXTENDED (Level 3-5)
 // Data-driven prestige rewards beyond Academy unlock
@@ -608,8 +606,11 @@ export const SOFT_LOCK_CHECKLIST: Omit<SoftLockCheck, 'passed' | 'details'>[] = 
 /**
  * Run soft-lock audit
  * Returns list of issues found
+ * @param _gameState - Reserved for future runtime checks (currently uses static analysis)
  */
-export function runSoftLockAudit(gameState: Record<string, unknown>): SoftLockCheck[] {
+export function runSoftLockAudit(_gameState: Record<string, unknown>): SoftLockCheck[] {
+  // TODO: Implement runtime validation using _gameState
+  void _gameState;
   const results: SoftLockCheck[] = [];
   
   // Check 1: All 12 arcs can be completed

@@ -250,7 +250,8 @@ class NotificationService {
     projectId: string;
     messagingSenderId: string;
   }): Promise<void> {
-    // Firebase SDK would be initialized here
+    void config;
+    // TODO: Initialize Firebase SDK with config
   }
 
   /**

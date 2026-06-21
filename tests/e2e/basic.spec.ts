@@ -6,7 +6,6 @@ import { test, expect } from '@playwright/test';
 
 // Test configuration
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:5173';
-const TEST_TIMEOUT = 60000; // 1 minute
 
 test.describe('Jolt Time E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -28,8 +27,6 @@ test.describe('Jolt Time E2E Tests', () => {
     const clickerArea = page.locator('[class*="cursor-pointer"], [class*="clicker"]').first();
     
     if (await clickerArea.isVisible().catch(() => false)) {
-      const initialText = await page.locator('text=/\\d+/').first().textContent();
-      
       await clickerArea.click();
       await clickerArea.click();
       await clickerArea.click();

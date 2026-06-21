@@ -3,9 +3,9 @@
 // Achievement categories and progress tracking
 // ═══════════════════════════════════════════════════════════════════════
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { Trophy, Star, Users, Map, BookOpen, Building, Lock, Unlock, ChevronRight } from 'lucide-react';
+import { Trophy, Star, Users, Map, BookOpen, Building, Lock, Unlock } from 'lucide-react';
 import { Card, Badge, Progress } from '../ui';
 import { useExpeditionStore } from '../store';
 import { useLiveOpsStore } from '../liveOpsStore';
@@ -45,7 +45,6 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
   const addXp = useExpeditionStore(s => s.addXp);
 
   const unlocked = progress?.unlocked || false;
-  const Icon = categoryIcons[achievement.category];
   const color = categoryColors[achievement.category];
 
   const handleClaim = () => {
@@ -65,8 +64,9 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
       className={`relative ${unlocked ? 'ring-2 ring-[#FFD700]' : 'opacity-60'} rounded-xl overflow-hidden`}
     >
       <Card 
-        className={`bg-[#161B22] border-white/5 p-3 ${!unlocked ? 'grayscale' : ''}`}
+        className={`bg-[#161B22] border-white/5 p-3 ${!unlocked ? 'grayscale' : ''} cursor-pointer hover:bg-white/5 transition-colors`}
         style={{ borderLeft: `3px solid ${unlocked ? '#FFD700' : color}` }}
+        onClick={handleClaim}
       >
         <div className="flex items-start gap-3">
           {/* Icon */}

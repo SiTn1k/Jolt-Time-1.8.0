@@ -87,7 +87,6 @@ serve(async (req) => {
     }
 
     // Calculate museum level from exhibitions
-    const exhibitions = museumState?.exhibitions || [];
     const completedCollections = museumState?.completed_collections || [];
     
     // Museum level = 1 + completed collections count (capped at 20)

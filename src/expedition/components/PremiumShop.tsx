@@ -3,14 +3,13 @@
 // Telegram Stars shop for Academy
 // ═══════════════════════════════════════════════════════════════════════
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { Star, Gift, Zap, Sparkles, Crown, Package, Lock, Check, ShoppingBag } from 'lucide-react';
+import { Star, Gift, Zap, Sparkles, Package, Lock, Check, ShoppingBag } from 'lucide-react';
 import { Card, Badge } from '../ui';
 import { 
   PREMIUM_SHOP_ITEMS, 
   getShopItemsByType, 
-  COSMETIC_FRAMES,
   type ShopItem,
   type ShopItemType 
 } from '../premiumEconomyData';

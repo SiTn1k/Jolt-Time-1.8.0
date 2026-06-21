@@ -12,10 +12,12 @@ import { Buildings } from './screens/Buildings';
 import { DailyRewards } from './screens/DailyRewards';
 import { Statistics } from './screens/Statistics';
 import { Premium } from './screens/Premium';
-import { HeroArchive } from './screens/HeroArchive';
-import { NpcEncyclopedia } from './screens/NpcEncyclopedia';
-import { Codex } from './screens/Codex';
 import { TutorialGuide } from '../components/tutorial';
+
+// Lazy load screens for future expansion
+// import { HeroArchive } from './screens/HeroArchive';
+// import { NpcEncyclopedia } from './screens/NpcEncyclopedia';
+// import { Codex } from './screens/Codex';
 
 // Lazy load heavy screens for code splitting
 const Museum = lazy(() => import('./screens/Museum').then(m => ({ default: m.Museum })));

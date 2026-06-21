@@ -8,7 +8,6 @@ import {
   Challenge,
   ChallengePeriod,
   ChallengeReward,
-  Achievement,
   SeasonalEvent,
   PlayerStats,
   getInitialPlayerStats,
@@ -238,10 +237,10 @@ export const useLiveOpsStore = create<LiveOpsStore>((set, get) => ({
     const shouldReset = now - lastReset >= 24 * 60 * 60 * 1000;
     
     if (shouldReset) {
-      set(s => {
+      set(() => {
         const newProgress: Record<string, ChallengeProgress> = {};
         dailyChallenges.forEach(c => {
-          const oldProgress = s.dailyChallengesProgress[c.id];
+          
           newProgress[c.id] = {
             current: 0,
             completed: false,
@@ -265,7 +264,7 @@ export const useLiveOpsStore = create<LiveOpsStore>((set, get) => ({
     const shouldReset = now - lastReset >= 7 * 24 * 60 * 60 * 1000;
     
     if (shouldReset) {
-      set(s => {
+      set(() => {
         const newProgress: Record<string, ChallengeProgress> = {};
         weeklyChallenges.forEach(c => {
           newProgress[c.id] = {
@@ -437,7 +436,7 @@ export const useLiveOpsStore = create<LiveOpsStore>((set, get) => ({
       const currentBoost = get().activeBoosts.expeditionSpeedBoost;
       const expiresAt = now + 24 * 60 * 60 * 1000; // 24 hours
       
-      set(s => ({
+      set(() => ({
         activeBoosts: {
           expeditionSpeedBoost: currentBoost + boost.expeditionSpeedBoost,
           expeditionSpeedBoostExpires: expiresAt,

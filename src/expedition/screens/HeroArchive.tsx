@@ -5,27 +5,11 @@
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { Users, Lock, Star, Zap, Shield, BookOpen, Map, Heart } from 'lucide-react';
+import { Users, Lock, Star } from 'lucide-react';
 import { Card, Badge } from '../ui';
 import { useExpeditionStore } from '../store';
-import { Rarity } from '../data';
-import { HERO_SYNERGIES, getSynergyBetween } from '../heroRpgData';
-
-// Trait icons mapping
-const TRAIT_ICONS: Record<string, string> = {
-  archaeologist: '⛏️',
-  explorer: '🧭',
-  historian: '📜',
-  diplomat: '🤝',
-  warrior: '⚔️',
-  treasure_hunter: '💎',
-  scholar: '📚',
-  leader: '👑',
-  lucky: '🍀',
-  cartographer: '🗺️',
-  medic: '💊',
-  trader: '💰',
-};
+import { type Rarity, type Hero } from '../data';
+import { HERO_SYNERGIES } from '../heroRpgData';
 
 // Rarity colors
 const RARITY_COLORS: Record<Rarity, string> = {
@@ -40,7 +24,7 @@ function HeroCard({
   prestigeLevel, 
   playerLevel 
 }: { 
-  hero: any; 
+  hero: Hero; 
   prestigeLevel: number;
   playerLevel: number;
 }) {
@@ -152,7 +136,7 @@ function HeroCard({
   );
 }
 
-function checkCanUnlock(hero: any, prestigeLevel: number, playerLevel: number): boolean {
+function checkCanUnlock(hero: Hero, prestigeLevel: number, playerLevel: number): boolean {
   if (!hero.unlockCondition) return false;
   
   switch (hero.unlockCondition.type) {
@@ -170,7 +154,6 @@ function checkCanUnlock(hero: any, prestigeLevel: number, playerLevel: number): 
 export function HeroArchive() {
   const heroes = useExpeditionStore(s => s.heroes);
   const reputation = useExpeditionStore(s => s.reputation);
-  const prestigeLevel = 0; // Would come from main game state
 
   const [filter, setFilter] = useState<'all' | 'unlocked' | 'locked'>('all');
 

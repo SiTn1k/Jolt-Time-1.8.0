@@ -141,8 +141,6 @@ function calculatePrestigeRewards(level: number): PrestigeRewards {
   // Prestige 2: Academy unlock
   // Prestige 3-5: Progressive unlocks
   
-  const baseMultiplier = level;
-  
   return {
     prestigePoints: level * 100,
     currency: level * 500,

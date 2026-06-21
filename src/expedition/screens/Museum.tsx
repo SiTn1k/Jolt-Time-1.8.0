@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useExpeditionStore } from '../store';
 import { Landmark, Settings } from 'lucide-react';
-import { Card, EmptyState } from '../ui';
+import { Card } from '../ui';
 import { MuseumSystem } from '../components/MuseumSystem';
 import { useTranslation } from '../../i18n';
 import { getReputationLevel, museumCollections } from '../museumData';

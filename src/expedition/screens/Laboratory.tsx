@@ -1,7 +1,7 @@
 import { useExpeditionStore } from '../store';
 import { motion } from 'motion/react';
 import { FlaskConical, Clock, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
-import { Card, Badge, Progress, Button, Tabs, TabsContent, TabsList, TabsTrigger, EmptyState } from '../ui';
+import { Card, Badge, Progress, Button, Tabs, TabsContent, TabsList, TabsTrigger } from '../ui';
 import type { Rarity } from '../data';
 import { useTickValue } from '../useTick';
 import { useTranslation } from '../../i18n';

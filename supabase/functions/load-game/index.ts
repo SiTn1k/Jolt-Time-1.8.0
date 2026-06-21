@@ -11,7 +11,6 @@ const corsHeaders = {
 };
 
 const CURRENT_SAVE_VERSION = 2;
-const CURRENT_CONTENT_VERSION = 2;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -79,7 +78,6 @@ serve(async (req) => {
 
     // Check for save version mismatch
     const savedVersion = cloudSave.save_version || 0;
-    const savedContentVersion = cloudSave.content_version || 0;
     
     let migratedData = cloudSave.save_data;
     let migrationPerformed = false;

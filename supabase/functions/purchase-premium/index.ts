@@ -113,7 +113,7 @@ serve(async (req) => {
         rewardDetails = { currency: itemConfig.reward.amount };
         break;
 
-      case "xp_boost":
+      case "xp_boost": {
         const currentBoosters = (profile.active_boosters as Record<string, unknown>) || {};
         const existingBoost = currentBoosters.xp_boost_until || 0;
         const newBoostUntil = Math.max(existingBoost as number, Date.now()) + itemConfig.reward.amount;
@@ -130,8 +130,9 @@ serve(async (req) => {
         rewardGranted = true;
         rewardDetails = { xp_boost_until: newBoostUntil };
         break;
+      }
 
-      case "energy":
+      case "energy": {
         const currentEnergy = profile.energy || 0;
         const maxEnergy = profile.max_energy || 100;
         
@@ -144,6 +145,7 @@ serve(async (req) => {
         rewardGranted = true;
         rewardDetails = { energy: itemConfig.reward.amount };
         break;
+      }
 
       default:
         // Mark as purchased but don't apply yet (for future items)
