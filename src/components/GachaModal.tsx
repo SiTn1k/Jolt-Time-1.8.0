@@ -145,15 +145,15 @@ export function GachaModal({
   const getRarityStyle = (rarity: string) => {
     switch (rarity) {
       case 'secret':
-        return { color: 'text-pink-400', glow: 'drop-shadow-[0_0_25px_rgba(236,72,153,0.6)]' };
+        return { color: 'text-pink-400', borderColor: 'rgba(236,72,153,0.4)' };
       case 'legendary':
-        return { color: 'text-yellow-400', glow: 'drop-shadow-[0_0_20px_rgba(234,179,8,0.5)]' };
+        return { color: 'text-yellow-400', borderColor: 'rgba(234,179,8,0.4)' };
       case 'epic':
-        return { color: 'text-purple-400', glow: 'drop-shadow-[0_0_15px_rgba(168,85,247,0.4)]' };
+        return { color: 'text-purple-400', borderColor: 'rgba(168,85,247,0.4)' };
       case 'rare':
-        return { color: 'text-blue-400', glow: 'drop-shadow-[0_0_10px_rgba(59,130,246,0.3)]' };
+        return { color: 'text-blue-400', borderColor: 'rgba(59,130,246,0.4)' };
       default:
-        return { color: 'text-gray-300', glow: '' };
+        return { color: 'text-gray-300', borderColor: 'rgba(255,255,255,0.1)' };
     }
   };
 
@@ -224,7 +224,7 @@ export function GachaModal({
           <div
             className={`text-8xl transition-all duration-300 select-none ${
               phase === 'rolling' ? 'animate-bounce' : ''
-            } ${phase === 'result' && primaryReward ? getRarityStyle(primaryReward.rarity).glow + ' scale-125' : ''}`}
+            } ${phase === 'result' && primaryReward ? getRarityStyle(primaryReward.rarity).color + ' scale-110' : ''}`}
           >
             {phase === 'error' ? '❌' : currentIcon}
           </div>

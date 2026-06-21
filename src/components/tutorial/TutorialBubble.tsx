@@ -7,7 +7,14 @@
 
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from '../../i18n';
-import type { TutorialStep } from './useTutorial';
+
+interface TutorialStep {
+  id: string;
+  titleKey: string;
+  contentKey: string;
+  targetSelector?: string;
+  screen: string;
+}
 
 interface TutorialBubbleProps {
   step: TutorialStep;
@@ -51,19 +58,19 @@ export function TutorialBubble({
         <div
           className="mx-4 pointer-events-auto max-w-sm mx-auto"
           style={{
-            background: 'rgba(20, 20, 30, 0.95)',
-            borderRadius: '28px',
+            background: 'rgba(22, 27, 34, 0.98)',
+            borderRadius: '24px',
             border: '1px solid rgba(255, 255, 255, 0.08)',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
           }}
         >
           {/* Header with guide */}
-          <div className="flex items-center gap-3 p-4 border-b border-white/5">
+          <div className="flex items-center gap-3 p-4 border-b border-white/[0.08]">
             {/* Guide Avatar */}
             <div
               className="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
               style={{
-                background: 'linear-gradient(135deg, #FFC72C 0%, #FF8C00 100%)',
+                background: '#FFC72C',
               }}
             >
               {guideAvatar}
@@ -85,7 +92,7 @@ export function TutorialBubble({
             {/* Skip button */}
             <button
               onClick={onSkip}
-              className="text-xs px-3 py-1.5 rounded-lg transition-colors hover:bg-white/10"
+              className="text-xs px-3 py-1.5 rounded-lg transition-colors hover:bg-white/[0.08]"
               style={{ color: '#8B949E' }}
             >
               ✕
@@ -111,7 +118,7 @@ export function TutorialBubble({
             <div className="h-1 rounded-full mb-4 overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
               <motion.div
                 className="h-full rounded-full"
-                style={{ background: 'linear-gradient(90deg, #FFC72C 0%, #FF8C00 100%)' }}
+                style={{ background: '#FFC72C' }}
                 initial={{ width: 0 }}
                 animate={{ width: `${(stepNumber / totalSteps) * 100}%` }}
                 transition={{ duration: 0.3 }}
@@ -121,12 +128,10 @@ export function TutorialBubble({
             {/* Action button */}
             <button
               onClick={onNext}
-              className="w-full py-3.5 rounded-xl font-medium text-sm transition-all active:scale-[0.98]"
+              className="w-full h-12 rounded-2xl font-semibold text-base transition-all active:scale-[0.98] flex items-center justify-center"
               style={{
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
-                color: '#E6EDF3',
-                minHeight: '48px',
+                background: '#FFC72C',
+                color: '#0d1117',
               }}
             >
               {stepNumber === totalSteps ? t('tutorial.finish') : t('tutorial.got_it')}
@@ -135,7 +140,7 @@ export function TutorialBubble({
             {/* Skip link */}
             <button
               onClick={onSkip}
-              className="w-full mt-2 py-2 text-xs transition-colors"
+              className="w-full mt-3 py-2 text-xs transition-colors"
               style={{ color: '#8B949E' }}
             >
               {t('tutorial.skip_tutorial')}

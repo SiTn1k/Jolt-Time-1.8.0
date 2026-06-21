@@ -9,37 +9,37 @@ interface TutorialModalProps {
 
 const STEPS = [
   {
-    icon: <Target className="w-16 h-16 text-yellow-400" />,
+    icon: <Target className="w-12 h-12 text-[#FFC72C]" />,
     titleKey: 'tutorial.welcome_title',
     contentKey: 'tutorial.welcome_content',
   },
   {
-    icon: <ShoppingBag className="w-16 h-16 text-green-400" />,
+    icon: <ShoppingBag className="w-12 h-12 text-[#10B981]" />,
     titleKey: 'tutorial.generators_title',
     contentKey: 'tutorial.generators_content',
   },
   {
-    icon: <Gift className="w-16 h-16 text-purple-400" />,
+    icon: <Gift className="w-12 h-12 text-[#9747FF]" />,
     titleKey: 'tutorial.artifacts_title',
     contentKey: 'tutorial.artifacts_content',
   },
   {
-    icon: <Map className="w-16 h-16 text-cyan-400" />,
+    icon: <Map className="w-12 h-12 text-[#00E5FF]" />,
     titleKey: 'tutorial.expeditions_title',
     contentKey: 'tutorial.expeditions_content',
   },
   {
-    icon: <Award className="w-16 h-16 text-amber-400" />,
+    icon: <Award className="w-12 h-12 text-[#FFC72C]" />,
     titleKey: 'tutorial.prestige_title',
     contentKey: 'tutorial.prestige_content',
   },
   {
-    icon: <Crown className="w-16 h-16 text-red-400" />,
+    icon: <Crown className="w-12 h-12 text-[#FF2A5F]" />,
     titleKey: 'tutorial.academy_title',
     contentKey: 'tutorial.academy_content',
   },
   {
-    icon: <Zap className="w-16 h-16 text-yellow-400" />,
+    icon: <Zap className="w-12 h-12 text-[#FFC72C]" />,
     titleKey: 'tutorial.boosters_title',
     contentKey: 'tutorial.boosters_content',
   },
@@ -73,28 +73,28 @@ export function TutorialModal({ onClose }: TutorialModalProps) {
   const currentStep = STEPS[step];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4">
-      <div className="relative w-full max-w-sm bg-gray-900 rounded-3xl overflow-hidden shadow-2xl border border-gray-700">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+      <div className="relative w-full max-w-sm bg-[#161B22] rounded-3xl overflow-hidden border border-white/[0.08]">
         <button
           onClick={handleSkip}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white z-10 transition-colors"
+          className="absolute top-4 right-4 text-[#8B949E] hover:text-[#E6EDF3] z-10 transition-colors"
         >
-          <X size={24} />
+          <X size={20} />
         </button>
 
         <div className="pt-8 pb-6 px-6 text-center">
           {/* Icon */}
-          <div className="mb-6 flex justify-center animate-pulse">
+          <div className="mb-6 flex justify-center">
             {currentStep.icon}
           </div>
 
           {/* Title */}
-          <h2 className="text-xl font-bold text-white mb-3">
+          <h2 className="text-xl font-bold text-[#E6EDF3] mb-3">
             {t(currentStep.titleKey)}
           </h2>
 
           {/* Content */}
-          <p className="text-gray-400 text-sm leading-relaxed mb-6">
+          <p className="text-[#8B949E] text-sm leading-relaxed mb-6">
             {t(currentStep.contentKey)}
           </p>
 
@@ -103,8 +103,8 @@ export function TutorialModal({ onClose }: TutorialModalProps) {
             {STEPS.map((_, i) => (
               <div
                 key={i}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  i === step ? 'bg-yellow-400 w-6' : 'bg-gray-600'
+                className={`h-1.5 rounded-full transition-all ${
+                  i === step ? 'w-6 bg-[#FFC72C]' : 'w-2 bg-white/[0.1]'
                 }`}
               />
             ))}
@@ -115,7 +115,7 @@ export function TutorialModal({ onClose }: TutorialModalProps) {
             {step > 0 && (
               <button
                 onClick={handlePrev}
-                className="flex-1 py-3 rounded-xl bg-gray-700 text-white font-medium hover:bg-gray-600 transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="flex-1 h-12 rounded-2xl bg-white/[0.08] text-[#E6EDF3] font-medium hover:bg-white/[0.12] transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
               >
                 <ChevronLeft size={18} />
                 {t('tutorial.back')}
@@ -123,7 +123,7 @@ export function TutorialModal({ onClose }: TutorialModalProps) {
             )}
             <button
               onClick={handleNext}
-              className="flex-1 py-3 rounded-xl font-medium transition-all active:scale-95 flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-500 to-amber-500 text-black hover:from-yellow-400 hover:to-amber-400"
+              className="flex-1 h-12 rounded-2xl font-semibold transition-all active:scale-[0.98] flex items-center justify-center gap-2 bg-[#FFC72C] text-[#0d1117]"
             >
               {step === STEPS.length - 1 ? (
                 <>
@@ -142,7 +142,7 @@ export function TutorialModal({ onClose }: TutorialModalProps) {
           {/* Skip link */}
           <button
             onClick={handleSkip}
-            className="mt-4 text-xs text-gray-500 hover:text-gray-400 transition-colors"
+            className="mt-4 text-xs text-[#8B949E] hover:text-[#E6EDF3] transition-colors"
           >
             {t('tutorial.skip_tutorial')}
           </button>

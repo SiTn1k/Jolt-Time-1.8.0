@@ -91,28 +91,28 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
   // Boost is active - show status with correct duration
   if (boostActive) {
     return (
-      <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 rounded-2xl p-4 border border-green-500/30">
+      <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-green-500/20 rounded-xl">
-              <Zap className="w-6 h-6 text-green-400" />
+            <div className="p-2 bg-[#10B981]/20 rounded-xl">
+              <Zap className="w-5 h-5 text-[#10B981]" />
             </div>
             <div>
-              <h3 className="text-white font-bold text-lg">XP x3 активний</h3>
-              <p className="text-green-400 text-sm">
+              <h3 className="text-[#E6EDF3] font-semibold">XP x3 активний</h3>
+              <p className="text-[#8B949E] text-sm">
                 Залишилось: {formatRemainingTime(remainingTime)}
               </p>
             </div>
           </div>
-          <div className="text-2xl font-bold text-green-400">x3</div>
+          <div className="text-xl font-bold text-[#10B981]">x3</div>
         </div>
-        <div className="w-full bg-gray-800 rounded-full h-2.5 mt-3">
+        <div className="w-full bg-white/[0.08] rounded-full h-2 mt-3">
           <div
-            className="bg-gradient-to-r from-green-500 to-emerald-400 h-2.5 rounded-full transition-all duration-1000"
+            className="bg-[#10B981] h-2 rounded-full transition-all duration-1000"
             style={{ width: `${Math.max(0, (remainingTime / XP_BOOST_DURATION_MS) * 100)}%` }}
           />
         </div>
-        <p className="text-gray-400 text-xs text-center mt-2">
+        <p className="text-[#8B949E] text-xs text-center mt-2">
           Буст діє 30 хвилин та не подовжується
         </p>
       </div>
@@ -121,19 +121,19 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
 
   // Show ad button
   return (
-    <div className="bg-gradient-to-br from-amber-900/30 to-orange-900/30 rounded-2xl p-4 border border-amber-500/30">
+    <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-4">
       <div className="flex items-center gap-3 mb-3">
-        <div className="p-2.5 bg-amber-500/20 rounded-xl">
-          <Gift className="w-6 h-6 text-amber-400" />
+        <div className="p-2 bg-[#FFC72C]/10 rounded-xl">
+          <Gift className="w-5 h-5 text-[#FFC72C]" />
         </div>
         <div className="flex-1">
-          <h3 className="text-white font-bold text-lg">Безкоштовний XP бустер</h3>
-          <p className="text-amber-400/80 text-sm">x3 XP на 30 хвилин за перегляд реклами</p>
+          <h3 className="text-[#E6EDF3] font-semibold">Безкоштовний XP бустер</h3>
+          <p className="text-[#8B949E] text-sm">x3 XP на 30 хвилин за перегляд реклами</p>
         </div>
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 text-red-400 text-sm mb-3 bg-red-500/10 rounded-lg p-2.5">
+        <div className="flex items-center gap-2 text-[#EF4444] text-sm mb-3 bg-[#EF4444]/10 rounded-lg p-2.5">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           <span>{error}</span>
         </div>
@@ -142,10 +142,10 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
       <button
         onClick={handleShowAd}
         disabled={isLoading || boostActive}
-        className={`w-full py-3 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 ${
+        className={`w-full h-12 rounded-xl font-semibold text-base transition-all flex items-center justify-center gap-2 ${
           isLoading || boostActive
-            ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-            : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black shadow-lg shadow-amber-900/30 active:scale-[0.98]'
+            ? 'bg-white/[0.08] text-[#8B949E] cursor-not-allowed'
+            : 'bg-[#FFC72C] text-[#0d1117] active:scale-[0.98]'
         }`}
       >
         {isLoading ? (
@@ -161,7 +161,7 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
         )}
       </button>
 
-      <p className="text-gray-500 text-xs text-center mt-2">
+      <p className="text-[#8B949E] text-xs text-center mt-2">
         Безкоштовно • Переглянь рекламу до кінця • Буст не подовжується
       </p>
     </div>
