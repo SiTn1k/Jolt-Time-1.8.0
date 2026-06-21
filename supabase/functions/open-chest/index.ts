@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { createHmac } from "node:crypto";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,32 +10,101 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
+
+// =====================================================
+// SECURITY: Rate limiting (in-memory, reset on cold start)
+// =====================================================
+const rateLimitStore = new Map<number, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 10; // 10 chest opens per minute
+
+function checkRateLimit(telegramId: number): { allowed: boolean; remaining: number } {
+  const now = Date.now();
+  const record = rateLimitStore.get(telegramId);
+  
+  if (!record || now > record.resetAt) {
+    rateLimitStore.set(telegramId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS - 1 };
+  }
+  
+  if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return { allowed: false, remaining: 0 };
+  }
+  
+  record.count++;
+  return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS - record.count };
+}
+
+// =====================================================
+// SECURITY: HMAC-SHA256 initData validation
+// =====================================================
+function validateInitData(initData: string): { valid: boolean; userId: number | null; error?: string } {
+  if (!BOT_TOKEN) {
+    console.error("SECURITY: TELEGRAM_BOT_TOKEN not configured!");
+    return { valid: false, userId: null, error: "Server misconfiguration" };
+  }
+
+  const params = new URLSearchParams(initData);
+  const hash = params.get("hash");
+  if (!hash) {
+    return { valid: false, userId: null, error: "Missing hash" };
+  }
+
+  // Check auth_date freshness
+  const authDateStr = params.get("auth_date");
+  if (!authDateStr) {
+    return { valid: false, userId: null, error: "Missing auth_date" };
+  }
+  const authDate = parseInt(authDateStr, 10);
+  const ageSeconds = Math.floor(Date.now() / 1000) - authDate;
+  if (isNaN(authDate) || ageSeconds > 86400 || ageSeconds < 0) {
+    return { valid: false, userId: null, error: "initData expired or invalid" };
+  }
+
+  // Build data_check_string
+  const keys = [...params.keys()].filter(k => k !== "hash").sort();
+  const dataCheckString = keys.map(k => `${k}=${params.get(k)}`).join("\n");
+
+  // HMAC-SHA256
+  const secretKey = createHmac("sha256", "WebAppData").update(BOT_TOKEN).digest();
+  const computedHash = createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
+
+  if (computedHash !== hash) {
+    return { valid: false, userId: null, error: "HMAC validation failed" };
+  }
+
+  // Extract user.id
+  const userStr = params.get("user");
+  if (userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      return { valid: true, userId: user.id ?? null };
+    } catch {
+      return { valid: false, userId: null, error: "Invalid user JSON" };
+    }
+  }
+
+  return { valid: false, userId: null, error: "No user in initData" };
+}
 
 /**
  * Open Chest Edge Function
  *
  * Server-authoritative chest/skychest opening.
- * Generates artifact fragment rewards with proper rarity chances.
- *
- * Rarity chances:
- * - Common: 60%
- * - Rare: 25%
- * - Epic: 10%
- * - Legendary: 4%
- * - Secret: 1% (only if prestige_level >= requiredPrestige)
- *
- * Secret artifact chance scales with prestige research:
- * - Base: 1%
- * - +5% per "rare_artifact_chance" research level (max 10 levels = +50% = 1.5% total)
- *
- * Rewards: 1-3 artifact fragments for a random artifact from current epoch
+ * 
+ * SECURITY:
+ * - Validates initData via HMAC-SHA256
+ * - Rate limited: 10 requests/minute per user
+ * - Uses SERVICE_ROLE key for database operations
  */
 
 interface OpenChestRequest {
   telegram_id: number;
+  init_data?: string; // Required for validation
   epoch_id: string;
-  chest_type?: "skychest" | "daily"; // skychest = premium, daily = free
-  epoch_index?: number; // For cost calculation: 0-based epoch order
+  chest_type?: "skychest" | "daily";
+  epoch_index?: number;
 }
 
 interface ArtifactDrop {
@@ -238,7 +308,35 @@ Deno.serve(async (req: Request) => {
 
   try {
     const body: OpenChestRequest = await req.json();
-    const { telegram_id, epoch_id, chest_type = "daily", epoch_index = 0 } = body;
+    const { telegram_id, init_data, epoch_id, chest_type = "daily", epoch_index = 0 } = body;
+
+    // =====================================================
+    // SECURITY: Validate initData
+    // =====================================================
+    if (!init_data) {
+      return jsonResponse({ error: "Missing init_data for validation" }, 401);
+    }
+
+    const validation = validateInitData(init_data);
+    if (!validation.valid || !validation.userId) {
+      console.error(`SECURITY: initData validation failed for telegram_id=${telegram_id}: ${validation.error}`);
+      return jsonResponse({ error: validation.error || "Authentication failed" }, 401);
+    }
+
+    // Verify telegram_id matches validated user
+    if (validation.userId !== telegram_id) {
+      console.error(`SECURITY: telegram_id mismatch! Body=${telegram_id}, Validated=${validation.userId}`);
+      return jsonResponse({ error: "User ID mismatch" }, 403);
+    }
+
+    // =====================================================
+    // SECURITY: Rate limiting
+    // =====================================================
+    const rateCheck = checkRateLimit(telegram_id);
+    if (!rateCheck.allowed) {
+      console.warn(`SECURITY: Rate limit exceeded for telegram_id=${telegram_id}`);
+      return jsonResponse({ error: "Rate limit exceeded. Try again later." }, 429);
+    }
 
     if (!telegram_id || typeof telegram_id !== "number" || telegram_id <= 0) {
       return jsonResponse({ error: "Invalid telegram_id" }, 400);

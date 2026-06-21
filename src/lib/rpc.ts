@@ -82,9 +82,19 @@ export async function rpcOpenChest(
 }> {
   if (!supabase) return { ok: false, error: 'No Supabase connection' };
 
+  const init_data = getRawInitData();
+  if (!init_data) return { ok: false, error: 'Not running in Telegram' };
+
   try {
+    // SECURITY: Pass init_data for server-side HMAC validation
     const { data, error } = await supabase.functions.invoke('open-chest', {
-      body: { telegram_id: telegramId, epoch_id: epochId, chest_type: chestType, epoch_index: epochIndex },
+      body: { 
+        telegram_id: telegramId, 
+        init_data, // Pass init_data for validation
+        epoch_id: epochId, 
+        chest_type: chestType, 
+        epoch_index: epochIndex 
+      },
     });
 
     if (error) return { ok: false, error: error.message || 'Edge function error' };
@@ -94,6 +104,45 @@ export async function rpcOpenChest(
     console.error('rpcOpenChest error:', e);
     return { ok: false, error: String(e) };
   }
+}
+
+/**
+ * Get trusted server timestamp for offline calculations.
+ * Prevents client clock manipulation exploits.
+ */
+export async function rpcGetServerTime(): Promise<{ 
+  ok: boolean; 
+  server_time?: number; 
+  error?: string 
+}> {
+  if (!supabase) return { ok: false, error: 'No Supabase connection' };
+
+  try {
+    const { data, error } = await supabase.functions.invoke('get-server-time', {});
+    
+    if (error) return { ok: false, error: error.message };
+    
+    return { 
+      ok: true, 
+      server_time: data?.server_time as number 
+    };
+  } catch (e) {
+    console.error('rpcGetServerTime error:', e);
+    return { ok: false, error: String(e) };
+  }
+}
+
+/**
+ * Validate referral ID before processing.
+ * SECURITY: Prevents injection and integer overflow attacks.
+ */
+export function isValidReferralId(id: number): boolean {
+  // Valid Telegram user IDs are positive integers
+  // Max reasonable value is ~10^11 (100 billion)
+  if (!Number.isInteger(id)) return false;
+  if (id < 1) return false;
+  if (id > 999999999999) return false;
+  return true;
 }
 
 /**
