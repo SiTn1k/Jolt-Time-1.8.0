@@ -6,7 +6,7 @@ import { motion } from 'motion/react';
 import { 
   Landmark, Award, Sparkles, Eye, 
   Plus, Minus, Star, Gift, 
-  X, Calendar, RefreshCw
+  X, Calendar, RefreshCw, Sword, Gem, Shield
 } from 'lucide-react';
 import { Card, Badge, Progress } from '../ui';
 import type { Artifact, Rarity } from '../data';
@@ -470,7 +470,7 @@ function CollectionsTab({
         >
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center"
                 style={{ backgroundColor: collection.isComplete ? '#FFC72C30' : '#ffffff10' }}>
                 {collection.isComplete ? <Star className="w-6 h-6 text-[#FFC72C]" /> : collection.icon}
               </div>
@@ -562,7 +562,7 @@ function UpgradesTab({
           className={`border-white/10 p-4 ${upgrade.isMaxed ? 'border-[#FFC72C]/30 bg-[#FFC72C]/5' : ''}`}
         >
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-white/10">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/10">
               {upgrade.icon}
             </div>
             <div className="flex-1">
@@ -751,7 +751,7 @@ function AchievementsTab({ museumState, museumArtifacts }: { museumState: Museum
             className={`border-white/10 p-4 ${isUnlocked ? 'border-[#FFC72C]/30 bg-[#FFC72C]/5' : ''}`}
           >
             <div className="flex items-start gap-3">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                 isUnlocked ? 'bg-[#FFC72C]/20' : 'bg-white/10 opacity-50'
               }`}>
                 {achievement.icon}
@@ -831,7 +831,9 @@ function EventsTab({ museumState, joinEvent }: { museumState: MuseumState; joinE
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl">{event.theme === 'gold' ? '👑' : event.theme === 'warrior' ? '⚔️' : '🏺'}</span>
+                  {event.theme === 'gold' ? <Crown className="w-6 h-6 text-[#FFC72C]" /> : 
+                   event.theme === 'warrior' ? <Sword className="w-6 h-6 text-[#FF2A5F]" /> : 
+                   <Gem className="w-6 h-6 text-[#00E5FF]" />}
                   <div>
                     <h3 className="text-sm font-medium">
                       {t(event.nameKey)}
@@ -897,13 +899,13 @@ function EventsTab({ museumState, joinEvent }: { museumState: MuseumState; joinE
             className={`border-white/10 p-4 ${isCompleted ? 'border-[#FFC72C]/30' : !isUnlocked ? 'opacity-50' : 'border-[#FF2A5F]/30'}`}
           >
             <div className="flex items-start gap-3">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                 isCompleted ? 'bg-[#FFC72C]/20' : 'bg-[#FF2A5F]/20'
               }`}>
-                {exhibition.id.includes('trypillia') ? '🏺' : 
-                 exhibition.id.includes('scythia') ? '⚔️' :
-                 exhibition.id.includes('rus') ? '⛪' :
-                 exhibition.id.includes('cossack') ? '🗡️' : '🌟'}
+                {exhibition.id.includes('trypillia') ? <Gem className="w-6 h-6 text-[#00E5FF]" /> : 
+                 exhibition.id.includes('scythia') ? <Sword className="w-6 h-6 text-[#FF2A5F]" /> :
+                 exhibition.id.includes('rus') ? <Landmark className="w-6 h-6 text-[#FFC72C]" /> :
+                 exhibition.id.includes('cossack') ? <Shield className="w-6 h-6 text-[#9747FF]" /> : <Sparkles className="w-6 h-6 text-[#FF2A5F]" />}
               </div>
               <div className="flex-1">
                 <h3 className="text-sm font-medium">

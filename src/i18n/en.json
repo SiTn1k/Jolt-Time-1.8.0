@@ -46,7 +46,7 @@
     "generators": "Generators",
     "epoch": "Epoch",
     "prestige_button": "Prestige",
-    "next_prestige": "Next prestige: {level} ★",
+    "next_prestige": "Next prestige: {level} \u2605",
     "confirm_title": "Confirm Prestige?",
     "confirm_desc": "Your level, currency and generators will be reset. Artifacts and research will be kept.",
     "total_level": "Total level: {level}",
@@ -96,7 +96,7 @@
     "passive_xp_per_sec": "Passive XP/s",
     "tap_power": "Tap Power",
     "generators": "Generators",
-    "streak": "🔥 Streak",
+    "streak": "\ud83d\udd25 Streak",
     "record_streak": "Record Streak",
     "days": "days",
     "days_one": "day",
@@ -107,9 +107,9 @@
     "artifact_chest": "Artifact Chest",
     "chest_open_cost": "Open chests for {cost} {icon} and collect unique artifacts.",
     "chest_odds": "Odds: Common 39% | Rare 35% | Epic 18% | Legendary 8%",
-    "upgrade_to_level": "⬆️ Upgrade (Lvl {level})",
+    "upgrade_to_level": "\u2b06\ufe0f Upgrade (Lvl {level})",
     "fragments": "{current}/{total} frag.",
-    "max_level": "⭐ Max level",
+    "max_level": "\u2b50 Max level",
     "open_chest": "Open chest",
     "active": "Active",
     "active_boosters": "Active Boosters",
@@ -138,7 +138,7 @@
     "continue_with_boost": "Continue playing with boost",
     "double_passive": "Double passive income",
     "chest_milestone": "10 Chests Opened!",
-    "chest_milestone_desc": "You've opened {{count}} chests! Watch ad for bonus 🎁",
+    "chest_milestone_desc": "You've opened {{count}} chests! Watch ad for bonus \ud83c\udf81",
     "cannot_skip": "Ad cannot be skipped"
   },
   "duplicate_tab": {
@@ -406,7 +406,8 @@
     "join_event": "Join Event",
     "participating": "Participating",
     "event_active": "Event Active",
-    "event_completed": "Event Completed"
+    "event_completed": "Event Completed",
+    "speed_up_hint": "Complete for 50% speed boost"
   },
   "npc": {
     "courtyard": "Courtyard",
@@ -582,7 +583,7 @@
     "boost_ends_in": "Ends in",
     "free_xp_boost": "Free XP Booster",
     "free_xp_boost_desc": "x3 XP for 30 minutes for watching ad",
-    "stars_info": "Telegram Stars — Real Payment",
+    "stars_info": "Telegram Stars \u2014 Real Payment",
     "stars_hint": "Buy boosters with Telegram Stars in the app"
   },
   "ads": {
@@ -599,7 +600,7 @@
   "referrals": {
     "invite_friends": "Invite Friends",
     "reward_per_friend": "Get 100 {icon} for each friend",
-    "share_link": "Share link — get a reward!",
+    "share_link": "Share link \u2014 get a reward!",
     "friend_bonus": "Friend gets 50 {icon} bonus on registration",
     "invited": "Invited",
     "earned": "Earned {icon}",
@@ -629,8 +630,8 @@
   },
   "daily_tasks": {
     "loading": "Loading tasks...",
-    "checkin": "📥 Check-in: {streak} {days} in a row",
-    "record": "Record: 🔥 {streak} {days}",
+    "checkin": "\ud83d\udce5 Check-in: {streak} {days} in a row",
+    "record": "Record: \ud83d\udd25 {streak} {days}",
     "day": "day",
     "days": "days",
     "days_many": "days"
@@ -661,23 +662,23 @@
   },
   "tutorial": {
     "guide_name": "Young Researcher",
-    "academy_welcome_title": "🇺🇦 Welcome to the Academy!",
+    "academy_welcome_title": "\ud83c\uddfa\ud83c\udde6 Welcome to the Academy!",
     "academy_welcome_content": "Welcome to the Academy. Together we will restore the history of Ukraine.",
-    "map_title": "🗺️ World Map",
+    "map_title": "\ud83d\uddfa\ufe0f World Map",
     "map_content": "Let's start with the map. This is where expeditions are launched.",
-    "expedition_title": "⚔️ First Expedition",
+    "expedition_title": "\u2694\ufe0f First Expedition",
     "expedition_content": "Try sending your first expedition.",
-    "rewards_title": "🎁 Collecting Rewards",
+    "rewards_title": "\ud83c\udf81 Collecting Rewards",
     "rewards_content": "After the expedition completes, you can collect rewards here.",
-    "laboratory_title": "🔬 Laboratory",
+    "laboratory_title": "\ud83d\udd2c Laboratory",
     "laboratory_content": "Damaged artifacts go to the laboratory.",
-    "museum_title": "🏛️ Museum",
+    "museum_title": "\ud83c\udfdb\ufe0f Museum",
     "museum_content": "Restored artifacts decorate the museum.",
-    "heroes_title": "🧙 Heroes",
+    "heroes_title": "\ud83e\uddd9 Heroes",
     "heroes_content": "Heroes give bonuses to expeditions.",
-    "buildings_title": "🏗️ Buildings",
+    "buildings_title": "\ud83c\udfd7\ufe0f Buildings",
     "buildings_content": "Buildings enhance the Academy's development.",
-    "complete_title": "🎓 Academy Mastered!",
+    "complete_title": "\ud83c\udf93 Academy Mastered!",
     "complete_content": "You are ready. Good luck with your research!",
     "got_it": "Got it",
     "finish": "Complete",
@@ -685,16 +686,16 @@
     "back": "Back",
     "next": "Next",
     "start_game": "Start Game!",
-    "welcome_title": "🇺🇦 Welcome to Ukraine Through Time!",
+    "welcome_title": "\ud83c\uddfa\ud83c\udde6 Welcome to Ukraine Through Time!",
     "welcome_content": "You are an archaeologist traveling through 12 epochs of Ukrainian history. Tap, collect artifacts, and unlock the secrets of the past!",
-    "generators_title": "💰 Generators",
-    "generators_content": "Buy generators — they automatically earn XP! Higher level = more income. Invest to grow faster!",
-    "artifacts_title": "🏺 Artifacts",
+    "generators_title": "\ud83d\udcb0 Generators",
+    "generators_content": "Buy generators \u2014 they automatically earn XP! Higher level = more income. Invest to grow faster!",
+    "artifacts_title": "\ud83c\udffa Artifacts",
     "artifacts_content": "Collect unique artifacts from each epoch! Send them to the museum to earn prestige and unlock new opportunities.",
-    "prestige_title": "⭐ Rebirth",
-    "prestige_content": "Collect 1500 prestige — and make your first rebirth! You'll keep artifacts but start with a bigger bonus.",
-    "boosters_title": "⚡ Boosters",
-    "boosters_content": "Watch ads for x3 XP for 30 minutes! This is the ONLY way to get such a powerful boost — use it wisely!"
+    "prestige_title": "\u2b50 Rebirth",
+    "prestige_content": "Collect 1500 prestige \u2014 and make your first rebirth! You'll keep artifacts but start with a bigger bonus.",
+    "boosters_title": "\u26a1 Boosters",
+    "boosters_content": "Watch ads for x3 XP for 30 minutes! This is the ONLY way to get such a powerful boost \u2014 use it wisely!"
   },
   "arc": {
     "arcs": "Arcs",
@@ -711,6 +712,8 @@
     "feature_museum": "Museum",
     "feature_heroes": "Heroes",
     "feature_story": "History",
+    "feature_npc": "NPC",
+    "feature_reputation": "Reputation",
     "academy_title": "Archaeological Academy",
     "academy_subtitle": "of Ukraine",
     "reputation": "Reputation",
@@ -740,14 +743,14 @@
     "no_heroes_available": "All heroes are on expeditions.",
     "select_at_least_one": "Select at least one hero",
     "no_free_slots": "No free expedition slots",
-    "expedition_started": "Expedition to «{region}» started",
+    "expedition_started": "Expedition to \u00ab{region}\u00bb started",
     "expedition_active": "Active Expeditions",
     "expedition_completed": "Expedition Completed",
     "collect_result": "Collect Reward",
     "expedition_success": "Success!",
     "expedition_failed": "Expedition failed",
     "heroes_returned": "Heroes returned.",
-    "found_artifact": "Found «{artifact}»",
+    "found_artifact": "Found \u00ab{artifact}\u00bb",
     "expedition_slots": "Slots",
     "status_traveling": "Traveling",
     "status_excavating": "Excavating",
@@ -794,7 +797,9 @@
     "leaderboard_play_more": "Play more to enter the rankings!",
     "leaderboard_refresh": "Refresh",
     "leaderboard_no_data": "No data for this leaderboard",
-    "story_system": "Story System"
+    "story_system": "Story System",
+    "speed_up": "Speed up for ad",
+    "sped_up": "Expedition sped up by 50%!"
   },
   "academy_unlock": {
     "title": "Academy of Time Unlocked!",
@@ -887,7 +892,7 @@
   },
   "npc_hints": {
     "academy_hint_1": "I've heard legends about the Historical Academy...",
-    "academy_hint_3": "Accumulate Prestige — and you'll get there.",
+    "academy_hint_3": "Accumulate Prestige \u2014 and you'll get there.",
     "academy_hint_5": "To get there, you need to become a real historian."
   },
   "ad_reward": {
@@ -925,7 +930,7 @@
     "unlock_prestige_3": "Unlocks after Prestige 3",
     "unlock_prestige_4": "Unlocks after Prestige 4",
     "unlock_prestige_5": "Unlocks after Prestige 5",
-    "locked": "🔒 Locked",
+    "locked": "\ud83d\udd12 Locked",
     "level_up": "Level Up",
     "assign": "Assign",
     "unassign": "Unassign",
@@ -944,7 +949,7 @@
     "investment_opportunity": "Available investment opportunity",
     "bond_denomination": "Bond Denomination",
     "karb": "karb",
-    "redemption_info": "Redemption: 4s · Annual yield: 12%",
+    "redemption_info": "Redemption: 4s \u00b7 Annual yield: 12%",
     "buy_bond": "Buy Bond",
     "premium_account": "Premium Account",
     "premium_active": "Premium Active",
@@ -991,7 +996,7 @@
   },
   "referral": {
     "invite_friends": "Invite Friends",
-    "share_link": "Share link — get reward!",
+    "share_link": "Share link \u2014 get reward!",
     "invited": "Invited",
     "leaderboard": "Leaderboard"
   },
@@ -1003,12 +1008,12 @@
   "stats": {
     "upgrade_tap": "Upgrade tap",
     "max_level": "Maximum level",
-    "power": "Power: {from} → {to} XP/tap",
+    "power": "Power: {from} \u2192 {to} XP/tap",
     "base_passive": "Base: +{base} | Passive floor: {passive}",
     "cost": "cost"
   },
   "duplicate": {
-    "warning_title": "⚠️ Opening the game in multiple tabs may lead to:",
+    "warning_title": "\u26a0\ufe0f Opening the game in multiple tabs may lead to:",
     "expedition_loss": "Loss of expedition progress",
     "double_rewards": "Double rewards",
     "save_error": "Incorrect save",
@@ -1035,7 +1040,7 @@
     "passive": "passive"
   },
   "shop": {
-    "title": "🌟 Stars Shop",
+    "title": "\ud83c\udf1f Stars Shop",
     "buy": "Buy",
     "purchase_failed": "Purchase failed",
     "footer": "Purchases via Telegram Stars",
@@ -1047,32 +1052,32 @@
     "limit_daily": "Up to {{max}}/day",
     "limit_weekly": "Up to {{max}}/week",
     "starter_basic_name": "Basic Starter",
-    "starter_basic_desc": "1000 💰 + x2 XP for 30 min",
+    "starter_basic_desc": "1000 \ud83d\udcb0 + x2 XP for 30 min",
     "starter_plus_name": "Starter Plus",
-    "starter_plus_desc": "10000 💰 + x3 XP + x2 💰 for 60 min",
+    "starter_plus_desc": "10000 \ud83d\udcb0 + x3 XP + x2 \ud83d\udcb0 for 60 min",
     "currency_small_name": "Small Cash",
-    "currency_small_desc": "500 💰 karbovanets",
+    "currency_small_desc": "500 \ud83d\udcb0 karbovanets",
     "currency_medium_name": "Medium Cash",
-    "currency_medium_desc": "5000 💰 karbovanets",
+    "currency_medium_desc": "5000 \ud83d\udcb0 karbovanets",
     "currency_large_name": "Big Cash",
-    "currency_large_desc": "50000 💰 karbovanets",
+    "currency_large_desc": "50000 \ud83d\udcb0 karbovanets",
     "xp_boost_name": "XP Boost",
     "xp_boost_desc": "x3 XP for 1 hour",
-    "currency_boost_name": "💰 Boost",
-    "currency_boost_desc": "x3 💰 for 1 hour",
+    "currency_boost_name": "\ud83d\udcb0 Boost",
+    "currency_boost_desc": "x3 \ud83d\udcb0 for 1 hour",
     "expedition_speedup_name": "Speed Up",
     "expedition_speedup_desc": "x2 expedition speed",
     "energy_restore_name": "Energy",
     "energy_restore_desc": "Restore 500 energy",
     "patron_name": "Great Patron",
-    "patron_desc": "9 hr offline + 100000 💰",
+    "patron_desc": "9 hr offline + 100000 \ud83d\udcb0",
     "support_name": "Support Dev",
-    "support_desc": "x5 XP for 2 hr + 50000 💰"
+    "support_desc": "x5 XP for 2 hr + 50000 \ud83d\udcb0"
   },
   "boosters_shop": {
-    "telegram_stars_real_payment": "Telegram Stars — real payment",
+    "telegram_stars_real_payment": "Telegram Stars \u2014 real payment",
     "telegram_stars_desc": "Buy boosters with Telegram Stars in the app. Get Stars from @PremiumBot.",
-    "payment_note": "Payment via Telegram Stars. Refunds — @JoltTimebot team /paysupport",
+    "payment_note": "Payment via Telegram Stars. Refunds \u2014 @JoltTimebot team /paysupport",
     "xp_booster_x2": {
       "name": "XP booster x2",
       "description": "Double XP for 1 hour"
@@ -1091,7 +1096,7 @@
     },
     "big_patron": {
       "name": "Big Patron",
-      "description": "Offline income: 6hr → 9hr forever"
+      "description": "Offline income: 6hr \u2192 9hr forever"
     },
     "professor_archaeology": {
       "name": "Professor of Archaeology",
@@ -1114,11 +1119,11 @@
     "artifact_opened": "Artifact {artifactId} opened!",
     "region_opened": "New region {regionId} opened!",
     "upgrade_updated": "{name} upgraded!",
-    "new_slot": "📍 New slot opened!",
-    "expedition_started": "Expedition to «{region}» started",
+    "new_slot": "\ud83d\udccd New slot opened!",
+    "expedition_started": "Expedition to \u00ab{region}\u00bb started",
     "expedition_failed": "Expedition failed. +{reward} carb.",
-    "restoration_started": "Restoration of «{name}» started",
-    "exhibit_added": "«{name}» displayed in museum (+{prestige} prestige)",
+    "restoration_started": "Restoration of \u00ab{name}\u00bb started",
+    "exhibit_added": "\u00ab{name}\u00bb displayed in museum (+{prestige} prestige)",
     "npc_reward": "{npc}: +{karb} carb., +{rep} reputation"
   },
   "ad_system": {

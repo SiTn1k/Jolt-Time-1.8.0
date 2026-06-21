@@ -1,7 +1,7 @@
 import { useExpeditionStore } from '../store';
 import { expeditionSeconds } from '../store';
 import { motion } from 'motion/react';
-import { MapPin, Clock, Star, Lock, Users, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { MapPin, Clock, Star, Lock, Users, TrendingUp, CheckCircle2, Zap } from 'lucide-react';
 import { Card, Badge, Button, Progress } from '../ui';
 import { useState } from 'react';
 import { UkrainianPattern } from '../components/UkrainianPattern';
@@ -15,6 +15,7 @@ export function WorldMap() {
   const expeditions = useExpeditionStore((s) => s.expeditions);
   const startExpedition = useExpeditionStore((s) => s.startExpedition);
   const collectExpedition = useExpeditionStore((s) => s.collectExpedition);
+  const speedUpExpedition = useExpeditionStore((s) => s.speedUpExpedition);
 
   const [selectedRegionId, setSelectedRegionId] = useState(regions[0].id);
   const [team, setTeam] = useState<string[]>([]);
@@ -124,9 +125,19 @@ export function WorldMap() {
                       {t('expedition.collect_result')}
                     </Button>
                   ) : (
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Clock className="w-3 h-3" />
-                      {t('common.remaining')}: {remaining}{t('common.per_second')} · {t('expedition.success_chance')}: {exp.successChance}%
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Clock className="w-3 h-3" />
+                        {t('common.remaining')}: {remaining}{t('common.per_second')} · {t('expedition.success_chance')}: {exp.successChance}%
+                      </div>
+                      <Button
+                        className="w-full h-8 text-xs"
+                        onClick={() => speedUpExpedition(exp.id)}
+                        style={{ backgroundColor: '#9747FF', color: '#fff', fontFamily: "'Exo 2', sans-serif" }}
+                      >
+                        <Zap className="w-3 h-3 mr-1" />
+                        {t('expedition.speed_up')}
+                      </Button>
                     </div>
                   )}
                 </Card>

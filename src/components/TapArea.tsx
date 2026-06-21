@@ -1,6 +1,7 @@
 import { useRef, useCallback } from 'react';
 import { TapEvent, Epoch } from '../types/game';
 import { formatNumber } from '../lib/utils';
+import { Sparkles, Landmark } from 'lucide-react';
 
 interface TapAreaProps {
   epoch: Epoch;
@@ -14,6 +15,10 @@ interface TapAreaProps {
   currency: number;
   currencyIcon: string;
   topOffset?: number;
+  totalLevels?: number;
+  currentEpochIndex?: number;
+  totalEpochs?: number;
+  prestigeLevel?: number;
 }
 
 export function TapArea({
@@ -28,6 +33,10 @@ export function TapArea({
   currency,
   currencyIcon,
   topOffset = 0,
+  totalLevels = 960,
+  currentEpochIndex = 0,
+  totalEpochs = 12,
+  prestigeLevel = 0,
 }: TapAreaProps) {
   const areaRef = useRef<HTMLDivElement>(null);
 
@@ -52,18 +61,35 @@ export function TapArea({
   }, [onTap]);
 
   const xpPercent = (xp / xpToNextLevel) * 100;
+  const epochProgress = ((level - epoch.levelRange.min) / (epoch.levelRange.max - epoch.levelRange.min)) * 100;
 
   return (
     <div className="relative flex-shrink-0 flex flex-col" style={{ height: `calc(50vh - ${topOffset}px)` }}>
-      {/* Header Stats */}
+      {/* Enhanced Header Stats */}
       <div
         className="p-3 sm:p-4 text-white"
         style={{ background: epoch.bgGradient }}
       >
-        <div className="flex justify-between items-center mb-2">
-          <div>
-            <h2 className="text-sm sm:text-lg font-bold">{epoch.name.ua}</h2>
-            <p className="text-[10px] sm:text-xs opacity-80">Рівень {level}</p>
+        {/* Epoch Title & Period */}
+        <div className="flex justify-between items-start mb-2">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-white/20">
+                Епоха {currentEpochIndex + 1}/{totalEpochs}
+              </span>
+              {prestigeLevel < 2 && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#9747FF]/50 flex items-center gap-1">
+                  <Landmark className="w-3 h-3" />
+                  🏛 Академія в P2
+                </span>
+              )}
+            </div>
+            <h2 className="text-base sm:text-xl font-bold" style={{ fontFamily: "'Exo 2', sans-serif" }}>
+              {epoch.name.ua}
+            </h2>
+            <p className="text-[10px] sm:text-xs opacity-80 italic">
+              {epoch.period.ua}
+            </p>
           </div>
           <div className="text-right">
             <div className="text-xl sm:text-2xl font-bold">
@@ -73,16 +99,38 @@ export function TapArea({
           </div>
         </div>
 
+        {/* Historical Description */}
+        <p className="text-[10px] sm:text-xs opacity-70 mb-2 line-clamp-1">
+          {epoch.description.ua}
+        </p>
+
+        {/* Level Progress */}
+        <div className="mb-2">
+          <div className="flex justify-between text-[10px] sm:text-xs mb-1">
+            <span>Рівень {level}</span>
+            <span className="opacity-80">{Math.round(epochProgress)}% епохи</span>
+          </div>
+          <div className="w-full bg-black/30 rounded-full h-2 sm:h-3 overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-white/80 to-white transition-all duration-100 rounded-full"
+              style={{ width: `${Math.min(epochProgress, 100)}%` }}
+            />
+          </div>
+        </div>
+
         {/* XP Progress Bar */}
-        <div className="w-full bg-black/30 rounded-full h-3 sm:h-4 overflow-hidden">
+        <div className="w-full bg-black/30 rounded-full h-2 sm:h-2.5 overflow-hidden">
           <div
-            className="h-full bg-white/90 transition-all duration-100 rounded-full"
+            className="h-full bg-[#FFC72C]/80 transition-all duration-100 rounded-full"
             style={{ width: `${Math.min(xpPercent, 100)}%` }}
           />
         </div>
-        <div className="flex justify-between text-[10px] sm:text-xs mt-1 opacity-80">
-          <span>{formatNumber(xp)} XP</span>
-          <span>{formatNumber(xpToNextLevel)} XP</span>
+        <div className="flex justify-between text-[10px] sm:text-xs mt-0.5 opacity-80">
+          <span>{formatNumber(xp)}/{formatNumber(xpToNextLevel)} XP</span>
+          <span className="flex items-center gap-1">
+            <Sparkles className="w-3 h-3" />
+            Тап: +{formatNumber(tapPower)}
+          </span>
         </div>
       </div>
 

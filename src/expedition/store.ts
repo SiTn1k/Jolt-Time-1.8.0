@@ -149,6 +149,7 @@ interface GameState {
 
   // expeditions
   startExpedition: (regionId: string, heroIds: string[]) => boolean;
+  speedUpExpedition: (expeditionId: string) => void;
   collectExpedition: (expeditionId: string) => void;
 
   // lab
@@ -1402,9 +1403,28 @@ export const useExpeditionStore = create<GameState>()(
         return true;
       },
 
+      speedUpExpedition: (expeditionId: string) => {
+        const exp = get().expeditions.find((e) => e.id === expeditionId);
+        if (!exp || exp.collected || exp.status === 'collecting') return;
+        
+        const remainingTime = exp.endsAt - Date.now();
+        if (remainingTime <= 0) return;
+        
+        // Reduce remaining time by 50%
+        const newEndsAt = exp.endsAt - Math.floor(remainingTime * 0.5);
+        
+        set((st) => ({
+          expeditions: st.expeditions.map((e) =>
+            e.id === expeditionId ? { ...e, endsAt: Math.max(Date.now(), newEndsAt) } : e,
+          ),
+        }));
+        
+        get().pushToast('Експедицію прискорено на 50%!', '#10B981');
+      },
       collectExpedition: (expeditionId) => {
         const s = get();
         const exp = s.expeditions.find((e) => e.id === expeditionId);
+
 
         if (!exp || exp.collected) {
           return;

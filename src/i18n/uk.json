@@ -225,7 +225,8 @@
     "join_event": "Приєднатися",
     "participating": "Берете участь",
     "event_completed": "Event Completed",
-    "event_active": "Event Active"
+    "event_active": "Event Active",
+    "speed_up_hint": "Завершіть для прискорення на 50%"
   },
   "npc": {
     "courtyard": "Подвір'я",
@@ -689,6 +690,8 @@
     "feature_museum": "Музей",
     "feature_heroes": "Герої",
     "feature_story": "Історія",
+    "feature_npc": "NPC",
+    "feature_reputation": "Репутація",
     "academy_title": "Академія",
     "academy_subtitle": "Академія дослідників",
     "reputation": "Репутація",
@@ -772,7 +775,9 @@
     "leaderboard_play_more": "Грайте більше, щоб потрапити в рейтинг!",
     "leaderboard_refresh": "Оновити",
     "leaderboard_no_data": "Немає даних для цього рейтингу",
-    "story_system": "Система історії"
+    "story_system": "Система історії",
+    "speed_up": "Прискорити за рекламу",
+    "sped_up": "Експедицію прискорено на 50%!"
   },
   "academy_unlock": {
     "title": "Академія Часу Відкрита!",

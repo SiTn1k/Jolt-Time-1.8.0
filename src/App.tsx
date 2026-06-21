@@ -472,6 +472,9 @@ function App() {
         currency={state.currency}
         currencyIcon={epoch.currencyIcon}
         topOffset={0}
+        currentEpochIndex={state.unlockedEpochs.indexOf(epoch.id)}
+        totalEpochs={12}
+        prestigeLevel={state.prestigeLevel || 0}
       />
 
       <div className="bg-gray-900 border-t border-gray-700 flex flex-col flex-1 min-h-0">
