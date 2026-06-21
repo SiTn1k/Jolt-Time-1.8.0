@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { createHmac } from "node:crypto";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,6 +10,10 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
+
+// Rate limiting: minimum 60 seconds between prestige actions
+const PRESTIGE_COOLDOWN_MS = 60000;
 
 /**
  * Perform Prestige Edge Function
@@ -16,34 +21,18 @@ const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
  * Server-authoritative prestige (rebirth) system.
  * Resets player progress in exchange for permanent prestige points.
  *
+ * SECURITY:
+ * - Validates initData via HMAC-SHA256
+ * - Rate limited: 1 prestige per 60 seconds
+ * - Uses SERVICE_ROLE key for database operations
+ *
  * Requirements:
  * - Minimum level 950
  * - Calculated prestige points based on total_xp
- *
- * Resets:
- * - level → 1
- * - xp → 0
- * - currency → 20
- * - owned_generators → []
- * - tap_power → 1
- * - passive_xp_per_second → 0
- * - unlocked_epochs → ['trypillia']
- * - epoch_id → 'trypillia'
- * - energy → 1000
- * - artifact_parts → {} (keep artifact_levels)
- *
- * Keeps:
- * - prestige_level (+1)
- * - prestige_points (new points added)
- * - prestige_research
- * - artifact_levels (completed artifacts)
- * - completed_artifacts
- * - referrals_count
- * - referral_earnings
  */
 
 interface PrestigeRequest {
-  telegram_id: number;
+  initData: string; // Required for HMAC validation
 }
 
 interface PrestigeResponse {
@@ -52,6 +41,61 @@ interface PrestigeResponse {
   prestige_level?: number;
   prestige_points_earned?: number;
   total_prestige_points?: number;
+}
+
+// =====================================================
+// SECURITY: HMAC-SHA256 initData validation
+// =====================================================
+function validateInitData(initData: string): { success: true; telegram_id: number } | { success: false; error: string } {
+  if (!BOT_TOKEN) {
+    console.error("SECURITY: TELEGRAM_BOT_TOKEN not configured!");
+    return { success: false, error: "Server misconfiguration" };
+  }
+
+  const params = new URLSearchParams(initData);
+  const hash = params.get("hash");
+  if (!hash) {
+    return { success: false, error: "Missing hash" };
+  }
+
+  // Check auth_date freshness
+  const authDateStr = params.get("auth_date");
+  if (!authDateStr) {
+    return { success: false, error: "Missing auth_date" };
+  }
+  const authDate = parseInt(authDateStr, 10);
+  const ageSeconds = Math.floor(Date.now() / 1000) - authDate;
+  if (isNaN(authDate) || ageSeconds > 86400 || ageSeconds < 0) {
+    return { success: false, error: "initData expired or invalid" };
+  }
+
+  // Build data_check_string
+  const keys = [...params.keys()].filter(k => k !== "hash").sort();
+  const dataCheckString = keys.map(k => `${k}=${params.get(k)}`).join("\n");
+
+  // HMAC-SHA256
+  const secretKey = createHmac("sha256", "WebAppData").update(BOT_TOKEN).digest();
+  const computedHash = createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
+
+  if (computedHash !== hash) {
+    return { success: false, error: "HMAC validation failed" };
+  }
+
+  // Extract user.id
+  const userStr = params.get("user");
+  if (userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      if (user.id) {
+        return { success: true, telegram_id: user.id };
+      }
+      return { success: false, error: "Missing user.id in initData" };
+    } catch {
+      return { success: false, error: "Invalid user JSON" };
+    }
+  }
+
+  return { success: false, error: "No user in initData" };
 }
 
 function jsonResponse(data: PrestigeResponse | { error: string }, status = 200) {
@@ -94,18 +138,61 @@ Deno.serve(async (req: Request) => {
 
   try {
     const body: PrestigeRequest = await req.json();
-    const { telegram_id } = body;
+    const { initData } = body;
 
-    if (!telegram_id || typeof telegram_id !== "number" || telegram_id <= 0) {
-      return jsonResponse({ error: "Invalid telegram_id" }, 400);
+    // =====================================================
+    // SECURITY: Validate initData BEFORE any DB operations
+    // =====================================================
+    if (!initData) {
+      return jsonResponse({ error: "Missing initData for validation" }, 403);
+    }
+
+    const validated = validateInitData(initData);
+    if (!validated.success) {
+      console.error(`SECURITY: initData validation failed: ${validated.error}`);
+      return jsonResponse({ error: validated.error || "Invalid initData" }, 403);
+    }
+
+    const telegram_id = validated.telegram_id;
+
+    if (!telegram_id) {
+      return jsonResponse({ error: "Invalid telegram_id from validation" }, 403);
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
+    // =====================================================
+    // SECURITY: Rate limiting - check last_prestige_at
+    // =====================================================
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("last_prestige_at")
+      .eq("telegram_id", telegram_id)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error("Error fetching profile for rate limit:", profileError);
+    }
+
+    if (profile?.last_prestige_at) {
+      const lastPrestige = new Date(profile.last_prestige_at).getTime();
+      const now = Date.now();
+      const elapsed = now - lastPrestige;
+
+      if (elapsed < PRESTIGE_COOLDOWN_MS) {
+        const remaining = Math.ceil((PRESTIGE_COOLDOWN_MS - elapsed) / 1000);
+        console.warn(`SECURITY: Prestige rate limit for telegram_id=${telegram_id}. Wait ${remaining}s`);
+        return jsonResponse(
+          { error: `Prestige on cooldown. Try again in ${remaining} seconds.` },
+          429
+        );
+      }
+    }
+
     // Fetch current player state
     const { data: player, error: fetchError } = await supabase
       .from("game_progress")
-      .select("level, total_xp, prestige_level, prestige_points, prestige_research, artifact_levels, completed_artifacts")
+      .select("level, total_xp, prestige_level, prestige_points, prestige_research, artifact_levels, completed_artifacts, active_boosters")
       .eq("telegram_id", telegram_id)
       .maybeSingle();
 
@@ -151,18 +238,9 @@ Deno.serve(async (req: Request) => {
       last_saved_at: new Date().toISOString(),
       last_online_at: new Date().toISOString(),
       session_start_at: new Date().toISOString(),
-      // Keep these:
-      // prestige_research (unchanged)
-      // artifact_levels (unchanged)
-      // completed_artifacts (unchanged)
-      // referrals_count (unchanged)
-      // referral_earnings (unchanged)
-      // active_boosters (clear non-permanent)
       active_boosters: {
-        // Keep purchase_log for refund support
         purchase_log: (player.active_boosters as Record<string, unknown>)?.purchase_log || [],
       },
-      // Reset daily counters
       daily_ad_views: {},
     };
 
@@ -176,6 +254,14 @@ Deno.serve(async (req: Request) => {
       console.error("Error updating player for prestige:", updateError);
       return jsonResponse({ error: "Failed to perform prestige" }, 500);
     }
+
+    // =====================================================
+    // SECURITY: Update last_prestige_at after successful prestige
+    // =====================================================
+    await supabase
+      .from("profiles")
+      .update({ last_prestige_at: new Date().toISOString() })
+      .eq("telegram_id", telegram_id);
 
     // Record prestige in prestige_records
     await supabase.from("prestige_records").insert({

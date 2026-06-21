@@ -25,7 +25,7 @@ import {
   getUserRank,
   fetchActiveBoosters,
 } from '../lib/storage';
-import { hapticNotification, hapticImpact } from '../lib/telegram';
+import { hapticNotification, hapticImpact, getRawInitData } from '../lib/telegram';
 import type { ActiveBoosters } from '../types/game';
 
 const LOCAL_SAVE_INTERVAL = 2000;
@@ -915,14 +915,19 @@ export function useGame() {
   const performPrestige = useCallback(async () => {
     if (!canPrestige) return false;
 
-    const telegramIdLocal = getTelegramUserId();
-    if (!telegramIdLocal) return false;
+    // Get initData for server-side validation
+    const initData = getRawInitData();
+    if (!initData) {
+      console.error('Cannot prestige: not running in Telegram');
+      return false;
+    }
 
     try {
+      // SECURITY: Pass initData for HMAC validation instead of telegram_id
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/perform-prestige`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegram_id: telegramIdLocal }),
+        body: JSON.stringify({ initData }),
       });
 
       const data = await response.json();
