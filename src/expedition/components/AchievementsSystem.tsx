@@ -82,7 +82,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
             <div className="flex items-center justify-between gap-2">
               <h4 className="text-sm font-medium text-[#E6EDF3]">
                 {achievement.secret && !unlocked ? '???' : 
-                  achievement.nameKey.replace('achievement.', '').replace(/_/g, ' ')
+                  t(achievement.nameKey)
                 }
               </h4>
               {unlocked && (
@@ -96,7 +96,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
             <p className="text-xs text-[#8B949E] mt-0.5">
               {achievement.secret && !unlocked 
                 ? 'Секретне досягнення' 
-                : achievement.descriptionKey.replace('achievement.', '').replace(/_/g, ' ')
+                : t(achievement.descriptionKey)
               }
             </p>
             

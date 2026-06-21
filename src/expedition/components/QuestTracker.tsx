@@ -25,7 +25,7 @@ function QuestCard({ quest }: { quest: ActiveQuest }) {
         <span className="text-lg">{config.icon}</span>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-[#E6EDF3] truncate">
-            {quest.titleKey.replace('quest.', '').replace(/_/g, ' ')}
+            {t(quest.titleKey)}
           </p>
         </div>
         {isComplete && (
