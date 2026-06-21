@@ -66,15 +66,22 @@ declare global {
  * Initialize AdsGram SDK
  */
 export function initAdsgram(blockId: string = ADSGRAM_BLOCK_ID, debug = false): AdsgramController | null {
+  console.log('[adsgram] Initializing with blockId:', blockId);
+  
   if (!window.Adsgram) {
-    console.error('AdsGram SDK not loaded');
+    console.error('[adsgram] SDK not loaded - window.Adsgram is undefined');
+    console.log('[adsgram] Available window keys:', Object.keys(window).filter(k => k.toLowerCase().includes('ad') || k.toLowerCase().includes('ads')));
     return null;
   }
 
+  console.log('[adsgram] SDK found, initializing...');
+  
   try {
-    return window.Adsgram.init({ blockId, debug });
+    const controller = window.Adsgram.init({ blockId, debug });
+    console.log('[adsgram] Controller created:', controller);
+    return controller;
   } catch (err) {
-    console.error('Failed to initialize AdsGram:', err);
+    console.error('[adsgram] Failed to initialize:', err);
     return null;
   }
 }

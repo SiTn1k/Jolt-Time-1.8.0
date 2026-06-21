@@ -30,7 +30,14 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
 
   // Initialize AdsGram controller
   useEffect(() => {
-    controllerRef.current = initAdsgram();
+    console.log('[AdsGramButton] Initializing AdsGram SDK...');
+    const controller = initAdsgram();
+    if (!controller) {
+      console.error('[AdsGramButton] Failed to initialize AdsGram controller');
+    } else {
+      console.log('[AdsGramButton] AdsGram controller initialized successfully');
+    }
+    controllerRef.current = controller;
   }, []);
 
   // Update remaining time every second
@@ -52,12 +59,14 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
 
     const controller = controllerRef.current;
     if (!controller) {
-      setError('AdsGram SDK не завантажено');
+      console.error('[AdsGramButton] Controller is null');
+      setError('Реклама наразі недоступна. Спробуйте пізніше.');
       return;
     }
 
     const telegramId = getTelegramUserId();
     if (!telegramId) {
+      console.error('[AdsGramButton] Telegram ID not found');
       setError('Помилка авторизації');
       return;
     }
@@ -66,8 +75,11 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
     setError(null);
     hapticImpact('medium');
 
+    console.log('[AdsGramButton] Showing reward ad...');
+
     try {
       const result = await showRewardAd(controller, telegramId);
+      console.log('[AdsGramButton] Ad result:', result);
 
       if (result.success && result.boostActivated) {
         hapticNotification('success');
