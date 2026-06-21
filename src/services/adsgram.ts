@@ -145,11 +145,15 @@ export async function showRewardAd(
   telegramId: number
 ): Promise<AdShowResult> {
   try {
+    console.log('[adsgram] Showing reward ad...');
     const result = await controller.show();
+    console.log('[adsgram] Ad result:', JSON.stringify(result));
 
     if (result.done) {
+      console.log('[adsgram] Ad completed, granting reward via server...');
       // User watched ad till the end - grant reward via server
       const grantResult = await grantXpBoostFromServer(telegramId);
+      console.log('[adsgram] Grant result:', JSON.stringify(grantResult));
 
       if (grantResult.success) {
         return {
@@ -165,12 +169,14 @@ export async function showRewardAd(
       }
     } else {
       // User closed ad before completion
+      console.log('[adsgram] Ad was not completed (result.done = false)');
       return {
         success: false,
         error: 'Рекламу не завершено. Подивись до кінця, щоб отримати нагороду.',
       };
     }
   } catch (err) {
+    console.error('[adsgram] Error showing ad:', err);
     const errorResult = err as ShowPromiseResult;
 
     // Handle different error states

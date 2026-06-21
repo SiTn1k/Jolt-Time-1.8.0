@@ -144,9 +144,9 @@ export function PrestigeButton({
         {showConfirm ? (
           <motion.div
             key="confirm"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
             className="space-y-3"
           >
             <p className="text-center text-white text-sm">
@@ -172,8 +172,9 @@ export function PrestigeButton({
         ) : (
           <motion.button
             key="button"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.95 }}
             onClick={handlePrestige}
