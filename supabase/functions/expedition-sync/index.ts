@@ -387,7 +387,9 @@ async function completeExpedition(
   // Check if rewards already claimed (idempotency)
   const rewardsClaimed = expedition.rewardsClaimed as boolean;
   if (rewardsClaimed) {
-    return jsonResponse({ error: "Rewards already claimed" }, 409);
+    // Return success with alreadyClaimed flag for idempotency
+    // This prevents the UI from showing error when user clicks collect twice
+    return jsonResponse({ ok: true, alreadyClaimed: true, message: "Rewards already claimed" });
   }
 
   // ── SERVER-SIDE REWARD CALCULATION ───────────────────────────────────────
