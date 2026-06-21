@@ -21,6 +21,7 @@ import { initTelegramMiniApp, hapticImpact, hapticNotification, getTelegramWebAp
 import { rpcTrackSession } from './lib/rpc';
 import { supabase } from './lib/supabase';
 import { notificationService } from './services/NotificationService';
+import { initErrorToasts } from './lib/errors';
 import { Crown, ShoppingBag, Trophy, Gift, Loader2, Users, X, Shield, Zap, Star, ChevronRight, Wifi, RefreshCw, Timer, AlertTriangle, Battery, BatteryLow, Globe, Building2, Check } from 'lucide-react';
 import type { EpochId } from './types/game';
 import { formatNumber } from './lib/utils';
@@ -86,6 +87,11 @@ function App() {
   const hasSeenAcademyUnlock = localStorage.getItem('academy_unlock_seen') === 'true';
   const [showAcademyUnlock, setShowAcademyUnlock] = useState(false);
   const [academyModalShown, setAcademyModalShown] = useState(false);
+
+  // Initialize error toasts on mount
+  useEffect(() => {
+    initErrorToasts();
+  }, []);
 
   // Show unlock modal on first visit after prestigeLevel >= 2
   useEffect(() => {

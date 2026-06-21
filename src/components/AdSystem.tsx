@@ -3,6 +3,7 @@ import { Battery, Gift, Zap, AlertCircle, Loader2, X, Play } from 'lucide-react'
 import { hapticImpact, hapticNotification } from '../lib/telegram';
 import { useTranslation } from '../i18n';
 import { getTelegramUserId } from '../lib/telegram';
+import { showError, showSuccess } from '../lib/errors';
 import {
   initAdsgram,
 } from '../services/adsgram';
@@ -65,6 +66,7 @@ export function SessionAdModal({ prestigeLevel, onReward, onClose }: SessionAdMo
     } catch (err) {
       console.error('Session ad error:', err);
       setError(t('ad_system.ad_load_error'));
+      showError(t('ad_system.ad_load_error'));
       hapticNotification('error');
     } finally {
       setIsLoading(false);
@@ -197,6 +199,7 @@ export function ChestAdModal({ prestigeLevel, chestsOpened, onReward, onClose }:
     } catch (err) {
       console.error('Chest ad error:', err);
       setError(t('ad_system.ad_load_error'));
+      showError(t('ad_system.ad_load_error'));
       hapticNotification('error');
     } finally {
       setIsLoading(false);
@@ -344,14 +347,21 @@ export function EnergyRestoreAdButton({
           }),
         });
 
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Server error: ${response.status}`);
+        }
+
         const data = await response.json();
 
         if (data.success) {
+          showSuccess('Енергія відновлена!');
           hapticNotification('success');
           onEnergyRestored(data.new_value - currentEnergy); // Actual restored amount
           onAdUsed();
         } else {
           setError(data.error || t('ad_system.limit_reached'));
+          showError(data.error || t('ad_system.limit_reached'));
           hapticNotification('warning');
         }
       } else {
@@ -361,6 +371,7 @@ export function EnergyRestoreAdButton({
     } catch (err) {
       console.error('Energy ad error:', err);
       setError(t('ad_system.ad_load_error'));
+      showError(t('ad_system.ad_load_error'));
       hapticNotification('error');
     } finally {
       setIsLoading(false);
