@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { GameState, EpochId, OwnedGenerator, LeaderboardEntry, ActiveBoosters, DailyTasksState, PrestigeResearch, DailyAdViews, Epoch } from '../types/game';
+import { GameState, EpochId, OwnedGenerator, LeaderboardEntry, ActiveBoosters, PrestigeResearch, DailyAdViews, Epoch } from '../types/game';
 import { getTelegramUserId, getTelegramUserInfo, getReferrerId } from './telegram';
 import { getCurrentEpochByLevel, EPOCHS } from '../data/epochs';
 import { generateUUID } from './cryptoUtils';
@@ -7,7 +7,6 @@ import {
   GameStateSchema, 
   ActiveBoostersSchema, 
   LeaderboardEntrySchema,
-  safeParse 
 } from '../schemas/game';
 import { validateReferrerId, verifyReferrerExists } from './referralValidation';
 
@@ -235,7 +234,7 @@ export async function loadGameState(): Promise<GameState | null> {
         // SECURITY: Validate referrer ID before processing
         if (referrerId) {
           const validation = validateReferrerId(referrerId);
-          if (validation.valid && validation.referrerId !== telegramId) {
+          if (validation.valid && validation.referrerId !== null && validation.referrerId !== telegramId) {
             // Verify referrer exists in database
             const exists = await verifyReferrerExists(supabase, validation.referrerId);
             if (exists) {

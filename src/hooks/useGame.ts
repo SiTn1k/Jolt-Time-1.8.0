@@ -40,7 +40,7 @@ const TAB_ID = `tab_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 let consumeEnergyDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 let lastConsumeEnergyCall = 0;
 
-async function consumeEnergyServer(telegramId: number, initData: string): Promise<{ energy: number } | null> {
+async function consumeEnergyServer(_telegramId: number, initData: string): Promise<{ energy: number } | null> {
   try {
     const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/consume-energy`, {
       method: 'POST',

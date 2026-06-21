@@ -8,7 +8,7 @@
  * - Out-of-range Telegram ID exploitation
  */
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 // Valid Telegram ID range
 const VALID_TELEGRAM_ID_MIN = 1;
@@ -104,6 +104,10 @@ export async function validateReferral(
   }
 
   // Step 3: Verify referrer exists
+  if (validation.referrerId === null) {
+    return { valid: false, referrerId: null, error: 'Invalid referrer ID' };
+  }
+  
   const exists = await verifyReferrerExists(supabase, validation.referrerId);
   if (!exists) {
     console.warn('Referrer does not exist:', validation.referrerId);
