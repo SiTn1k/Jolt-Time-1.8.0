@@ -3,6 +3,12 @@ import { GameState, EpochId, OwnedGenerator, LeaderboardEntry, ActiveBoosters, D
 import { getTelegramUserId, getTelegramUserInfo, getReferrerId } from './telegram';
 import { getCurrentEpochByLevel, EPOCHS } from '../data/epochs';
 import { generateUUID } from './cryptoUtils';
+import { 
+  GameStateSchema, 
+  ActiveBoostersSchema, 
+  LeaderboardEntrySchema,
+  safeParse 
+} from '../schemas/game';
 
 const LOCAL_STORAGE_KEY = 'ukraine_tap_game_state';
 const DEVICE_ID_KEY = 'ukraine_tap_device_id';
@@ -322,63 +328,105 @@ export async function loadGameState(): Promise<GameState | null> {
 }
 
 function hydrateFromDb(data: Record<string, unknown>): GameState {
-  const rawDate = data.last_saved_at as string | null;
-  const parsedTime = rawDate ? new Date(rawDate).getTime() : NaN;
-  const lastSavedAt = Number.isFinite(parsedTime) ? parsedTime : Date.now();
-  const level = (data.level as number) || 1;
+  // Map DB snake_case to camelCase for Zod validation
+  const mapped = {
+    epochId: data.epoch_id,
+    level: data.level,
+    xp: data.xp,
+    xpToNextLevel: data.xp_to_next_level,
+    totalXp: data.total_xp,
+    currency: data.currency,
+    totalCurrencyEarned: data.total_currency_earned,
+    ownedGenerators: data.owned_generators || [],
+    tapPower: data.tap_power,
+    passiveXpPerSecond: data.passive_xp_per_second || 0,
+    unlockedEpochs: data.unlocked_epochs || ['trypillia'],
+    lastSavedAt: data.last_saved_at ? new Date(data.last_saved_at as string).getTime() : Date.now(),
+    artifactParts: data.artifact_parts || {},
+    artifactLevels: data.artifact_levels || {},
+    completedArtifacts: data.completed_artifacts || [],
+    artifactDupes: data.artifact_dupes || {},
+    referrerId: data.referrer_id,
+    referralsCount: data.referrals_count || 0,
+    referralEarnings: data.referral_earnings || 0,
+    activeBoosters: data.active_boosters || {},
+    dailyStreak: (data.active_boosters as ActiveBoosters)?._daily?.streak || 0,
+    bestStreak: (data.active_boosters as ActiveBoosters)?._daily?.best || 0,
+    lastLoginDate: (data.active_boosters as ActiveBoosters)?._daily?.lastDate || null,
+    dailyTasksState: (data.active_boosters as ActiveBoosters)?._daily?.tasks || null,
+    lastCheckIn: data.last_check_in || null,
+    checkInStreak: data.current_streak || 0,
+    prestigeLevel: data.prestige_level || 0,
+    prestigePoints: data.prestige_points || 0,
+    prestigeResearch: data.prestige_research || {},
+    energy: data.energy ?? 1000,
+    maxEnergy: data.max_energy ?? 1000,
+    lastOnlineAt: data.last_online_at ? new Date(data.last_online_at as string).getTime() : Date.now(),
+    sessionStartAt: data.session_start_at ? new Date(data.session_start_at as string).getTime() : Date.now(),
+    dailyAdViews: data.daily_ad_views || {},
+  };
 
-  const rawBoosters = (data.active_boosters as ActiveBoosters) || {};
-  const daily = rawBoosters._daily;
-  const { _daily: _ignored, ...activeBoosters } = rawBoosters;
-  void _ignored;
+  // Validate with Zod
+  const parseResult = GameStateSchema.safeParse(mapped);
 
-  // Parse last_online_at and session_start_at
-  const lastOnlineRaw = data.last_online_at as string | null;
-  const lastOnlineAt = lastOnlineRaw ? new Date(lastOnlineRaw).getTime() : Date.now();
+  if (!parseResult.success) {
+    console.error('Invalid game state from DB:', parseResult.error.issues);
+    // Return initial state instead of crashing
+    return getInitialState();
+  }
 
-  const sessionStartRaw = data.session_start_at as string | null;
-  const sessionStartAt = sessionStartRaw ? new Date(sessionStartRaw).getTime() : Date.now();
+  // Fix unlocked epochs
+  const level = parseResult.data.level || 1;
+  const epochId = parseResult.data.epochId || 'trypillia';
 
   return {
-    epochId: (data.epoch_id as EpochId) || 'trypillia',
-    level,
-    xp: (data.xp as number) || 0,
-    xpToNextLevel: (data.xp_to_next_level as number) || calculateXpToLevel(level),
-    totalXp: (data.total_xp as number) || 0,
-    currency: (data.currency as number) || 0,
-    totalCurrencyEarned: (data.total_currency_earned as number) || 0,
-    tapPower: (data.tap_power as number) || 1,
-    passiveXpPerSecond: (data.passive_xp_per_second as number) || 0,
-    ownedGenerators: (data.owned_generators as OwnedGenerator[]) || [],
+    ...parseResult.data,
     unlockedEpochs: fixUnlockedEpochs(
-      ((data.unlocked_epochs as string[]) || ['trypillia']) as EpochId[],
+      parseResult.data.unlockedEpochs as EpochId[],
       level,
-      (data.epoch_id as EpochId) || 'trypillia',
+      epochId
     ),
-    artifactParts: (data.artifact_parts as Record<string, number>) || {},
-    artifactLevels: (data.artifact_levels as Record<string, number>) || {},
-    completedArtifacts: (data.completed_artifacts as string[]) || [],
-    artifactDupes: (data.artifact_dupes as Record<string, number>) || {},
-    lastSavedAt,
-    referrerId: sanitizeId(data.referrer_id as number),
-    referralsCount: (data.referrals_count as number) || 0,
-    referralEarnings: (data.referral_earnings as number) || 0,
-    activeBoosters,
-    dailyStreak: daily?.streak || 0,
-    bestStreak: daily?.best || 0,
-    lastLoginDate: daily?.lastDate || null,
-    dailyTasksState: (daily?.tasks as DailyTasksState) || null,
-    lastCheckIn: (data.last_check_in as string) || null,
-    checkInStreak: (data.current_streak as number) || 0,
-    // Phase 2 fields with defaults for backward compatibility
-    prestigeLevel: (data.prestige_level as number) || 0,
-    prestigePoints: (data.prestige_points as number) || 0,
-    prestigeResearch: (data.prestige_research as PrestigeResearch) || {},
-    energy: (data.energy as number) ?? 1000,
-    maxEnergy: (data.max_energy as number) ?? 1000,
-    lastOnlineAt,
-    sessionStartAt,
-    dailyAdViews: (data.daily_ad_views as DailyAdViews) || {},
+    lastSavedAt: Number.isFinite(parseResult.data.lastSavedAt) ? parseResult.data.lastSavedAt : Date.now(),
+    lastOnlineAt: Number.isFinite(parseResult.data.lastOnlineAt) ? parseResult.data.lastOnlineAt : Date.now(),
+    sessionStartAt: Number.isFinite(parseResult.data.sessionStartAt) ? parseResult.data.sessionStartAt : Date.now(),
+  };
+}
+
+function getInitialState(): GameState {
+  return {
+    epochId: 'trypillia',
+    level: 1,
+    xp: 0,
+    xpToNextLevel: calculateXpToLevel(1),
+    totalXp: 0,
+    currency: 20,
+    totalCurrencyEarned: 20,
+    tapPower: 1,
+    passiveXpPerSecond: 0,
+    ownedGenerators: [],
+    unlockedEpochs: ['trypillia'],
+    lastSavedAt: Date.now(),
+    artifactParts: {},
+    artifactLevels: {},
+    completedArtifacts: [],
+    artifactDupes: {},
+    referralsCount: 0,
+    referralEarnings: 0,
+    activeBoosters: {},
+    dailyStreak: 0,
+    bestStreak: 0,
+    lastLoginDate: null,
+    dailyTasksState: null,
+    lastCheckIn: null,
+    checkInStreak: 0,
+    prestigeLevel: 0,
+    prestigePoints: 0,
+    prestigeResearch: {},
+    energy: 1000,
+    maxEnergy: 1000,
+    lastOnlineAt: Date.now(),
+    sessionStartAt: Date.now(),
+    dailyAdViews: {},
   };
 }
 
@@ -442,18 +490,34 @@ export async function getLeaderboard(limit = 50): Promise<LeaderboardEntry[]> {
       .order('total_xp', { ascending: false })
       .limit(limit);
 
-    if (error || !data) return [];
+    if (error || !data) {
+      console.error('Leaderboard fetch error:', error);
+      return [];
+    }
 
-    return data.map((row, index) => ({
-      telegram_id: row.telegram_id,
-      first_name: row.first_name,
-      username: row.username,
-      level: row.level,
-      total_xp: row.total_xp,
-      prestige_level: row.prestige_level || 0,
-      referrals_count: row.referrals_count || 0,
-      rank: index + 1,
-    }));
+    // Validate entries with Zod
+    const entries: LeaderboardEntry[] = [];
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      const parseResult = LeaderboardEntrySchema.safeParse({
+        rank: i + 1,
+        telegram_id: row.telegram_id,
+        first_name: row.first_name,
+        username: row.username,
+        level: row.level,
+        total_xp: row.total_xp,
+        prestige_level: row.prestige_level || 0,
+        referrals_count: row.referrals_count || 0,
+      });
+
+      if (parseResult.success) {
+        entries.push(parseResult.data);
+      } else {
+        console.error('Invalid leaderboard entry:', parseResult.error.issues);
+      }
+    }
+
+    return entries;
   } catch (e) {
     console.error('Leaderboard fetch failed:', e);
     return [];
@@ -484,17 +548,32 @@ export async function getUserRank(telegramId: number): Promise<number | null> {
 export async function fetchActiveBoosters(telegramId: number): Promise<ActiveBoosters> {
   if (!supabase) return {};
   try {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('game_progress')
       .select('active_boosters')
       .eq('telegram_id', telegramId)
       .maybeSingle();
 
+    if (error) {
+      console.error('fetchActiveBoosters error:', error);
+      return {};
+    }
+
     const raw = (data?.active_boosters as ActiveBoosters) || {};
-    const { _daily: _ignored, ...clean } = raw;
+    const { _daily: _ignored, ...cleanBoosters } = raw;
     void _ignored;
-    return clean;
-  } catch {
+
+    // Validate with Zod
+    const parseResult = ActiveBoostersSchema.safeParse(cleanBoosters);
+
+    if (!parseResult.success) {
+      console.error('Invalid boosters from DB:', parseResult.error.issues);
+      return {};
+    }
+
+    return parseResult.data;
+  } catch (e) {
+    console.error('fetchActiveBoosters failed:', e);
     return {};
   }
 }
