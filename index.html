@@ -72,6 +72,47 @@
         to { transform: rotate(360deg); }
       }
     </style>
+
+    <!-- ===== ДІАГНОСТИКА ПЕРЕД ЗАВАНТАЖЕННЯМ ===== -->
+    <script>
+      console.log('=== 📄 INDEX.HTML ЗАВАНТАЖЕНО ===');
+      console.log('Час завантаження:', new Date().toISOString());
+      
+      // Перевіряємо наявність Telegram Web App
+      console.log('Telegram Web App до завантаження скриптів:', 
+        window.Telegram ? '✅' : '❌'
+      );
+      
+      // Зберігаємо оригінальний Error
+      window.__origError = window.Error;
+      
+      // Перехоплюємо помилки на рівні HTML
+      window.onerror = function(message, source, lineno, colno, error) {
+        console.error('=== 🔴 HTML ПОМИЛКА ===');
+        console.error('Повідомлення:', message);
+        console.error('Джерело:', source);
+        console.error('Рядок:', lineno);
+        console.error('Колонка:', colno);
+        console.error('Об\'єкт:', error);
+        console.error('Stack:', error?.stack);
+        
+        // Показуємо на екрані якщо є "jr"
+        if (message && (message.includes('jr') || message.includes('constructor'))) {
+          const div = document.createElement('div');
+          div.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#ff0000;color:white;padding:20px;z-index:999999;font-size:14px;overflow:auto;max-height:80vh;';
+          div.innerHTML = `
+            <strong>🚨 HTML ПОМИЛКА З 'jr':</strong><br>
+            ${message}<br>
+            ${source}:${lineno}:${colno}<br><br>
+            <strong>Stack:</strong><br>
+            ${error?.stack?.replace(/\n/g, '<br>') || 'Немає'}
+          `;
+          document.body.prepend(div);
+        }
+        
+        return false; // Не блокуємо стандартну обробку
+      };
+    </script>
   </head>
   <body>
     <div id="root">
@@ -84,12 +125,52 @@
         <p style="margin-top: 16px; opacity: 0.7;">Завантаження...</p>
       </div>
     </div>
-    <script type="module" src="/src/main.tsx"></script>
-
-    <!-- Telegram Web App SDK -->
+    
+    <!-- Telegram Web App SDK - loading with defer -->
     <script defer src="https://telegram.org/js/telegram-web-app.js"></script>
-
-    <!-- AdsGram SDK -->
+    
+    <!-- AdsGram SDK - loading with defer -->
     <script defer src="https://sad.adsgram.ai/js/sad.min.js"></script>
+    
+    <!-- Основний скрипт додатку -->
+    <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- ===== ДІАГНОСТИКА ПІСЛЯ ЗАВАНТАЖЕННЯ ===== -->
+    <script>
+      // Функція перевірки після завантаження скриптів
+      function checkScriptsLoaded() {
+        console.log('=== 📋 ПІСЛЯ ЗАВАНТАЖЕННЯ ВСІХ СКРИПТІВ ===');
+        
+        // Перевіряємо Telegram
+        if (window.Telegram) {
+          console.log('  Telegram SDK: ✅');
+          if (window.Telegram.WebApp) {
+            console.log('    WebApp.platform:', window.Telegram.WebApp.platform);
+            console.log('    WebApp.version:', window.Telegram.WebApp.version);
+          }
+        } else {
+          console.log('  Telegram SDK: ❌ Не завантажено');
+        }
+        
+        // Перевіряємо наявність "jr"
+        const keys = Object.keys(window);
+        const suspicious = keys.filter(k => 
+          k.toLowerCase().includes('jr') || k === 'J' || k === 'JR'
+        );
+        if (suspicious.length > 0) {
+          console.warn('⚠️ ЗНАЙДЕНО ПІДОЗРІЛІ:', suspicious);
+        }
+      }
+      
+      // Перевіряємо після завантаження
+      if (document.readyState === 'complete') {
+        checkScriptsLoaded();
+      } else {
+        window.addEventListener('load', checkScriptsLoaded);
+      }
+      
+      // Також через 3 секунди
+      setTimeout(checkScriptsLoaded, 3000);
+    </script>
   </body>
 </html>
