@@ -10,6 +10,7 @@ import { StorySystem } from '../components/StorySystem';
 import { AcademyProgress } from '../components/AcademyProgress';
 import { PrestigeMilestones } from '../components/PrestigeMilestones';
 import { AcademyTeaser } from '../components/AcademyTeaser';
+import { useLiveOpsStore } from '../liveOpsStore';
 import { useTranslation } from '../../i18n';
 
 // Academy unlock threshold - reduced from 5000 to 3000 for better retention
@@ -46,24 +47,42 @@ export function Academy() {
     ? Math.round((museumItems.length / totalArtifacts) * 100) 
     : 0;
 
-  // Generate current objective based on priorities
+  // Generate current objective based on priorities (Current Objective 2.0)
   const getCurrentObjective = () => {
-    if (storyState.activeQuests.length > 0) {
-      return { priority: 1, text: t('objective.complete_quest'), icon: Target };
+    // Priority 1: Active story quest
+    if (storyState.activeQuests && storyState.activeQuests.length > 0) {
+      return { priority: 1, text: t('objective.complete_quest'), icon: Target, color: '#FF6B6B' };
     }
-    if (activeExpeditions === 0 && heroes.length > 0) {
-      return { priority: 2, text: t('objective.start_expedition'), icon: Zap };
+    // Priority 2: Completed expeditions to collect
+    if (expeditions.some(e => !e.collected && e.status === 'completed')) {
+      return { priority: 2, text: t('objective.collect_expedition'), icon: Map, color: '#00E5FF' };
     }
+    // Priority 3: Active expedition available (if none running)
+    if (activeExpeditions === 0 && heroes.filter(h => h.unlocked).length > 0) {
+      return { priority: 3, text: t('objective.start_expedition'), icon: Zap, color: '#FFD700' };
+    }
+    // Priority 4: Available daily challenge
+    const dailyChallenges = useLiveOpsStore.getState().dailyChallengesProgress;
+    const hasUnclaimedDaily = Object.entries(dailyChallenges).some(
+      ([id, progress]) => progress?.completed && !progress?.claimed
+    );
+    if (hasUnclaimedDaily) {
+      return { priority: 4, text: t('objective.claim_daily_reward'), icon: Gift, color: '#10B981' };
+    }
+    // Priority 5: Damaged artifacts to restore
     if (damagedArtifacts.length > 0) {
-      return { priority: 3, text: t('objective.restore_artifact'), icon: Archive };
+      return { priority: 5, text: t('objective.restore_artifact'), icon: Archive, color: '#F59E0B' };
     }
+    // Priority 6: Send artifact to museum
     if (museumItems.length === 0 && totalArtifacts > 0) {
-      return { priority: 4, text: t('objective.send_to_museum'), icon: Star };
+      return { priority: 6, text: t('objective.send_to_museum'), icon: Landmark, color: '#A855F7' };
     }
+    // Priority 7: Increase reputation
     if (reputation < 100) {
-      return { priority: 5, text: t('objective.increase_reputation'), icon: TrendingUp };
+      return { priority: 7, text: t('objective.increase_reputation'), icon: TrendingUp, color: '#FF6B6B' };
     }
-    return { priority: 6, text: t('objective.continue_exploring'), icon: CheckCircle2 };
+    // Priority 8: General exploration
+    return { priority: 8, text: t('objective.continue_exploring'), icon: CheckCircle2, color: '#8B949E' };
   };
 
   const currentObjective = getCurrentObjective();
@@ -115,14 +134,14 @@ export function Academy() {
         {/* Current Objective Card */}
         <Card className="bg-white/[0.04] border-white/[0.08] rounded-3xl p-4 mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#FFC72C20' }}>
-              <currentObjective.icon className="w-5 h-5" style={{ color: '#FFC72C' }} />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${currentObjective.color}20` }}>
+              <currentObjective.icon className="w-5 h-5" style={{ color: currentObjective.color }} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs text-[#8B949E] mb-0.5">{t('objective.current_objective')}</p>
               <p className="text-sm font-medium text-[#E6EDF3] truncate">{currentObjective.text}</p>
             </div>
-            <Badge variant="outline" className="text-[10px] shrink-0" style={{ borderColor: '#FFC72C', color: '#FFC72C' }}>
+            <Badge variant="outline" className="text-[10px] shrink-0" style={{ borderColor: currentObjective.color, color: currentObjective.color }}>
               #{currentObjective.priority}
             </Badge>
           </div>

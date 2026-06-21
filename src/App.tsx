@@ -15,6 +15,7 @@ import { PrestigeButton, MuseumLaboratory } from './components/PrestigeSystem';
 import { SessionAdModal, ChestAdModal, EnergyRestoreAdButton, useSessionAdTrigger, useChestAdTrigger } from './components/AdSystem';
 import { OfflineRewardModal } from './components/OfflineRewardModal';
 import { AcademyUnlockModal } from './components/AcademyUnlockModal';
+import { AcademyPreview } from './components/AcademyPreview';
 import { EPOCHS, ARTIFACTS, getEpochById } from './data/epochs';
 import { initTelegramMiniApp, hapticImpact, hapticNotification, getTelegramWebApp, getTelegramUserId } from './lib/telegram';
 import { rpcTrackSession } from './lib/rpc';
@@ -501,6 +502,7 @@ function App() {
                 checkInStreak={state.checkInStreak}
                 onClaimTask={claimDailyTask}
               />
+              <AcademyPreview currentPrestige={state.prestigeLevel || 0} />
               <TapUpgrade
                 tapPower={state.tapPower}
                 effectiveTapPower={effectiveTapPower}
