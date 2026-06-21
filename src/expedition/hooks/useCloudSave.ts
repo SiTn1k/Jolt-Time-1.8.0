@@ -6,6 +6,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useExpeditionStore } from '../store';
+import { generateUUID } from '../lib/cryptoUtils';
 
 const SAVE_INTERVAL = 60000; // 60 seconds
 const DEBOUNCE_DELAY = 5000; // 5 seconds debounce
@@ -62,7 +63,7 @@ export function useCloudSave() {
       }
 
       const saveData = getStoreState();
-      const deviceId = localStorage.getItem('device_id') || crypto.randomUUID();
+      const deviceId = localStorage.getItem('device_id') || generateUUID();
       
       localStorage.setItem('device_id', deviceId);
 
@@ -149,7 +150,7 @@ export function useCloudSave() {
       if (!user) return;
 
       const saveData = getStoreState();
-      const deviceId = localStorage.getItem('device_id') || crypto.randomUUID();
+      const deviceId = localStorage.getItem('device_id') || generateUUID();
       localStorage.setItem('device_id', deviceId);
 
       await fetch(

@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 import { GameState, EpochId, OwnedGenerator, LeaderboardEntry, ActiveBoosters, DailyTasksState, PrestigeResearch, DailyAdViews, Epoch } from '../types/game';
 import { getTelegramUserId, getTelegramUserInfo, getReferrerId } from './telegram';
 import { getCurrentEpochByLevel, EPOCHS } from '../data/epochs';
+import { generateUUID } from './cryptoUtils';
 
 const LOCAL_STORAGE_KEY = 'ukraine_tap_game_state';
 const DEVICE_ID_KEY = 'ukraine_tap_device_id';
@@ -80,7 +81,7 @@ function sanitizeId(value: number | null | undefined): number | null {
 function getDeviceId(): string {
   let id = localStorage.getItem(DEVICE_ID_KEY);
   if (!id) {
-    id = 'dev_' + crypto.randomUUID();
+    id = 'dev_' + generateUUID();
     localStorage.setItem(DEVICE_ID_KEY, id);
   }
   return id;
