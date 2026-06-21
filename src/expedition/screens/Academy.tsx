@@ -38,16 +38,16 @@ export function Academy() {
   const currentArc = useExpeditionStore((s) => s.storyState.currentArc);
   void currentArc; // Used for future story expansion
 
-  const activeExpeditions = expeditions.filter((e) => !e.collected).length;
-  const damagedArtifacts = artifacts.filter((a) => a.condition < 100);
-  const totalArtifacts = artifacts.length;
+  const activeExpeditions = (expeditions || []).filter((e) => !e.collected).length;
+  const damagedArtifacts = (artifacts || []).filter((a) => a.condition < 100);
+  const totalArtifacts = (artifacts || []).length;
   
   // Museum items are artifacts with status 'museum'
-  const museumItems = artifacts.filter((a) => a.status === 'museum');
+  const museumItems = (artifacts || []).filter((a) => a.status === 'museum');
 
   // Calculate museum collection percentage
   const museumCollectionPercent = totalArtifacts > 0 
-    ? Math.round((museumItems.length / totalArtifacts) * 100) 
+    ? Math.round(((museumItems || []).length / totalArtifacts) * 100) 
     : 0;
 
   // Generate current objective based on priorities (Current Objective 2.0)
