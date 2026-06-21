@@ -7,12 +7,16 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:load": "echo \"Load tests require deployment\""
+    "test:load": "echo \"Load tests require deployment\"",
+    "audit": "npm audit --audit-level=moderate",
+    "audit:high": "npm audit --audit-level=high",
+    "security-check": "npm run typecheck && npm run audit"
   },
   "dependencies": {
     "@adsgram/react": "^1.0.2",
