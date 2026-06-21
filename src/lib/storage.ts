@@ -13,6 +13,40 @@ import { validateReferrerId, verifyReferrerExists } from './referralValidation';
 const LOCAL_STORAGE_KEY = 'ukraine_tap_game_state';
 const DEVICE_ID_KEY = 'ukraine_tap_device_id';
 
+/**
+ * Load game state from localStorage (fallback when DB fails)
+ */
+export function loadLocalState(): GameState | null {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as GameState;
+    return sanitizeLoadedState(parsed);
+  } catch (e) {
+    console.error('localStorage load failed:', e);
+    return null;
+  }
+}
+
+/**
+ * Force immediate save to both localStorage and DB
+ * Use this after important events (level up, prestige, etc.)
+ */
+export async function saveNow(state: GameState): Promise<void> {
+  // Always save to localStorage first (synchronous, always works)
+  saveLocalState(state);
+  
+  // Then try to save to DB
+  if (supabase) {
+    try {
+      await saveRemoteState(state);
+      console.log('[storage] Force save to DB successful');
+    } catch (e) {
+      console.error('[storage] Force save to DB failed:', e);
+    }
+  }
+}
+
 export const REFERRER_BONUS = 100;
 export const NEW_USER_BONUS = 50;
 
@@ -204,6 +238,11 @@ export async function loadGameState(): Promise<GameState | null> {
   const referrerId = getReferrerId();
   const deviceId = getDeviceId();
 
+  // Warn if Supabase is not configured
+  if (!supabase) {
+    console.warn('[storage] Supabase not configured - using localStorage only');
+  }
+
   if (supabase) {
     try {
       const { data } = telegramId
@@ -224,6 +263,14 @@ export async function loadGameState(): Promise<GameState | null> {
           localStorage.removeItem(LOCAL_STORAGE_KEY);
         }
         return hydrateFromDb(data);
+      }
+
+      // Data not found in DB - try localStorage fallback
+      console.log('[storage] No DB data, checking localStorage fallback...');
+      const localData = loadLocalState();
+      if (localData) {
+        console.log('[storage] Restored from localStorage');
+        return localData;
       }
 
       if (telegramId) {
@@ -333,15 +380,8 @@ export async function loadGameState(): Promise<GameState | null> {
     }
   }
 
-  try {
-    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as GameState;
-    return sanitizeLoadedState(parsed);
-  } catch (e) {
-    console.error('localStorage load failed:', e);
-    return null;
-  }
+  // Final fallback: load from localStorage
+  return loadLocalState();
 }
 
 function hydrateFromDb(data: Record<string, unknown>): GameState {

@@ -9,7 +9,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Gift, Loader2 } from 'lucide-react';
-import { hapticNotification } from '../lib/telegram';
+import { hapticNotification, getTelegramUserId } from '../lib/telegram';
 import { useTranslation } from '../i18n';
 
 // Task configuration
@@ -97,22 +97,29 @@ export function AdsGramTask({ onRewardClaimed }: AdsGramTaskProps) {
       
       // Claim reward via server
       try {
-        const telegramId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
-        if (telegramId) {
-          const response = await fetch(
-            `https://iyxhzisfwcdfhuxuqxso.supabase.co/functions/v1/adsgram-reward?userid=${telegramId}&secret=e73dc047768d42dba4d64432274c05c1`
-          );
-          const data = await response.json();
-          console.log('[AdsGramTask] Reward claim response:', data);
-          
-          if (data.success || data.already_claimed) {
-            setRewardClaimed(true);
-            localStorage.setItem('adsgram_task_completed', 'true');
-            hapticNotification('success');
-            onRewardClaimed?.();
-          } else {
-            hapticNotification('warning');
-          }
+        const telegramId = getTelegramUserId();
+        console.log('[AdsGramTask] Telegram ID:', telegramId);
+        
+        if (!telegramId) {
+          console.error('[AdsGramTask] Telegram ID not found');
+          hapticNotification('error');
+          return;
+        }
+        
+        const response = await fetch(
+          `https://iyxhzisfwcdfhuxuqxso.supabase.co/functions/v1/adsgram-reward?userid=${telegramId.toString()}&secret=e73dc047768d42dba4d64432274c05c1`
+        );
+        const data = await response.json();
+        console.log('[AdsGramTask] Reward claim response:', data);
+        
+        if (data.success || data.already_claimed) {
+          setRewardClaimed(true);
+          localStorage.setItem('adsgram_task_completed', 'true');
+          hapticNotification('success');
+          onRewardClaimed?.();
+        } else {
+          console.error('[AdsGramTask] Reward claim failed:', data.error);
+          hapticNotification('warning');
         }
       } catch (err) {
         console.error('[AdsGramTask] Failed to claim reward:', err);

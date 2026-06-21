@@ -277,6 +277,7 @@ export function useGame() {
   const isInitialized = useRef(false);
   const dirtyRef = useRef(false);
   const isOnlineRef = useRef(true);
+  const lastForceSaveRef = useRef<number>(0);
 
   // ── Online/offline detection ────────────────────────────────────────
   useEffect(() => {
@@ -534,6 +535,21 @@ export function useGame() {
     if (isLoading) return;
     dirtyRef.current = true;
   }, [state, isLoading]);
+
+  // Force immediate save on critical events (level up, epoch unlock)
+  useEffect(() => {
+    if (isLoading || !state.level) return;
+    
+    // Debounce force saves (don't spam on every tick)
+    const now = Date.now();
+    if (!lastForceSaveRef.current || (now - lastForceSaveRef.current) > 5000) {
+      lastForceSaveRef.current = now;
+      // Save to localStorage immediately
+      saveLocalState(state);
+      // Also trigger remote save by marking dirty
+      dirtyRef.current = true;
+    }
+  }, [state.level, state.epochId, state.unlockedEpochs, isLoading]);
 
   useEffect(() => {
     if (isLoading) return;
