@@ -188,7 +188,7 @@ interface GameState {
   placeArtifactInExhibition: (artifactId: string, slotIndex: number) => boolean;
   removeArtifactFromExhibition: (slotIndex: number) => void;
   collectMuseumIncome: () => void;
-  purchaseMuseumUpgrade: (upgradeId: string) => boolean;
+  purchaseMuseumUpgrade: (upgradeId: string) => { success: true; upgradeNameKey: string; upgradeIcon: string } | false;
   expandExhibitionSlots: () => boolean;
   checkAndUnlockAchievements: (context: { visitors?: number; artifacts?: number; collections?: number; exhibitions?: number; events?: number }) => void;
   joinEvent: (eventId: string) => void;
@@ -1155,8 +1155,7 @@ export const useExpeditionStore = create<GameState>()(
           },
         }));
         
-        s.pushToast(`${upgrade.icon} ${upgrade.nameKey} оновлено!`, '#FFC72C');
-        return true;
+        return { success: true, upgradeNameKey: upgrade.nameKey, upgradeIcon: upgrade.icon };
       },
 
       expandExhibitionSlots: () => {

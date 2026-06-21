@@ -38,6 +38,7 @@ export function MuseumSystem({ isOpen, onClose }: MuseumSystemProps) {
   const removeArtifactFromExhibition = useExpeditionStore((s) => s.removeArtifactFromExhibition);
   const collectMuseumIncome = useExpeditionStore((s) => s.collectMuseumIncome);
   const purchaseMuseumUpgrade = useExpeditionStore((s) => s.purchaseMuseumUpgrade);
+  const pushToast = useExpeditionStore((s) => s.pushToast);
   const expandExhibitionSlots = useExpeditionStore((s) => s.expandExhibitionSlots);
   const joinEvent = useExpeditionStore((s) => s.joinEvent);
 
@@ -542,7 +543,7 @@ function UpgradesTab({
 }: {
   museumState: MuseumState;
   karbovanets: number;
-  purchaseMuseumUpgrade: (upgradeId: string) => boolean;
+  purchaseMuseumUpgrade: (upgradeId: string) => { success: true; upgradeNameKey: string; upgradeIcon: string } | false;
 }) {
   const { t } = useTranslation();
 
@@ -601,7 +602,12 @@ function UpgradesTab({
                 </div>
               ) : (
                 <button
-                  onClick={() => purchaseMuseumUpgrade(upgrade.id)}
+                  onClick={() => {
+                    const result = purchaseMuseumUpgrade(upgrade.id);
+                    if (result && typeof result === 'object' && result.success) {
+                      pushToast(`${result.upgradeIcon} ${t(result.upgradeNameKey)} оновлено!`, '#FFC72C');
+                    }
+                  }}
                   disabled={!upgrade.canAfford}
                   className={`w-full py-2 rounded-lg font-medium transition-all ${
                     upgrade.canAfford
