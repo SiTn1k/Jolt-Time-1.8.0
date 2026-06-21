@@ -118,10 +118,10 @@ export function Academy() {
   };
 
   return (
-    <div className="min-h-full bg-[#0D1117] p-4 pb-20 relative overflow-hidden">
+    <div className="min-h-screen bg-[#0D1117] p-4 pb-20 relative overflow-y-auto overscroll-contain">
       <UkrainianPattern />
 
-      <div className="relative z-10 mb-6">
+      <div className="relative z-10 mb-6 mt-4">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl" style={{ fontFamily: "'Exo 2', sans-serif", color: '#FFC72C' }}>
