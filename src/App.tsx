@@ -18,7 +18,7 @@ import { AcademyUnlockModal } from './components/AcademyUnlockModal';
 import { AcademyPreview } from './components/AcademyPreview';
 import { SettingsPanel } from './components/SettingsPanel';
 import { EPOCHS, ARTIFACTS, getEpochById } from './data/epochs';
-import { initTelegramMiniApp, hapticImpact, hapticNotification, getTelegramWebApp, getTelegramUserId } from './lib/telegram';
+import { initTelegramMiniApp, hapticImpact, hapticNotification, getTelegramWebApp, getTelegramUserId, getRawInitData } from './lib/telegram';
 import { rpcTrackSession } from './lib/rpc';
 import { supabase } from './lib/supabase';
 import { notificationService } from './services/NotificationService';
@@ -354,13 +354,14 @@ function App() {
           currencyIcon={epoch.currencyIcon}
           onClaim={async (watchAd) => {
             if (watchAd) {
-              // Call claim-ad-reward Edge Function for x2
+              // Call claim-ad-reward Edge Function for x2 with HMAC auth
               try {
+                const initData = getRawInitData();
                 const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/claim-ad-reward`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
-                    telegram_id: telegramId,
+                    initData,
                     reward_type: 'offline_x2',
                   }),
                 });
@@ -1263,13 +1264,14 @@ function App() {
         <SessionAdModal
           prestigeLevel={state.prestigeLevel || 0}
           onReward={async (type) => {
-            // Claim reward via server Edge Function
+            // Claim reward via server Edge Function with HMAC auth
             try {
               const rewardType = type === 'energy' ? 'energy_restore' : 'session_ad';
+              const initData = getRawInitData();
               const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/claim-ad-reward`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ telegram_id: telegramId, reward_type: rewardType }),
+                body: JSON.stringify({ initData, reward_type: rewardType }),
               });
               const data = await response.json();
               if (data.success) {
@@ -1296,10 +1298,11 @@ function App() {
           onReward={async (type) => {
             try {
               const rewardType = type === 'energy' ? 'energy_restore' : 'chest_bonus';
+              const initData = getRawInitData();
               const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/claim-ad-reward`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ telegram_id: telegramId, reward_type: rewardType }),
+                body: JSON.stringify({ initData, reward_type: rewardType }),
               });
               const data = await response.json();
               if (data.success) {
