@@ -16,6 +16,7 @@ import { SessionAdModal, ChestAdModal, EnergyRestoreAdButton, useSessionAdTrigge
 import { OfflineRewardModal } from './components/OfflineRewardModal';
 import { AcademyUnlockModal } from './components/AcademyUnlockModal';
 import { AcademyPreview } from './components/AcademyPreview';
+import { SettingsPanel } from './components/SettingsPanel';
 import { EPOCHS, ARTIFACTS, getEpochById } from './data/epochs';
 import { initTelegramMiniApp, hapticImpact, hapticNotification, getTelegramWebApp, getTelegramUserId } from './lib/telegram';
 import { rpcTrackSession } from './lib/rpc';
@@ -81,6 +82,7 @@ function App() {
   const [showError, setShowError] = useState<string | null>(null);
   const [purchasingBooster, setPurchasingBooster] = useState<string | null>(null);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Academy Unlock Modal - show once when prestigeLevel === 2
   const isAcademyUnlocked = (state.prestigeLevel || 0) >= 2;
@@ -465,6 +467,14 @@ function App() {
           >
             <Globe className="w-4 h-4" />
             <span className="font-medium">{locale.toUpperCase()}</span>
+          </button>
+          {/* Settings */}
+          <button
+            onClick={() => setShowSettings(true)}
+            className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+            title={t('settings.title') || 'Налаштування'}
+          >
+            <Shield className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -1306,6 +1316,17 @@ function App() {
             }
           }}
           onClose={dismissChestAd}
+        />
+      )}
+
+      {/* Settings Panel */}
+      {showSettings && (
+        <SettingsPanel
+          onClose={() => setShowSettings(false)}
+          onImportSuccess={() => {
+            // Reload game state after import
+            window.location.reload();
+          }}
         />
       )}
     </div>
