@@ -37,6 +37,7 @@ export function WorldMap() {
   const getStatusLabel = (status: string, ready: boolean) => {
     if (ready) return t('expedition.status_completed');
     switch (status) {
+      case 'collecting': return t('expedition.status_completed'); // collecting = ready to collect
       case 'returning': return t('expedition.status_returning');
       case 'excavating': return t('expedition.status_excavating');
       default: return t('expedition.status_traveling');
@@ -101,7 +102,8 @@ export function WorldMap() {
             {activeExpeditions.map((exp) => {
               const remaining = Math.max(0, Math.ceil((exp.endsAt - now) / 1000));
               const ratio = Math.min(100, ((exp.duration * 1000 - (exp.endsAt - now)) / (exp.duration * 1000)) * 100);
-              const ready = now >= exp.endsAt;
+              const isCollecting = exp.status === 'collecting';
+              const ready = isCollecting || now >= exp.endsAt;
               return (
                 <Card key={exp.id} className="border-2 p-3" style={{ borderColor: ready ? '#10B981' : '#FFC72C' }}>
                   <div className="flex items-center justify-between mb-1">

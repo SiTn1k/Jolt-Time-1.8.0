@@ -4,7 +4,7 @@ import { Landmark, Settings } from 'lucide-react';
 import { Card } from '../ui';
 import { MuseumSystem } from '../components/MuseumSystem';
 import { useTranslation } from '../../i18n';
-import { getReputationLevel, museumCollections, calculateCollectionProgress } from '../museumData';
+import { getReputationLevel, museumCollections } from '../museumData';
 
 export function Museum() {
   const { t } = useTranslation();
@@ -24,7 +24,8 @@ export function Museum() {
   // Check collection completion on mount
   useEffect(() => {
     checkCollectionCompletion();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Intentionally run once on mount
 
   return (
     <>
@@ -75,7 +76,7 @@ export function Museum() {
             </span>
           </div>
           <div className="flex gap-1">
-            {museumCollections.slice(0, 8).map((col, i) => {
+            {museumCollections.slice(0, 8).map((col) => {
               const isComplete = museumState.completedCollections?.includes(col.id);
               return (
                 <div

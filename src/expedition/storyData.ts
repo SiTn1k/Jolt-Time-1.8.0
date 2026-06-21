@@ -40,7 +40,7 @@ export const RELATIONSHIP_REWARDS: Record<RelationshipLevel, RelationshipReward>
   3: { karbovanets: 100, reputation: 10 },
   4: { karbovanets: 200, reputation: 25, artifactFragment: { rarity: 'common', amount: 5 } },
   5: { karbovanets: 500, reputation: 50, artifactFragment: { rarity: 'rare', amount: 3 } },
-  6: { karbovanets: 1000, reputation: 100, artifactFragment: { rarity: 'epic', amount: 2 }, heroFragment: { heroId: 'hero-1', amount: 5 } }, // TODO: award to random unlocked hero instead of 'hero-1'
+  6: { karbovanets: 1000, reputation: 100, artifactFragment: { rarity: 'epic', amount: 2 }, heroFragment: { heroId: 'any', amount: 5 } }, // Awarded to random locked hero (store handles selection)
 };
 
 // ═══════════════════════════════════════════════════════════════════════

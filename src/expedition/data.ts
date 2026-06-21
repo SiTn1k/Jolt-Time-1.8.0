@@ -208,7 +208,7 @@ export interface Expedition {
   endsAt: number;
   duration: number; // seconds (real)
   successChance: number;
-  status: 'traveling' | 'excavating' | 'returning' | 'completed';
+  status: 'traveling' | 'excavating' | 'returning' | 'collecting' | 'completed';
   rewardKarbovanets: number;
   rewardReputation: number;
   artifactName: string;

@@ -524,7 +524,8 @@ export const useExpeditionStore = create<GameState>()(
         // Collect rewards for level up
         let repReward = 0;
         let carbReward = 0;
-        let fragReward: { rarity: string; amount: number }[] = [];
+        const fragReward: { rarity: string; amount: number }[] = [];
+        let heroFragReward: { heroId: string; amount: number } | null = null;
         
         if (newLevel > oldLevel) {
           for (let lvl = oldLevel + 1; lvl <= newLevel; lvl++) {
@@ -533,6 +534,7 @@ export const useExpeditionStore = create<GameState>()(
             if (reward.karbovanets) carbReward += reward.karbovanets;
             if (reward.reputation) repReward += reward.reputation;
             if (reward.artifactFragment) fragReward.push(reward.artifactFragment);
+            if (reward.heroFragment) heroFragReward = reward.heroFragment;
           }
         }
         
@@ -542,6 +544,17 @@ export const useExpeditionStore = create<GameState>()(
           for (const frag of fragReward) {
             const key = frag.rarity as keyof typeof st.artifactFragments;
             newFragments[key] = (newFragments[key] || 0) + frag.amount;
+          }
+          
+          // Handle hero fragment reward - award to random locked hero
+          const newHeroes = [...st.heroes];
+          if (heroFragReward) {
+            const lockedHeroes = newHeroes.filter(h => !h.unlocked);
+            const targetHeroes = lockedHeroes.length > 0 ? lockedHeroes : newHeroes;
+            if (targetHeroes.length > 0) {
+              const randomHero = targetHeroes[Math.floor(Math.random() * targetHeroes.length)];
+              randomHero.fragments = (randomHero.fragments || 0) + heroFragReward.amount;
+            }
           }
           
           return {
@@ -560,6 +573,7 @@ export const useExpeditionStore = create<GameState>()(
             karbovanets: st.karbovanets + carbReward,
             reputation: st.reputation + repReward,
             artifactFragments: newFragments,
+            heroes: newHeroes,
           };
         });
         

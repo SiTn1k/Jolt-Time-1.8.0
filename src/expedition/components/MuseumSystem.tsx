@@ -4,9 +4,9 @@ import { museumCollections, museumUpgrades, getReputationLevel, MUSEUM_ACHIEVEME
 import { leaderboardService, LeaderboardType, RankingMetric, LeaderboardEntry } from '../leaderboardService';
 import { motion } from 'motion/react';
 import { 
-  Landmark, TrendingUp, Award, Sparkles, Eye, 
+  Landmark, Award, Sparkles, Eye, 
   Plus, Minus, Star, Gift, 
-  X, Settings, Trophy, Calendar, Crown, RefreshCw
+  X, Calendar, RefreshCw
 } from 'lucide-react';
 import { Card, Badge, Progress } from '../ui';
 import type { Artifact, Rarity } from '../data';
