@@ -119,6 +119,20 @@ interface GameState {
   museumVisitors: number;
   historicalPrestige: number;
 
+  // Premium currency (Telegram Stars)
+  starsBalance: number;
+  expeditionBoosts: number;
+  premiumTickets: number;
+  ownedCosmetics: string[];
+  ownedBadges: string[];
+  activeEffects: {
+    xpBoostEnd: number;
+    incomeBoostEnd: number;
+    reputationBoostEnd: number;
+  };
+  adsWatched: number;
+  totalStarsSpent: number;
+
   heroes: Hero[];
   artifacts: Artifact[];
   regions: Region[];
