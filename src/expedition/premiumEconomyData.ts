@@ -182,7 +182,7 @@ export const PREMIUM_SHOP_ITEMS: ShopItem[] = [
   {
     id: 'starter_pack_small',
     type: 'pack',
-    nameKey: 'shop.starter_pack_small.name',
+    nameKey: 'shop.starter_pack_small_name',
     descriptionKey: 'shop.starter_pack_small.desc',
     cost: 50,
     icon: '🎁',
@@ -196,7 +196,7 @@ export const PREMIUM_SHOP_ITEMS: ShopItem[] = [
   {
     id: 'explorer_pack',
     type: 'pack',
-    nameKey: 'shop.explorer_pack.name',
+    nameKey: 'shop.explorer_pack_name',
     descriptionKey: 'shop.explorer_pack.desc',
     cost: 99,
     icon: '🧭',
@@ -211,7 +211,7 @@ export const PREMIUM_SHOP_ITEMS: ShopItem[] = [
   {
     id: 'historian_pack',
     type: 'pack',
-    nameKey: 'shop.historian_pack.name',
+    nameKey: 'shop.historian_pack_name',
     descriptionKey: 'shop.historian_pack.desc',
     cost: 199,
     icon: '📚',
@@ -227,7 +227,7 @@ export const PREMIUM_SHOP_ITEMS: ShopItem[] = [
   {
     id: 'patron_pack',
     type: 'pack',
-    nameKey: 'shop.patron_pack.name',
+    nameKey: 'shop.patron_pack_name',
     descriptionKey: 'shop.patron_pack.desc',
     cost: 399,
     icon: '👑',
@@ -246,7 +246,7 @@ export const PREMIUM_SHOP_ITEMS: ShopItem[] = [
   {
     id: 'boost_expedition_1',
     type: 'boost',
-    nameKey: 'shop.boost_expedition_1.name',
+    nameKey: 'shop.boost_expedition_1_name',
     descriptionKey: 'shop.boost_expedition_1.desc',
     cost: 5,
     icon: '⚡',
@@ -258,7 +258,7 @@ export const PREMIUM_SHOP_ITEMS: ShopItem[] = [
   {
     id: 'boost_expedition_10',
     type: 'boost',
-    nameKey: 'shop.boost_expedition_10.name',
+    nameKey: 'shop.boost_expedition_10_name',
     descriptionKey: 'shop.boost_expedition_10.desc',
     cost: 45,
     icon: '💎',
@@ -272,7 +272,7 @@ export const PREMIUM_SHOP_ITEMS: ShopItem[] = [
   {
     id: 'gacha_ticket_1',
     type: 'spin',
-    nameKey: 'shop.gacha_ticket_1.name',
+    nameKey: 'shop.gacha_ticket_1_name',
     descriptionKey: 'shop.gacha_ticket_1.desc',
     cost: 10,
     icon: '🎰',
@@ -284,7 +284,7 @@ export const PREMIUM_SHOP_ITEMS: ShopItem[] = [
   {
     id: 'gacha_ticket_5',
     type: 'spin',
-    nameKey: 'shop.gacha_ticket_5.name',
+    nameKey: 'shop.gacha_ticket_5_name',
     descriptionKey: 'shop.gacha_ticket_5.desc',
     cost: 45,
     icon: '🎰',
@@ -298,7 +298,7 @@ export const PREMIUM_SHOP_ITEMS: ShopItem[] = [
   {
     id: 'cosmetic_frame_bronze',
     type: 'cosmetic_frame',
-    nameKey: 'shop.cosmetic_frame_bronze.name',
+    nameKey: 'shop.cosmetic_frame_bronze_name',
     descriptionKey: 'shop.cosmetic_frame_bronze.desc',
     cost: 100,
     icon: '🖼️',
@@ -310,7 +310,7 @@ export const PREMIUM_SHOP_ITEMS: ShopItem[] = [
   {
     id: 'cosmetic_frame_silver',
     type: 'cosmetic_frame',
-    nameKey: 'shop.cosmetic_frame_silver.name',
+    nameKey: 'shop.cosmetic_frame_silver_name',
     descriptionKey: 'shop.cosmetic_frame_silver.desc',
     cost: 200,
     icon: '🖼️',
@@ -322,7 +322,7 @@ export const PREMIUM_SHOP_ITEMS: ShopItem[] = [
   {
     id: 'cosmetic_frame_gold',
     type: 'cosmetic_frame',
-    nameKey: 'shop.cosmetic_frame_gold.name',
+    nameKey: 'shop.cosmetic_frame_gold_name',
     descriptionKey: 'shop.cosmetic_frame_gold.desc',
     cost: 500,
     icon: '🖼️',
@@ -334,7 +334,7 @@ export const PREMIUM_SHOP_ITEMS: ShopItem[] = [
   {
     id: 'cosmetic_frame_legendary',
     type: 'cosmetic_frame',
-    nameKey: 'shop.cosmetic_frame_legendary.name',
+    nameKey: 'shop.cosmetic_frame_legendary_name',
     descriptionKey: 'shop.cosmetic_frame_legendary.desc',
     cost: 1000,
     icon: '🖼️',

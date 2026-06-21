@@ -583,6 +583,41 @@
       "role": "Curator",
       "biography": "Chief curator of the National Museum of Ukrainian History."
     },
+    "danylo_romanovich": {
+      "name": "Daniel Romanovych",
+      "role": "King of Galicia-Volhynia",
+      "biography": "The first King of Rus who united the Galicia and Volhynia principalities."
+    },
+    "kobzar": {
+      "name": "Kobzar",
+      "role": "Folk Singer",
+      "biography": "Traveling musician-storyteller who preserves folk memory in songs."
+    },
+    "shevchenko": {
+      "name": "Taras Shevchenko",
+      "role": "Poet and Artist",
+      "biography": "Great national poet, symbol of Ukrainian spirit and fight for freedom."
+    },
+    "petrykura": {
+      "name": "Symon Petliura",
+      "role": "Head of Directorate of UNR",
+      "biography": "Military and political figure of the liberation struggle for Ukrainian independence."
+    },
+    "ww2_researcher": {
+      "name": "WWII Researcher",
+      "role": "War Historian",
+      "biography": "Expert researching the tragic and heroic pages of World War II."
+    },
+    "dziuba": {
+      "name": "Ivan Dziuba",
+      "role": "Literary Critic",
+      "biography": "Distinguished literary scholar and human rights activist of the Sixtiers era."
+    },
+    "modern_historian": {
+      "name": "Modern Historian",
+      "role": "Contemporary Ukraine Researcher",
+      "biography": "Young scholar studying modern Ukrainian history and democratic transformations."
+    },
     "relationship": "Relationship",
     "trust_points": "Trust Points",
     "level": "Level",
@@ -1303,6 +1338,68 @@
     "weekly_epic": {
       "title": "Epic Artifact",
       "desc": "Obtain an epic or legendary artifact"
+    }
+  },
+  "event": {
+    "independence": {
+      "name": "Independence Day",
+      "desc": "Celebrate Ukraine's 33rd Independence Anniversary!"
+    },
+    "pokrova": {
+      "name": "Pokrova",
+      "desc": "Holiday of Cossack glory and defenders of Ukraine"
+    },
+    "christmas": {
+      "name": "Christmas",
+      "desc": "Merry Christmas! Special rewards await you"
+    },
+    "easter": {
+      "name": "Easter",
+      "desc": "Christ is Risen! Collect Easter artifacts"
+    },
+    "cossack_day": {
+      "name": "Cossack Day",
+      "desc": "Honor to the Cossack lineage!"
+    },
+    "kyiv_founded": {
+      "name": "Kyiv Founded Day",
+      "desc": "1541 years of Kyiv! Unlock unique rewards"
+    },
+    "new_year": {
+      "name": "New Year",
+      "desc": "Happy New Year! Gifts for all researchers"
+    },
+    "zhovtnevy": {
+      "name": "October Festival",
+      "desc": "Golden autumn is the time to collect artifacts"
+    }
+  },
+  "cosmetic": {
+    "bronze_frame": {
+      "name": "Bronze Frame"
+    },
+    "silver_frame": {
+      "name": "Silver Frame"
+    },
+    "gold_frame": {
+      "name": "Gold Frame"
+    },
+    "legendary_frame": {
+      "name": "Legendary Frame"
+    }
+  },
+  "badge": {
+    "explorer": {
+      "name": "Explorer"
+    },
+    "scholar": {
+      "name": "Scholar"
+    },
+    "patron": {
+      "name": "Patron"
+    },
+    "legend": {
+      "name": "Legend"
     }
   },
   "boosters_shop": {
