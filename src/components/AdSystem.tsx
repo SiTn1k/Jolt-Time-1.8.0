@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Battery, Gift, Zap, AlertCircle, Loader2, X, Play } from 'lucide-react';
-import { hapticImpact, hapticNotification } from '../lib/telegram';
+import { hapticImpact, hapticNotification, getTelegramUserId, getRawInitData } from '../lib/telegram';
 import { useTranslation } from '../i18n';
-import { getTelegramUserId } from '../lib/telegram';
 import { showError, showSuccess } from '../lib/errors';
 import {
   initAdsgram,
@@ -387,12 +386,13 @@ export function EnergyRestoreAdButton({
       const result = await showRewardAd(controllerRef.current, telegramId);
 
       if (result.success) {
-        // Claim reward via server
+        // Claim reward via server with HMAC authentication
+        const initData = getRawInitData();
         const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/claim-ad-reward`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            telegram_id: telegramId,
+            initData,
             reward_type: 'energy_restore',
           }),
         });

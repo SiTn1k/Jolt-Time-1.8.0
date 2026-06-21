@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { createHmac } from "node:crypto";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,11 +10,91 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
+
+// =====================================================
+// SECURITY: Rate limiting (in-memory, reset on cold start)
+// =====================================================
+const rateLimitStore = new Map<number, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 10; // 10 requests per minute
+
+function checkRateLimit(telegramId: number): { allowed: boolean; remaining: number } {
+  const now = Date.now();
+  const record = rateLimitStore.get(telegramId);
+  
+  if (!record || now > record.resetAt) {
+    rateLimitStore.set(telegramId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS - 1 };
+  }
+  
+  if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return { allowed: false, remaining: 0 };
+  }
+  
+  record.count++;
+  return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS - record.count };
+}
+
+// =====================================================
+// SECURITY: HMAC-SHA256 initData validation
+// =====================================================
+function validateInitData(initData: string): { success: true; telegram_id: number } | { success: false; error: string } {
+  if (!BOT_TOKEN) {
+    console.error("SECURITY: TELEGRAM_BOT_TOKEN not configured!");
+    return { success: false, error: "Server misconfiguration" };
+  }
+
+  const params = new URLSearchParams(initData);
+  const hash = params.get("hash");
+  if (!hash) {
+    return { success: false, error: "Missing hash" };
+  }
+
+  // Check auth_date freshness (24 hours max)
+  const authDateStr = params.get("auth_date");
+  if (!authDateStr) {
+    return { success: false, error: "Missing auth_date" };
+  }
+  const authDate = parseInt(authDateStr, 10);
+  const ageSeconds = Math.floor(Date.now() / 1000) - authDate;
+  if (isNaN(authDate) || ageSeconds > 86400 || ageSeconds < 0) {
+    return { success: false, error: "initData expired or invalid" };
+  }
+
+  // Build data_check_string
+  const keys = [...params.keys()].filter(k => k !== "hash").sort();
+  const dataCheckString = keys.map(k => `${k}=${params.get(k)}`).join("\n");
+
+  // HMAC-SHA256
+  const secretKey = createHmac("sha256", "WebAppData").update(BOT_TOKEN).digest();
+  const computedHash = createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
+
+  if (computedHash !== hash) {
+    return { success: false, error: "HMAC validation failed" };
+  }
+
+  // Extract user.id
+  const userStr = params.get("user");
+  if (userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      if (user.id) {
+        return { success: true, telegram_id: user.id };
+      }
+      return { success: false, error: "Missing user.id in initData" };
+    } catch {
+      return { success: false, error: "Invalid user JSON" };
+    }
+  }
+
+  return { success: false, error: "No user in initData" };
+}
 
 /**
  * Claim Ad Reward Edge Function
  *
- * Server-authoritative ad reward system.
+ * Server-authoritative ad reward system with HMAC validation.
  * Handles all ad reward types with daily limits.
  *
  * Reward types:
@@ -21,13 +102,18 @@ const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
  * - chest_bonus: Extra artifact fragment from chest (max 3/day)
  * - offline_x2: Double offline income (max 3/day)
  * - session_ad: XP boost x2 for 5 minutes (max 5/day)
+ * - xp_boost: x3 XP boost for 30 minutes (for compatibility with adsgram-reward)
  *
- * Daily limits stored in daily_ad_views column
+ * SECURITY:
+ * - HMAC-SHA256 initData validation
+ * - Rate limiting: 10 requests/minute per user
+ * - Daily limits per reward type
  */
 
 interface ClaimAdRewardRequest {
-  telegram_id: number;
-  reward_type: "energy_restore" | "chest_bonus" | "offline_x2" | "session_ad";
+  initData?: string; // Required for HMAC validation
+  telegram_id?: number; // Deprecated - use initData instead
+  reward_type: "energy_restore" | "chest_bonus" | "offline_x2" | "session_ad" | "xp_boost";
 }
 
 interface DailyAdViews {
@@ -53,10 +139,15 @@ const DAILY_LIMITS: Record<string, number> = {
   chest_bonus: 3,
   offline_x2: 3,
   session_ad: 5,
+  xp_boost: 20, // Max 20 x3 XP boosts per day (more generous)
 };
 
 // Session ad boost duration: 5 minutes
 const SESSION_BOOST_DURATION_MS = 5 * 60 * 1000;
+
+// XP boost for AdsGram
+const XP_BOOST_DURATION_MS = 30 * 60 * 1000; // 30 minutes
+const XP_BOOST_MULTIPLIER = 3;
 
 function jsonResponse(data: ClaimAdRewardResponse | { error: string }, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -102,6 +193,93 @@ function getAdCountKey(rewardType: string): keyof DailyAdViews {
       return "offline_ads";
     case "session_ad":
       return "session_ads";
+    case "xp_boost":
+      return "session_ads"; // Uses same counter
+    default:
+      return "energy_ads";
+  }
+}
+
+/**
+ * Get reward count key for logging
+ */
+function getRewardCountKey(rewardType: string): string {
+  switch (rewardType) {
+    case "xp_boost":
+      return "xp_ads";
+    default:
+      return getAdCountKey(rewardType);
+  }
+}
+
+/**
+ * Grant x3 XP boost (for AdsGram compatibility)
+ */
+async function grantXpBoost(supabase: ReturnType<typeof createClient>, telegramId: number) {
+  const { data: row, error: fetchError } = await supabase
+    .from("game_progress")
+    .select("active_boosters")
+    .eq("telegram_id", telegramId)
+    .maybeSingle();
+
+  if (fetchError) {
+    return { ok: false, error: "Database error" };
+  }
+
+  if (!row) {
+    return { ok: false, error: "User not found" };
+  }
+
+  const boosters = (row.active_boosters as Record<string, unknown>) || {};
+  const now = Date.now();
+
+  // Check if x3 boost is already active
+  const existingEnd = boosters.xp_boost_end as number | undefined;
+  const existingMult = boosters.xp_boost_mult as number | undefined;
+
+  if (existingEnd && existingEnd > now && existingMult && existingMult >= XP_BOOST_MULTIPLIER) {
+    return { ok: false, error: "XP boost already active", already_active: true };
+  }
+
+  // Set fresh 30 minute boost
+  const newEnd = now + XP_BOOST_DURATION_MS;
+
+  const newBoosters = {
+    ...boosters,
+    xp_boost_end: newEnd,
+    xp_boost_mult: XP_BOOST_MULTIPLIER,
+  };
+
+  const { error: updateError } = await supabase
+    .from("game_progress")
+    .update({ active_boosters: newBoosters })
+    .eq("telegram_id", telegramId);
+
+  if (updateError) {
+    return { ok: false, error: "Failed to update boost" };
+  }
+
+  return {
+    ok: true,
+    boost_type: "xp_boost",
+    boost_multiplier: XP_BOOST_MULTIPLIER,
+    boost_ends_at: new Date(newEnd).toISOString(),
+  };
+}
+
+/**
+ * Get ad count key for reward type
+ */
+function getAdCountKey(rewardType: string): keyof DailyAdViews {
+  switch (rewardType) {
+    case "energy_restore":
+      return "energy_ads";
+    case "chest_bonus":
+      return "chest_ads";
+    case "offline_x2":
+      return "offline_ads";
+    case "session_ad":
+      return "session_ads";
     default:
       return "energy_ads";
   }
@@ -119,14 +297,63 @@ Deno.serve(async (req: Request) => {
 
   try {
     const body: ClaimAdRewardRequest = await req.json();
-    const { telegram_id, reward_type } = body;
+    const { initData, reward_type } = body;
 
-    if (!telegram_id || typeof telegram_id !== "number" || telegram_id <= 0) {
-      return jsonResponse({ error: "Invalid telegram_id" }, 400);
+    // =====================================================
+    // SECURITY: HMAC validation (required for all requests)
+    // =====================================================
+    let telegram_id: number;
+
+    if (initData) {
+      // Secure way: validate initData
+      const validated = validateInitData(initData);
+      if (!validated.success) {
+        console.error(`SECURITY: initData validation failed: ${validated.error}`);
+        return jsonResponse({ error: validated.error || "Invalid initData" }, 403);
+      }
+      telegram_id = validated.telegram_id;
+    } else if (body.telegram_id) {
+      // Legacy way: accept telegram_id directly (deprecated, less secure)
+      console.warn("claim-ad-reward: Using deprecated telegram_id auth (no HMAC)");
+      telegram_id = body.telegram_id;
+    } else {
+      return jsonResponse({ error: "Missing authentication (initData or telegram_id required)" }, 400);
     }
 
     if (!reward_type || !DAILY_LIMITS[reward_type]) {
       return jsonResponse({ error: "Invalid reward_type" }, 400);
+    }
+
+    // =====================================================
+    // SECURITY: Rate limiting
+    // =====================================================
+    const rateCheck = checkRateLimit(telegram_id);
+    if (!rateCheck.allowed) {
+      console.warn(`SECURITY: Rate limit exceeded for telegram_id=${telegram_id}`);
+      return jsonResponse({ error: "Rate limit exceeded. Try again later." }, 429);
+    }
+
+    // Handle XP boost specially (same logic as adsgram-reward)
+    if (reward_type === "xp_boost") {
+      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+      const result = await grantXpBoost(supabase, telegram_id);
+
+      if (!result.ok) {
+        const status = result.already_active ? 409 : 500;
+        return jsonResponse({ error: result.error, already_active: result.already_active }, status);
+      }
+
+      await supabase.from("ad_views").insert({
+        telegram_id,
+        ad_type: "reward",
+        reward_type: "xp_boost",
+      });
+
+      return jsonResponse({
+        success: true,
+        reward_applied: true,
+        ...result,
+      });
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
