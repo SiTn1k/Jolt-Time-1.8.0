@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useExpeditionStore } from '../store';
-import { museumCollections, museumUpgrades, getReputationLevel, MUSEUM_ACHIEVEMENTS, LEGENDARY_EXHIBITIONS, getRankingTier, EXHIBITION_EVENTS, type MuseumState, type MuseumAchievement, type MuseumExhibition } from '../museumData';
+import { museumCollections, museumUpgrades, getReputationLevel, MUSEUM_ACHIEVEMENTS, LEGENDARY_EXHIBITIONS, getRankingTier, EXHIBITION_EVENTS, reputationLevels, type MuseumState, type MuseumAchievement, type MuseumExhibition } from '../museumData';
 import { leaderboardService, LeaderboardType, RankingMetric, LeaderboardEntry } from '../leaderboardService';
 import { motion } from 'motion/react';
 import { 
@@ -117,10 +117,19 @@ export function MuseumSystem({ isOpen, onClose }: MuseumSystemProps) {
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-[#E6EDF3]">{t('museum.museum_reputation')}</span>
             <span className="text-sm font-medium" style={{ color: '#FFC72C' }}>
-              {Math.round(museumState.reputation).toLocaleString()} / {repLevel.requiredReputation.toLocaleString()}
+              {Math.round(museumState.reputation).toLocaleString()} / {(() => {
+                const currentIndex = reputationLevels.findIndex(l => l.level === repLevel.level);
+                const nextLevel = reputationLevels[currentIndex + 1];
+                return nextLevel ? nextLevel.requiredReputation.toLocaleString() : '(MAX)';
+              })()}
             </span>
           </div>
-          <Progress value={(museumState.reputation / Math.max(1, repLevel.requiredReputation)) * 100} className="h-2" />
+          <Progress value={(() => {
+            const currentIndex = reputationLevels.findIndex(l => l.level === repLevel.level);
+            const nextLevel = reputationLevels[currentIndex + 1];
+            if (!nextLevel) return 100;
+            return Math.min(100, (museumState.reputation / nextLevel.requiredReputation) * 100);
+          })()} className="h-2" />
         </Card>
 
         {/* Tabs */}
@@ -851,7 +860,7 @@ function EventsTab({ museumState, joinEvent }: { museumState: MuseumState; joinE
               </div>
               
               <p className="text-xs text-muted-foreground mb-3">
-                {event.descriptionKey.split('.').pop()}
+                {event.descriptionKey?.split('.')?.pop() ?? ''}
               </p>
 
               {/* Bonuses */}
