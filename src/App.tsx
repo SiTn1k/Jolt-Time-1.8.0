@@ -16,7 +16,7 @@ import { PrestigeButton, MuseumLaboratory } from './components/PrestigeSystem';
 import { SessionAdModal, ChestAdModal, EnergyRestoreAdButton, useSessionAdTrigger, useChestAdTrigger } from './components/AdSystem';
 import { OfflineRewardModal } from './components/OfflineRewardModal';
 import { AcademyUnlockModal } from './components/AcademyUnlockModal';
-import { FigmaLayout } from './components/FigmaLayout';
+import { PreAcademyLayout } from './components/PreAcademyLayout';
 import { EPOCHS, ARTIFACTS, getEpochById } from './data/epochs';
 import { initTelegramMiniApp, hapticImpact, hapticNotification, getTelegramWebApp, getTelegramUserId, getRawInitData } from './lib/telegram';
 import { rpcTrackSession } from './lib/rpc';
@@ -349,8 +349,8 @@ function App() {
     );
   }
 
-  // Before Academy - use FIGMA layout (exact reproduction)
-  return <FigmaLayout />;
+  // Before Academy - use PreAcademy layout (based on Figma design)
+  return <PreAcademyLayout />;
 }
 
 export default App;
