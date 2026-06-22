@@ -107,15 +107,8 @@ const EARLY_GAME_MESSAGES = [
   }
 ];
 
-// Late game messages (prestige >= 2) - Focus on Academy, Expeditions, Museum
+// Late game messages (prestige >= 2, level >= 950) - Focus on Expeditions, Museum, Prestige
 const LATE_GAME_MESSAGES = [
-  {
-    type: "academy",
-    text: `🎓 Академія чекає на тебе!
-
-Нові дослідження доступні для вивчення — стань справжнім професором історії!`,
-    emoji: "📚"
-  },
   {
     type: "expedition",
     text: `🏛️ Твоя експедиція повернулась!
@@ -187,11 +180,11 @@ const LATE_GAME_MESSAGES = [
     emoji: "🗝️"
   },
   {
-    type: "research",
-    text: `🔬 Нові дослідження в Академії!
+    type: "midgame",
+    text: `🎯 Нові горизонти відкриваються!
 
-Покращуй свої навички та ефективність!`,
-    emoji: "🧪"
+Продовжуй досліджувати історію України!`,
+    emoji: "🗺️"
   }
 ];
 
@@ -520,7 +513,7 @@ Deno.serve(async (req: Request) => {
             url: inlineUrl,
             prestige_level: prestigeLevel,
             level: playerLevel,
-            epoch_id: epochId,
+            epoch_id: candidate.epoch_id || 'trypillia',
           },
         });
 
@@ -536,7 +529,7 @@ Deno.serve(async (req: Request) => {
     return json({
       ok: true,
       field_used: "last_active_at",
-      window: { after: sevenHoursAgoIso, before: sixHoursAgoIso },
+      window: { after: eightHoursAgoIso, before: sixHoursAgoIso },
       candidates: candidates.length,
       sent: sent.length,
       skipped_duplicate: skippedDuplicate.length,
