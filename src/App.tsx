@@ -16,12 +16,7 @@ import { PrestigeButton, MuseumLaboratory } from './components/PrestigeSystem';
 import { SessionAdModal, ChestAdModal, EnergyRestoreAdButton, useSessionAdTrigger, useChestAdTrigger } from './components/AdSystem';
 import { OfflineRewardModal } from './components/OfflineRewardModal';
 import { AcademyUnlockModal } from './components/AcademyUnlockModal';
-import { AcademyPreview } from './components/AcademyPreview';
-import { SettingsPanel } from './components/SettingsPanel';
-import { CompactHeader } from './components/CompactHeader';
-import { BoostBar } from './components/BoostBar';
-import { BottomNavigation, NavigationTab } from './components/BottomNavigation';
-import { OptimizedLayout } from './components/OptimizedLayout';
+import { FigmaLayout } from './components/FigmaLayout';
 import { EPOCHS, ARTIFACTS, getEpochById } from './data/epochs';
 import { initTelegramMiniApp, hapticImpact, hapticNotification, getTelegramWebApp, getTelegramUserId, getRawInitData } from './lib/telegram';
 import { rpcTrackSession } from './lib/rpc';
@@ -354,8 +349,8 @@ function App() {
     );
   }
 
-  // Before Academy - use OPTIMIZED layout
-  return <OptimizedLayout />;
+  // Before Academy - use FIGMA layout (exact reproduction)
+  return <FigmaLayout />;
 }
 
 export default App;
