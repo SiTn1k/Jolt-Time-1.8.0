@@ -68,9 +68,9 @@ function GameTab({
   onClaimTask: (taskId: string) => void;
 }) {
   const ownedLevels = useMemo(() => {
-    const levels: Record<string, number> = {};
-    state.ownedGenerators.forEach(g => { levels[g.id] = g.ownedLevels; });
-    return levels;
+    const map = new Map<string, number>();
+    state.ownedGenerators.forEach(g => { map.set(g.id, g.ownedLevels); });
+    return map;
   }, [state.ownedGenerators]);
 
   return (
@@ -280,7 +280,7 @@ export function OptimizedLayout() {
   }, []);
 
   const handleBuy = useCallback((id: string) => {
-    buyGenerator(id as unknown as number);
+    buyGenerator(id);
   }, [buyGenerator]);
 
   const handleUpgradeTap = useCallback(() => {
