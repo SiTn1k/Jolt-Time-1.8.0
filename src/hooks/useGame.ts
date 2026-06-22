@@ -109,41 +109,83 @@ function calculateXpToLevel(level: number): number {
   const rangeSize = Math.max(1, max - min + 1);
   const progress = Math.min(1, Math.max(0, (level - min) / rangeSize)); // 0 at epoch start, ~1 at end
 
-  // Target time by epoch:
-  // Epoch 1: 60s → 5 min (total ~6 min for 50 levels would be ideal but let's make it realistic)
-  // Epoch 2: 90s → 8 min
-  // Epoch 3+: 2 min → 15 min
+  // ═══════════════════════════════════════════════════════════════════════
+  // XP CURVE v2 - Balanced for 21/42 day completion
+  //
+  // Design targets:
+  // - Active player (with ads, boosters, purchases): ~21 days
+  // - Casual player (no extras): ~42 days
+  //
+  // Key principles:
+  // - Early epochs (1-3): Fast progression to hook players (~6 days)
+  // - Mid epochs (4-7): Steady growth (~10 days)
+  // - Late epochs (8-12): Slower but rewarding (~5 days)
+  //
+  // Active player multipliers: x1.5 from ads, x1.3 from boosters, x1.1 from purchases
+  // ═══════════════════════════════════════════════════════════════════════
+  
   const epochIndex = EPOCHS.findIndex(e => e.id === epoch.id);
   let minSeconds: number;
   let maxSeconds: number;
 
+  // Balanced XP curve (values are for base passive generation)
   if (epochIndex === 0) {
-    // Epoch 1: 60s → 300s (5 min) - avg ~3 min per level = ~2.5 hr for 50 levels
-    minSeconds = 60;
-    maxSeconds = 300;
-  } else if (epochIndex === 1) {
-    // Epoch 2: 60s → 480s (8 min) - avg ~4.5 min = ~3.75 hr for 50 levels
-    minSeconds = 60;
+    // Epoch 1 (Trypillia): 1-50 levels - Fast intro: 3min to 8min
+    minSeconds = 180;
     maxSeconds = 480;
+  } else if (epochIndex === 1) {
+    // Epoch 2 (Scythia): 51-100 levels - Moderate: 5min to 12min
+    minSeconds = 300;
+    maxSeconds = 720;
   } else if (epochIndex === 2) {
-    // Epoch 3: 120s → 900s (15 min) - avg ~8.5 min = ~7 hr for 50 levels
-    minSeconds = 120;
+    // Epoch 3 (Antiquity): 101-150 levels - Growing: 6min to 15min
+    minSeconds = 360;
     maxSeconds = 900;
+  } else if (epochIndex === 3) {
+    // Epoch 4 (Kyiv Rus): 151-250 levels - Steady: 8min to 20min
+    minSeconds = 480;
+    maxSeconds = 1200;
+  } else if (epochIndex === 4) {
+    // Epoch 5 (Halych-Volhynia): 251-320 levels - Challenging: 10min to 25min
+    minSeconds = 600;
+    maxSeconds = 1500;
+  } else if (epochIndex === 5) {
+    // Epoch 6 (Polish-Lithuanian): 321-420 levels - Hard: 12min to 30min
+    minSeconds = 720;
+    maxSeconds = 1800;
+  } else if (epochIndex === 6) {
+    // Epoch 7 (Cossack): 421-550 levels - Harder: 15min to 35min
+    minSeconds = 900;
+    maxSeconds = 2100;
+  } else if (epochIndex === 7) {
+    // Epoch 8 (Hetmanate): 551-650 levels - Moderate: 12min to 30min
+    minSeconds = 720;
+    maxSeconds = 1800;
+  } else if (epochIndex === 8) {
+    // Epoch 9 (Empire): 651-780 levels - Slower: 15min to 35min
+    minSeconds = 900;
+    maxSeconds = 2100;
+  } else if (epochIndex === 9) {
+    // Epoch 10 (Revolution): 781-850 levels - Near endgame: 18min to 40min
+    minSeconds = 1080;
+    maxSeconds = 2400;
+  } else if (epochIndex === 10) {
+    // Epoch 11 (Soviet): 851-950 levels - Quick finale: 10min to 20min
+    minSeconds = 600;
+    maxSeconds = 1200;
   } else {
-    // Later epochs: progressively harder
-    minSeconds = 120 + (epochIndex - 3) * 60;
-    maxSeconds = 1800 + (epochIndex - 3) * 600;
+    // Epoch 12 (Independence): 951-999 levels - Reserved for prestige
+    minSeconds = 480;
+    maxSeconds = 900;
   }
 
   const targetSeconds = minSeconds + progress * (maxSeconds - minSeconds);
 
   // Estimate passive XP/s for this level within the epoch
-  // Use the epoch's base production scaling × level factor
-  // The sum of all generators at roughly (level - min + 1) levels gives a good estimate
   const levelInEpoch = Math.max(1, level - min + 1);
   const estimatedPassive = estimatePassiveForEpoch(epoch, levelInEpoch);
 
-  return Math.max(50, Math.floor(estimatedPassive * targetSeconds));
+  return Math.max(100, Math.floor(estimatedPassive * targetSeconds));
 }
 
 function estimatePassiveForEpoch(epoch: Epoch, levelInEpoch: number): number {
