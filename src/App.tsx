@@ -21,7 +21,7 @@ import { SettingsPanel } from './components/SettingsPanel';
 import { CompactHeader } from './components/CompactHeader';
 import { BoostBar } from './components/BoostBar';
 import { BottomNavigation, NavigationTab } from './components/BottomNavigation';
-import { CompactLayout } from './components/CompactLayout';
+import { OptimizedLayout } from './components/OptimizedLayout';
 import { EPOCHS, ARTIFACTS, getEpochById } from './data/epochs';
 import { initTelegramMiniApp, hapticImpact, hapticNotification, getTelegramWebApp, getTelegramUserId, getRawInitData } from './lib/telegram';
 import { rpcTrackSession } from './lib/rpc';
@@ -354,8 +354,8 @@ function App() {
     );
   }
 
-  // Before Academy - use NEW Compact Layout
-  return <CompactLayout />;
+  // Before Academy - use OPTIMIZED layout
+  return <OptimizedLayout />;
 }
 
 export default App;
