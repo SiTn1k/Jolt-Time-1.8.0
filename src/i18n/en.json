@@ -1567,5 +1567,23 @@
     "artifacts": "Artifacts",
     "playtime": "Playtime",
     "prestige": "Prestige"
+  },
+  "nav": {
+    "game": "Game",
+    "artifacts": "Artifacts",
+    "expedition": "Expedition",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "boosts": {
+    "active": "ACTIVE",
+    "streak": "Streak",
+    "best": "Best",
+    "watchAd": "+30 min",
+    "noAds": "Ads unavailable",
+    "none": "No active"
+  },
+  "game": {
+    "level": "Level {level}"
   }
 }

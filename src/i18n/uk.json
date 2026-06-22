@@ -1593,5 +1593,23 @@
     "artifacts": "Артефактів",
     "playtime": "Час гри",
     "prestige": "Престиж"
+  },
+  "nav": {
+    "game": "Гра",
+    "artifacts": "Артефакти",
+    "expedition": "Експедиції",
+    "profile": "Профіль",
+    "settings": "Налаштування"
+  },
+  "boosts": {
+    "active": "АКТИВНІ",
+    "streak": "Стрік",
+    "best": "Рекорд",
+    "watchAd": "+30 хв",
+    "noAds": "Реклама недоступна",
+    "none": "Немає активних"
+  },
+  "game": {
+    "level": "Рівень {level}"
   }
 }

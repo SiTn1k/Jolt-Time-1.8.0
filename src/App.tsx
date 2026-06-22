@@ -18,6 +18,9 @@ import { OfflineRewardModal } from './components/OfflineRewardModal';
 import { AcademyUnlockModal } from './components/AcademyUnlockModal';
 import { AcademyPreview } from './components/AcademyPreview';
 import { SettingsPanel } from './components/SettingsPanel';
+import { CompactHeader } from './components/CompactHeader';
+import { BoostBar } from './components/BoostBar';
+import { BottomNavigation, NavigationTab } from './components/BottomNavigation';
 import { EPOCHS, ARTIFACTS, getEpochById } from './data/epochs';
 import { initTelegramMiniApp, hapticImpact, hapticNotification, getTelegramWebApp, getTelegramUserId, getRawInitData } from './lib/telegram';
 import { rpcTrackSession } from './lib/rpc';
@@ -79,12 +82,37 @@ function App() {
   } = useGame();
 
   const [activeTab, setActiveTab] = useState<Tab>('shop');
+  const [activeNavTab, setActiveNavTab] = useState<NavigationTab>('game');
   const [showGacha, setShowGacha] = useState(false);
   const [showEpochModal, setShowEpochModal] = useState(false);
   const [showError, setShowError] = useState<string | null>(null);
   const [purchasingBooster, setPurchasingBooster] = useState<string | null>(null);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+
+  // Handler for BottomNavigation tab change
+  const handleNavTabChange = useCallback((tab: NavigationTab) => {
+    setActiveNavTab(tab);
+    
+    // Map new tabs to old tabs for backwards compatibility
+    switch (tab) {
+      case 'game':
+        setActiveTab('shop');
+        break;
+      case 'artifacts':
+        setActiveTab('artifacts');
+        break;
+      case 'expedition':
+        // Expedition is handled separately with ExpeditionApp
+        break;
+      case 'profile':
+        setActiveTab('stats');
+        break;
+      case 'settings':
+        setShowSettings(true);
+        break;
+    }
+  }, []);
 
   // Academy Unlock Modal - show once when prestigeLevel === 2
   const isAcademyUnlocked = (state.prestigeLevel || 0) >= 2;
@@ -413,74 +441,27 @@ function App() {
         </div>
       )}
 
-      {/* Header with epoch selector */}
-      <div
-        className="px-3 py-2 flex items-center justify-between border-b border-white/10"
-        style={{ background: epoch.bgGradient }}
-      >
-        <button
-          onClick={() => setShowEpochModal(true)}
-          className="flex items-center gap-2 py-1.5 px-3 bg-white/10 rounded-xl hover:bg-white/20 transition-colors"
-        >
-          <span className="text-xl">{epoch.currencyIcon}</span>
-          <div className="text-left">
-            <div className="text-xs font-medium">{locale === 'uk' ? epoch.name.ua : epoch.name.en}</div>
-            <div className="text-[10px] opacity-70">{t('common.level')} {state.level}</div>
-          </div>
-          <ChevronRight className="w-4 h-4 opacity-50" />
-        </button>
+      {/* NEW: Compact Header */}
+      <CompactHeader
+        state={state}
+        epoch={epoch}
+        onEpochClick={() => setShowEpochModal(true)}
+      />
 
-        <div className="flex items-center gap-2">
-          {/* Energy display (only for Prestige 1+) */}
-          {(state.prestigeLevel || 0) >= 1 && (
-            <div className={`bg-white/10 rounded-xl px-2 py-1.5 flex items-center gap-1 ${
-              (state.energy || 0) > 0 ? 'text-green-400' : 'text-gray-400'
-            }`}>
-              {(state.energy || 0) > 0 ? (
-                <Battery className="w-4 h-4" />
-              ) : (
-                <BatteryLow className="w-4 h-4" />
-              )}
-              <span className="text-xs font-bold">{state.energy || 0}/{state.maxEnergy || 100}</span>
-            </div>
-          )}
-          {/* Currency display */}
-          <div className="bg-white/10 rounded-xl px-3 py-1.5">
-            <span className="text-sm font-bold">{epoch.currencyIcon} {formatNumber(state.currency)}</span>
-          </div>
-          {/* Prestige badge */}
-          {(state.prestigeLevel || 0) > 0 && (
-            <div className="bg-yellow-500/20 rounded-xl px-2 py-1.5 flex items-center gap-1">
-              <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-              <span className="text-xs font-bold text-yellow-400">{state.prestigeLevel}</span>
-            </div>
-          )}
-          {/* Sync status */}
-          <div className="flex items-center gap-1 text-xs opacity-60">
-            {syncStatus === 'synced' && <Wifi className="w-3 h-3 text-green-400" />}
-            {syncStatus === 'syncing' && <RefreshCw className="w-3 h-3 text-yellow-400 animate-spin" />}
-            {syncStatus === 'offline' && <Wifi className="w-3 h-3 text-gray-500" />}
-            {syncStatus === 'error' && <Wifi className="w-3 h-3 text-red-400" />}
-          </div>
-          {/* Language toggle */}
-          <button
-            onClick={toggleLocale}
-            className="flex items-center gap-1 text-xs px-2 py-1 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
-            title={locale === 'uk' ? 'Switch to English' : 'Перейти на українську'}
-          >
-            <Globe className="w-4 h-4" />
-            <span className="font-medium">{locale.toUpperCase()}</span>
-          </button>
-          {/* Settings */}
-          <button
-            onClick={() => setShowSettings(true)}
-            className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
-            title={t('settings.title') || 'Налаштування'}
-          >
-            <Shield className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+      {/* NEW: Boost Bar */}
+      <BoostBar
+        boostInfo={{
+          xpMultiplier: boosterMultipliers.xp,
+          xpBoostEndsAt: boosterMultipliers.xpBoostEndsAt,
+          currencyMultiplier: boosterMultipliers.currency,
+          currencyBoostEndsAt: boosterMultipliers.currencyBoostEndsAt,
+          dailyStreak: state.dailyStreak || 0,
+          bestStreak: state.bestStreak || 0,
+        }}
+        onWatchAd={() => {/* TODO: Watch ad handler */}}
+        adsRemaining={3}
+        disabled={false}
+      />
 
       <TapArea
         epoch={epoch}
@@ -499,19 +480,22 @@ function App() {
         prestigeLevel={state.prestigeLevel || 0}
       />
 
-      <div className="bg-gray-900 border-t border-gray-700 flex flex-col flex-1 min-h-0">
-        {/* Tab Bar */}
-        <div className="flex border-b border-gray-700 shrink-0 overflow-x-auto">
-          <TabButton active={activeTab === 'shop'} onClick={() => setActiveTab('shop')} icon={<ShoppingBag size={18} />} label={t('app.shop')} />
-          <TabButton active={activeTab === 'epochs'} onClick={() => setActiveTab('epochs')} icon={<Crown size={18} />} label={t('app.epochs')} badge={state.unlockedEpochs.length} />
-          <TabButton active={activeTab === 'artifacts'} onClick={() => setActiveTab('artifacts')} icon={<Gift size={18} />} label={t('app.artifacts')} badge={completedArtifacts} />
-          <TabButton active={activeTab === 'boosters'} onClick={() => setActiveTab('boosters')} icon={<Zap size={18} />} label={t('app.boosters')} />
-          <TabButton active={activeTab === 'referrals'} onClick={() => setActiveTab('referrals')} icon={<Users size={18} />} label={t('app.referrals')} badge={state.referralsCount || undefined} />
-          <TabButton active={activeTab === 'stats'} onClick={() => setActiveTab('stats')} icon={<Trophy size={18} />} label={t('app.stats')} />
-        </div>
+      <div className="bg-gray-900 flex flex-col flex-1 min-h-0 pb-16">
+        {/* NEW: Bottom Navigation */}
+        <BottomNavigation
+          activeTab={activeNavTab}
+          onTabChange={handleNavTabChange}
+          badges={{
+            artifacts: completedArtifacts,
+            expedition: 0,
+            profile: state.referralsCount || 0,
+          }}
+          expeditionUnlocked={isAcademyUnlocked}
+          prestigeLevel={state.prestigeLevel}
+        />
 
-        {/* Tab Content */}
-        <div className="flex-1 overflow-y-auto overscroll-contain">
+        {/* Content Area - scrollable */}
+        <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-2">
           {activeTab === 'shop' && (
             <div>
               <DailyTasksPanel
