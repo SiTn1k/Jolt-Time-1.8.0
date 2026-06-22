@@ -56,13 +56,13 @@ function GameTab({
   epoch: ReturnType<typeof useGame>['epoch'];
   tapPowerCost: number;
   effectiveTapPower: number;
-  onBuyGenerator: (id: number) => void;
+  onBuyGenerator: (id: string) => void;
   onUpgradeTap: () => void;
 }) {
   const ownedLevels = useMemo(() => {
-    const levels: Record<string, number> = {};
-    state.ownedGenerators.forEach(g => { levels[g.id] = g.ownedLevels; });
-    return levels;
+    const map = new Map<string, number>();
+    state.ownedGenerators.forEach(g => { map.set(g.id, g.ownedLevels); });
+    return map;
   }, [state.ownedGenerators]);
 
   return (
@@ -220,11 +220,8 @@ export function CompactLayout() {
   }, []);
 
   const handleBuy = useCallback((id: string) => {
-    const generator = epoch.generators.find(g => g.id === id);
-    if (generator) {
-      buyGenerator(id as unknown as number);
-    }
-  }, [epoch, buyGenerator]);
+    buyGenerator(id);
+  }, [buyGenerator]);
 
   const handleUpgradeTap = useCallback(() => {
     upgradeTapPower();
