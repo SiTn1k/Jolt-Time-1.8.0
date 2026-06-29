@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Battery, Gift, Zap, AlertCircle, Loader2, X } from 'lucide-react';
 import { hapticImpact, hapticNotification } from '../lib/telegram';
 import { useTranslation } from '../i18n';

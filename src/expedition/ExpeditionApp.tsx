@@ -1,9 +1,8 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Building2, Map, Users, FlaskConical, Landmark, HardHat, Gift, Loader2, BarChart3, Star } from 'lucide-react';
+import { Map, Users, FlaskConical, Landmark, HardHat, Gift, Loader2, BarChart3, Star } from 'lucide-react';
 import { useExpeditionStore } from './store';
 import { useAcademySync } from './expeditionSync';
-import { Academy } from './screens/Academy';
 import { WorldMap } from './screens/WorldMap';
 import { Heroes } from './screens/Heroes';
 import { Laboratory } from './screens/Laboratory';
@@ -22,10 +21,9 @@ import { TutorialGuide } from '../components/tutorial';
 // Lazy load heavy screens for code splitting
 const Museum = lazy(() => import('./screens/Museum').then(m => ({ default: m.Museum })));
 
-type ScreenId = 'academy' | 'map' | 'heroes' | 'laboratory' | 'museum' | 'treasury' | 'buildings' | 'daily' | 'statistics' | 'premium' | 'heroArchive' | 'npcEncyclopedia' | 'codex';
+type ScreenId = 'map' | 'heroes' | 'laboratory' | 'museum' | 'treasury' | 'buildings' | 'daily' | 'statistics' | 'premium' | 'heroArchive' | 'npcEncyclopedia' | 'codex';
 
 const navigation: { id: ScreenId; name: string; icon: typeof Map }[] = [
-  { id: 'academy', name: 'Академія', icon: Building2 },
   { id: 'map', name: 'Карта', icon: Map },
   { id: 'heroes', name: 'Герої', icon: Users },
   { id: 'laboratory', name: 'Лаб', icon: FlaskConical },
@@ -68,7 +66,7 @@ function ToastStack() {
 
 export function ExpeditionApp() {
   const tick = useExpeditionStore((s) => s.tick);
-  const [screen, setScreen] = useState<ScreenId>('academy');
+  const [screen, setScreen] = useState<ScreenId>('map');
   
   // Supabase sync - loads from server and syncs changes
   const { syncToServer } = useAcademySync();
@@ -105,7 +103,6 @@ export function ExpeditionApp() {
       <TutorialGuide />
 
       <div className="flex-1 overflow-y-auto overscroll-contain">
-        {screen === 'academy' && <Academy />}
         {screen === 'map' && <WorldMap />}
         {screen === 'heroes' && <Heroes />}
         {screen === 'laboratory' && <Laboratory />}
