@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, ChevronLeft, ChevronRight, Target, ShoppingBag, Gift, Zap, BookOpen, Map, Award, Crown } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Target, ShoppingBag, Gift, Zap, BookOpen, Map, Award } from 'lucide-react';
 import { hapticImpact } from '../lib/telegram';
 import { useTranslation } from '../i18n';
 
@@ -33,11 +33,7 @@ const STEPS = [
     titleKey: 'tutorial.prestige_title',
     contentKey: 'tutorial.prestige_content',
   },
-  {
-    icon: <Crown className="w-12 h-12 text-[#FF2A5F]" />,
-    titleKey: 'tutorial.academy_title',
-    contentKey: 'tutorial.academy_content',
-  },
+
   {
     icon: <Zap className="w-12 h-12 text-[#FFC72C]" />,
     titleKey: 'tutorial.boosters_title',

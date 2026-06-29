@@ -1,7 +1,7 @@
 import { useRef, useCallback } from 'react';
 import { TapEvent, Epoch } from '../types/game';
 import { formatNumber } from '../lib/utils';
-import { Sparkles, Landmark } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 interface TapAreaProps {
   epoch: Epoch;
@@ -75,12 +75,7 @@ export function TapArea({
               <span className="text-xs px-2 py-0.5 rounded-full bg-white/20">
                 Епоха {currentEpochIndex + 1}/{totalEpochs}
               </span>
-              {prestigeLevel < 2 && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#9747FF]/50 flex items-center gap-1">
-                  <Landmark className="w-3 h-3" />
-                  🏛 Академія в P2
-                </span>
-              )}
+
             </div>
             <h2 className="text-base sm:text-xl font-bold" style={{ fontFamily: "'Exo 2', sans-serif" }}>
               {epoch.name.ua}

@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Battery, Gift, Zap, AlertCircle, Loader2, X, Play } from 'lucide-react';
+import { useState, useCallback, useRef } from 'react';
+import { Battery, Gift, Zap, AlertCircle, Loader2, X } from 'lucide-react';
 import { hapticImpact, hapticNotification } from '../lib/telegram';
 import { useTranslation } from '../i18n';
 import { getTelegramUserId } from '../lib/telegram';
 import {
   initAdsgram,
+  showRewardAd,
 } from '../services/adsgram';
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -23,15 +24,10 @@ export function SessionAdModal({ prestigeLevel, onReward, onClose }: SessionAdMo
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const controllerRef = useRef<ReturnType<typeof initAdsgram>>(null);
-
-  useEffect(() => {
-    controllerRef.current = initAdsgram();
-  }, []);
 
   const handleWatchAd = useCallback(async () => {
-    const controller = controllerRef.current;
-    if (!controller) {
+    const sad = initAdsgram();
+    if (!sad) {
       setError(t('ad_system.sdk_not_loaded'));
       return;
     }
@@ -47,9 +43,9 @@ export function SessionAdModal({ prestigeLevel, onReward, onClose }: SessionAdMo
     hapticImpact('medium');
 
     try {
-      const result = await controller.show();
+      const result = await showRewardAd(sad, telegramId);
 
-      if (result.done) {
+      if (result.success) {
         hapticNotification('success');
         // Reward based on prestige level
         if (prestigeLevel >= 1) {
@@ -59,7 +55,7 @@ export function SessionAdModal({ prestigeLevel, onReward, onClose }: SessionAdMo
         }
         onClose();
       } else {
-        setError(t('ad_system.ad_not_completed'));
+        setError(result.error || t('ad_system.ad_not_completed'));
         hapticNotification('warning');
       }
     } catch (err) {
@@ -156,11 +152,6 @@ export function ChestAdModal({ prestigeLevel, chestsOpened, onReward, onClose }:
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const controllerRef = useRef<ReturnType<typeof initAdsgram>>(null);
-
-  useEffect(() => {
-    controllerRef.current = initAdsgram();
-  }, []);
 
   // Prevent closing by clicking outside
   const handleBackdropClick = useCallback((e: React.MouseEvent) => {
@@ -169,20 +160,22 @@ export function ChestAdModal({ prestigeLevel, chestsOpened, onReward, onClose }:
   }, []);
 
   const handleWatchAd = useCallback(async () => {
-    const controller = controllerRef.current;
-    if (!controller) {
+    const sad = initAdsgram();
+    if (!sad) {
       setError(t('ad_system.sdk_not_loaded'));
       return;
     }
+
+    const telegramId = getTelegramUserId();
 
     setIsLoading(true);
     setError(null);
     hapticImpact('medium');
 
     try {
-      const result = await controller.show();
+      const result = await showRewardAd(sad, telegramId || 0);
 
-      if (result.done) {
+      if (result.success) {
         hapticNotification('success');
         if (prestigeLevel >= 1) {
           onReward('energy'); // +10 Energy
@@ -191,7 +184,7 @@ export function ChestAdModal({ prestigeLevel, chestsOpened, onReward, onClose }:
         }
         onClose();
       } else {
-        setError(t('ad_system.ad_not_completed'));
+        setError(result.error || t('ad_system.ad_not_completed'));
         hapticNotification('warning');
       }
     } catch (err) {
@@ -307,15 +300,10 @@ export function EnergyRestoreAdButton({
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const controllerRef = useRef<ReturnType<typeof initAdsgram>>(null);
-
-  useEffect(() => {
-    controllerRef.current = initAdsgram();
-  }, []);
 
   const handleWatchAd = useCallback(async () => {
-    const controller = controllerRef.current;
-    if (!controller) {
+    const sad = initAdsgram();
+    if (!sad) {
       setError(t('ad_system.sdk_not_loaded'));
       return;
     }
@@ -331,9 +319,9 @@ export function EnergyRestoreAdButton({
     hapticImpact('medium');
 
     try {
-      const result = await controller.show();
+      const result = await showRewardAd(sad, telegramId);
 
-      if (result.done) {
+      if (result.success) {
         // Claim reward via server
         const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/claim-ad-reward`, {
           method: 'POST',
@@ -355,7 +343,7 @@ export function EnergyRestoreAdButton({
           hapticNotification('warning');
         }
       } else {
-        setError(t('ad_system.ad_not_completed'));
+        setError(result.error || t('ad_system.ad_not_completed'));
         hapticNotification('warning');
       }
     } catch (err) {

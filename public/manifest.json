@@ -1,7 +1,7 @@
 {
-  "name": "Україна Крізь Час",
-  "short_name": "Ukraine Tap",
-  "description": "Історична тапалка про 12 епох України",
+  "name": "Jolt Time",
+  "short_name": "Jolt Time",
+  "description": "Унікальна гра від Sit Studio",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1a1a2e",
