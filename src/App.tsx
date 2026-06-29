@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback, lazy, Suspense } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useGame } from './hooks/useGame';
 import { useTranslation } from './i18n';
 import { TapArea } from './components/TapArea';
@@ -19,13 +19,10 @@ import { initTelegramMiniApp, hapticImpact, hapticNotification, getTelegramWebAp
 import { rpcTrackSession } from './lib/rpc';
 import { supabase } from './lib/supabase';
 import { notificationService } from './services/NotificationService';
-import { Crown, ShoppingBag, Trophy, Gift, Loader2, Users, X, Shield, Zap, Star, ChevronRight, Wifi, RefreshCw, Timer, AlertTriangle, Battery, BatteryLow, Globe, Building2, Check } from 'lucide-react';
+import { Crown, ShoppingBag, Trophy, Gift, Loader2, Users, X, Shield, Zap, Star, ChevronRight, Wifi, RefreshCw, Timer, AlertTriangle, Battery, BatteryLow, Globe } from 'lucide-react';
 import type { EpochId } from './types/game';
 import { formatNumber } from './lib/utils';
 import { getTodayDateStr } from './data/tasks';
-
-// Lazy load ExpeditionApp - only needed for prestigeLevel >= 2
-const ExpeditionApp = lazy(() => import('./expedition/ExpeditionApp').then(m => ({ default: m.ExpeditionApp })));
 
 type Tab = 'shop' | 'epochs' | 'artifacts' | 'referrals' | 'stats' | 'boosters';
 

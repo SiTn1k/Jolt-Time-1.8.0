@@ -1,25 +1,28 @@
 /**
  * Game Balance Configuration
  * 
- * OPTIMIZED FOR 20 DAYS TO ACADEMY (Prestige 2)
+ * OPTIMIZED FOR MARCH 2027 - PRESTIGE 1 ONLY (NO ACADEMY)
  * 
- * Target: New player reaches Academy in ~20 days of active play
- * - 6 hours offline cap per day
- * - ~18 hours active play per day
- * - ~130 prestige per day active play
- * - Academy unlocks at 3000 prestige
+ * Target: Player with Prestige 1 plays until March 2027
+ * - Academy (Prestige 2+) has been REMOVED
+ * - Max prestige level is now 1
+ * - Game progression extended with new content
  * 
- * Progression:
- * - Day 3-5: First prestige (1500)
- * - Day 20: Second prestige (3000) → Academy unlock
+ * Progression targets for Prestige 1:
+ * - Day 3-5: First prestige ready
+ * - Month 1: Active player at level 50+
+ * - Month 3: Dedicated player at level 100+
+ * - Month 6: Expert player at level 200+
+ * - Month 9: Master player at level 350+
+ * - Month 12: Legendary player at level 500+
  */
 
 // ═══════════════════════════════════════════════════════════════════════
-// FIRST PRESTIGE TARGETS (Day 3-5)
+// PRESTIGE 1 PROGRESSION TARGETS
 // ═══════════════════════════════════════════════════════════════════════
 
 export const FIRST_PRESTIGE_TARGETS = {
-  // Day 1: First expedition, first artifact
+  // Day 1: Tutorial complete, first artifact
   day1: {
     karbovanets: 500,
     reputation: 50,
@@ -35,7 +38,7 @@ export const FIRST_PRESTIGE_TARGETS = {
     prestige: 300,
   },
   
-  // Day 3-5: First Prestige
+  // Day 3-5: First Prestige Ready
   day5: {
     karbovanets: 5000,
     reputation: 500,
@@ -45,88 +48,83 @@ export const FIRST_PRESTIGE_TARGETS = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════
-// PROGRESSION TARGETS (20 DAYS TO ACADEMY)
+// PRESTIGE 1 PROGRESSION (MARCH 2027 TARGETS)
 // ═══════════════════════════════════════════════════════════════════════
 
 export const PROGRESSION_TARGETS = {
-  // Day 1: Tutorial complete, first artifact
-  day1: {
-    karbovanets: 1000,
-    reputation: 100,
-    artifacts: 3,
-    prestige: 75,
-    level: 3,
-  },
-  
-  // Day 3: First prestige ready (if active)
-  day3: {
-    karbovanets: 3000,
-    reputation: 300,
-    artifacts: 15,
-    prestige: 400,
-    level: 8,
-  },
-  
-  // Day 7: Active player
-  day7: {
-    karbovanets: 8000,
-    reputation: 800,
-    artifacts: 40,
-    prestige: 1000,
-    level: 15,
-  },
-  
-  // Day 14: Dedicated player
-  day14: {
+  // Month 1: New prestige player
+  month1: {
     karbovanets: 15000,
     reputation: 1500,
-    artifacts: 75,
-    prestige: 2000,
-    level: 25,
+    artifacts: 50,
+    prestige: 1500,
+    level: 50,
   },
   
-  // Day 20: Academy unlocked!
-  day20: {
-    karbovanets: 25000,
-    reputation: 2500,
-    artifacts: 130,
-    prestige: 3000,
-    level: 35,
+  // Month 3: Active player
+  month3: {
+    karbovanets: 50000,
+    reputation: 5000,
+    artifacts: 150,
+    prestige: 1500,
+    level: 100,
+  },
+  
+  // Month 6: Dedicated player
+  month6: {
+    karbovanets: 150000,
+    reputation: 15000,
+    artifacts: 400,
+    prestige: 1500,
+    level: 200,
+  },
+  
+  // Month 9: Expert player
+  month9: {
+    karbovanets: 400000,
+    reputation: 40000,
+    artifacts: 900,
+    prestige: 1500,
+    level: 350,
+  },
+  
+  // Month 12 (March 2027): Legendary player
+  month12: {
+    karbovanets: 1000000,
+    reputation: 100000,
+    artifacts: 2000,
+    prestige: 1500,
+    level: 500,
   },
 };
 
 // ═══════════════════════════════════════════════════════════════════════
-// PRESTIGE MILESTONES
+// PRESTIGE MILESTONES (PRESTIGE 1 ONLY)
 // ═══════════════════════════════════════════════════════════════════════
 
 export const PRESTIGE_MILESTONES = [
   { prestige: 500, title: 'p0_prestige_milestone', reward: { karbovanets: 500, xp: 100 } },
   { prestige: 1000, title: 'p1_prestige_milestone', reward: { karbovanets: 1000, xp: 200 } },
   { prestige: 1500, title: 'p2_prestige_milestone', reward: { karbovanets: 1500, xp: 300 } },
-  { prestige: 2000, title: 'p3_prestige_milestone', reward: { karbovanets: 2000, xp: 400 } },
-  { prestige: 2500, title: 'p4_prestige_milestone', reward: { karbovanets: 2500, xp: 500 } },
-  { prestige: 3000, title: 'academy_unlock', reward: { karbovanets: 3000, xp: 1000, title: 'Історик' } },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════
-// BALANCE: TUNED FOR 20 DAYS TO ACADEMY
+// BALANCE: TUNED FOR MARCH 2027 (PRESTIGE 1 ONLY)
 // ═══════════════════════════════════════════════════════════════════════
 
-// Quest rewards - balanced for 20 day progression
-export const QUEST_REWARD_MULTIPLIER = 1.2;
+// Quest rewards - balanced for Prestige 1 progression
+export const QUEST_REWARD_MULTIPLIER = 1.0;
 
-// Expedition rewards - balanced
+// Expedition rewards - balanced for long-term play
 export const EXPEDITION_REWARD_MULTIPLIER = 1.0;
 
-// Museum income - balanced for progression
+// Museum income - balanced for Prestige 1 progression
 export const MUSEUM_INCOME_MULTIPLIER = 1.0;
 
 // Building costs - balanced
 export const BUILDING_COST_MULTIPLIER = 1.0;
 
-// Artifact prestige values - balanced for 20 days
-// OLD: 1.5 multiplier gave ~1875 prestige/day (too fast)
-// NEW: 1.0 multiplier gives ~150 prestige/day (20 days to academy)
+// Artifact prestige values - Prestige 1 only, slower progression
 export const ARTIFACT_PRESTIGE_MULTIPLIER = 1.0;
 
 // Generator/XP boost for early game - balanced

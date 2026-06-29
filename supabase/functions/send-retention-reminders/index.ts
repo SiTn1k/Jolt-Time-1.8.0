@@ -7,10 +7,11 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
  * Enhanced retention push system with personalized messages based on player progress.
  *
  * Features:
- * - Different message pools for early game (prestige < 2) vs late game (prestige >= 2)
  * - Personalized messages based on player's current epoch and achievements
  * - Multiple notification types for variety
  * - Duplicate protection within notification type + 24h window
+ * 
+ * NOTE: Academy system removed - all messages updated for Prestige 1 only
  *
  * Designed to be invoked hourly by pg_cron.
  */
@@ -30,11 +31,11 @@ const NOTIFICATION_TYPE = "retention";
 const DUPLICATE_WINDOW_HOURS = 24;
 
 // ============================================================
-// MESSAGE POOLS BY PLAYER PROGRESSION
+// MESSAGE POOLS FOR PRESTIGE 1 (NO ACADEMY)
 // ============================================================
 
-// Early game messages (prestige < 2) - Focus on core gameplay
-const EARLY_GAME_MESSAGES = [
+// Main game messages - Focus on core gameplay, museum, expeditions
+const GAME_MESSAGES = [
   {
     type: "energy",
     text: `⚡ Енергія відновилась! Час продовжити розкопки!
@@ -104,17 +105,6 @@ const EARLY_GAME_MESSAGES = [
 
 Збери зароблені монети та інвестуй у розвиток!`,
     emoji: "💰"
-  }
-];
-
-// Late game messages (prestige >= 2) - Focus on Academy, Expeditions, Museum
-const LATE_GAME_MESSAGES = [
-  {
-    type: "academy",
-    text: `🎓 Академія чекає на тебе!
-
-Нові дослідження доступні для вивчення — стань справжнім професором історії!`,
-    emoji: "📚"
   },
   {
     type: "expedition",
@@ -134,22 +124,8 @@ const LATE_GAME_MESSAGES = [
     type: "prestige",
     text: `⭐ Престиж чекає!
 
-Ти вже близько до наступного переродження — збери достатньо монет та почни новий етап!`,
+Збери достатньо монет та почни новий етап!`,
     emoji: "🌟"
-  },
-  {
-    type: "collection",
-    text: `💎 Рідкісні артефакти чекають!
-
-Твоя колекція унікальних артефактів може бути доповнена!`,
-    emoji: "🔮"
-  },
-  {
-    type: "reputation",
-    text: `📊 Репутація музею зростає!
-
-Продовжуй розвивати експозицію — відвідувачі в захваті!`,
-    emoji: "📈"
   },
   {
     type: "legendary",
@@ -157,20 +133,6 @@ const LATE_GAME_MESSAGES = [
 
 Збери останні фрагменти та отримай унікальний бонус!`,
     emoji: "⚡"
-  },
-  {
-    type: "achievement",
-    text: `🏅 Нове досягнення розблоковано!
-
-Перевір свій прогрес та отримай заслужену нагороду!`,
-    emoji: "🎖️"
-  },
-  {
-    type: "energy",
-    text: `⚡ Повна енергія відновилась!
-
-Час для нових археологічних відкриттів!`,
-    emoji: "🔋"
   },
   {
     type: "offline",
@@ -185,13 +147,6 @@ const LATE_GAME_MESSAGES = [
 
 Тільки справжні археологи можуть його знайти!`,
     emoji: "🗝️"
-  },
-  {
-    type: "research",
-    text: `🔬 Нові дослідження в Академії!
-
-Покращуй свої навички та ефективність!`,
-    emoji: "🧪"
   }
 ];
 
@@ -221,7 +176,7 @@ const URGENT_MESSAGES = [
 ];
 
 // LEVEL MILESTONE messages - sent when player reaches levels 5, 10, 15 etc. during offline
-// These are personalized based on player's current level
+// Updated to remove Academy references
 const LEVEL_MILESTONE_MESSAGES = [
   {
     type: "level_5",
@@ -243,7 +198,7 @@ const LEVEL_MILESTONE_MESSAGES = [
     type: "level_15",
     text: `📈 Ти на рівні {level}!
 
-До Академії залишилось зовсім трохи! Збери більше артефактів!`,
+До Престижу залишилось зовсім трохи! Збери більше артефактів!`,
     milestoneLevel: 15,
     emoji: "💎"
   },
@@ -251,7 +206,7 @@ const LEVEL_MILESTONE_MESSAGES = [
     type: "level_20",
     text: `🚀 Рівень {level}!
 
-Ти ледь не відкрив Академію! Повертайся та продовж збирати артефакти!`,
+Продовжуй збирати артефакти — ти на правильному шляху!`,
     milestoneLevel: 20,
     emoji: "👑"
   },
@@ -259,7 +214,7 @@ const LEVEL_MILESTONE_MESSAGES = [
     type: "level_25",
     text: `⭐ Ти досяг рівня {level}!
 
-Академія чекає на тебе! Повертайся, щоб відкрити справжню магію!`,
+Музей пишається твоїми досягненнями!`,
     milestoneLevel: 25,
     emoji: "🎓"
   },
@@ -267,7 +222,7 @@ const LEVEL_MILESTONE_MESSAGES = [
     type: "level_30",
     text: `🔥 Рівень {level}!
 
-Ти готовий до величі! Академія відкриє тобі нові горизонти!`,
+Ти справжній дослідник історії! Продовжуй у тому ж дусі!`,
     milestoneLevel: 30,
     emoji: "🌟"
   }
@@ -283,12 +238,11 @@ interface CandidatePlayer {
 }
 
 /**
- * Select appropriate message based on player's prestige level
- * Early game (prestige < 2): use early game messages
- * Late game (prestige >= 2): use late game messages
+ * Select appropriate message based on player's level
+ * Uses GAME_MESSAGES for all players (Prestige 1 only)
  */
-function selectMessageByPrestige(prestigeLevel: number, level: number): { type: string; text: string } {
-  const messages = prestigeLevel >= 2 ? LATE_GAME_MESSAGES : EARLY_GAME_MESSAGES;
+function selectMessageByLevel(level: number): { type: string; text: string } {
+  const messages = GAME_MESSAGES;
   
   // Pick random message
   const selected = messages[Math.floor(Math.random() * messages.length)];
@@ -471,16 +425,16 @@ Deno.serve(async (req: Request) => {
       // First check for level milestones (levels 5, 10, 15, 20, 25, 30)
       // These are high-priority messages for early game players
       let message;
-      if (prestigeLevel < 2 && playerLevel >= 5) {
+      if (playerLevel >= 5) {
         const milestoneMessage = checkLevelMilestone(playerLevel);
         if (milestoneMessage) {
           message = milestoneMessage;
           console.log(`[retention] sending level milestone message to ${telegramId}: level=${playerLevel}`);
         } else {
-          message = selectMessageByPrestige(prestigeLevel, playerLevel);
+          message = selectMessageByLevel(playerLevel);
         }
       } else {
-        message = selectMessageByPrestige(prestigeLevel, playerLevel);
+        message = selectMessageByLevel(playerLevel);
       }
 
       // Build inline keyboard based on player's progress
@@ -520,7 +474,6 @@ Deno.serve(async (req: Request) => {
             url: inlineUrl,
             prestige_level: prestigeLevel,
             level: playerLevel,
-            epoch_id: epochId,
           },
         });
 
@@ -536,7 +489,7 @@ Deno.serve(async (req: Request) => {
     return json({
       ok: true,
       field_used: "last_active_at",
-      window: { after: sevenHoursAgoIso, before: sixHoursAgoIso },
+      window: { after: eightHoursAgoIso, before: sixHoursAgoIso },
       candidates: candidates.length,
       sent: sent.length,
       skipped_duplicate: skippedDuplicate.length,
@@ -544,8 +497,7 @@ Deno.serve(async (req: Request) => {
       sent_ids: sent,
       failed_details: failed,
       message_pools: {
-        early_game: EARLY_GAME_MESSAGES.length,
-        late_game: LATE_GAME_MESSAGES.length,
+        game_messages: GAME_MESSAGES.length,
         urgent: URGENT_MESSAGES.length,
         level_milestones: LEVEL_MILESTONE_MESSAGES.length,
       },

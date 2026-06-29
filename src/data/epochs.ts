@@ -351,10 +351,6 @@ export const ARTIFACTS: Artifact[] = [
   { id: 'secret_revolution_manifest', name: { ua: 'Маніфест УНР', en: 'UNR Manifest' }, epoch: 'revolution', rarity: 'secret', parts: 15, bonus: { type: 'xp_multiplier', value: 1.18 }, icon: '📜', requiredPrestige: 1 },
   { id: 'secret_soviet_space_secret', name: { ua: 'Таємниця космосу', en: 'Space Secret' }, epoch: 'soviet', rarity: 'secret', parts: 15, bonus: { type: 'passive_boost', value: 1.18 }, icon: '🌌', requiredPrestige: 1 },
   { id: 'secret_independence_charter', name: { ua: 'Акт Незалежності', en: 'Independence Act' }, epoch: 'independence', rarity: 'secret', parts: 15, bonus: { type: 'currency_multiplier', value: 1.20 }, icon: '🇺🇦', requiredPrestige: 1 },
-  { id: 'secret_golden_fleece', name: { ua: 'Золоте руно', en: 'Golden Fleece' }, epoch: 'scythia', rarity: 'secret', parts: 20, bonus: { type: 'xp_multiplier', value: 1.19 }, icon: '🌟', requiredPrestige: 2 },
-  { id: 'secret_kyiv_sophia_secret', name: { ua: 'Таємниця Софії', en: 'Sophia Secret' }, epoch: 'kyiv_rus', rarity: 'secret', parts: 20, bonus: { type: 'passive_boost', value: 1.19 }, icon: '⛪', requiredPrestige: 2 },
-  { id: 'secret_cossack_constitution', name: { ua: 'Конституція Пилипа', en: "Pylyp's Constitution" }, epoch: 'cossack', rarity: 'secret', parts: 20, bonus: { type: 'currency_multiplier', value: 1.19 }, icon: '📖', requiredPrestige: 2 },
-  { id: 'secret_modern_constitution_1996', name: { ua: 'Конституція 1996', en: '1996 Constitution' }, epoch: 'independence', rarity: 'secret', parts: 20, bonus: { type: 'xp_multiplier', value: 1.20 }, icon: '⚖️', requiredPrestige: 3 },
 ];
 
 // Get regular artifacts (no prestige requirement)

@@ -5,6 +5,8 @@
  * - Browser Notifications API (default)
  * - OneSignal (optional, requires setup)
  * - Firebase Cloud Messaging (optional, requires setup)
+ * 
+ * NOTE: Academy notifications removed - Academy system disabled
  */
 
 import { supabase } from '../lib/supabase';
@@ -19,7 +21,7 @@ export interface PushNotification {
 }
 
 export interface NotificationPayload {
-  type: 'expedition_complete' | 'restoration_ready' | 'quest_available' | 'reward_claimed' | 'daily_reminder';
+  type: 'expedition_complete' | 'restoration_ready' | 'quest_available' | 'reward_claimed' | 'daily_reminder' | 'artifact_found';
   title: string;
   body: string;
   data?: Record<string, unknown>;
@@ -197,7 +199,7 @@ class NotificationService {
   async sendDailyReminder(): Promise<void> {
     await this.sendLocalNotification({
       title: 'Повертайся до гри! 🎮',
-      body: 'Твоя академія чекає на тебе. Не забудь про щоденні нагороди!',
+      body: 'Твій музей чекає на тебе. Не забудь про щоденні нагороди!',
       tag: 'daily-reminder',
       data: { type: 'daily_reminder' },
     });
