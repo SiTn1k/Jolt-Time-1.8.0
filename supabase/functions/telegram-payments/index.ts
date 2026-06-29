@@ -1,5 +1,13 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
+import { 
+  logSecurityEvent, 
+  logPurchaseEvent,
+  extractClientInfo,
+  EVENT_TYPES 
+} from "../_shared/security-log.ts";
+import { validatePaymentsRequest, validateTelegramId, validateBoosterId } from "../_shared/validation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -178,6 +186,7 @@ Deno.serve(async (req: Request) => {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
   const url = new URL(req.url);
+  const { ipAddress, userAgent } = extractClientInfo(req);
 
   // ─── GET requests — browser-friendly actions ─────────────────────────────
   if (req.method === "GET") {
@@ -347,39 +356,142 @@ Deno.serve(async (req: Request) => {
     // Create invoice link (Stars payment)
     if (action === "create_invoice") {
       if (!BOT_TOKEN) {
+        await logSecurityEvent({
+          telegramId: null,
+          eventType: EVENT_TYPES.PURCHASE_FAILED,
+          eventCategory: "purchase",
+          success: false,
+          ipAddress,
+          userAgent,
+          errorMessage: "Bot token not configured",
+          severity: "error",
+        });
         return json({ error: "Bot token not configured. Add TELEGRAM_BOT_TOKEN secret." }, 500);
       }
+
+      // Validate input
       if (!booster_id || !telegram_id) {
+        await logSecurityEvent({
+          telegramId: telegram_id ?? null,
+          eventType: EVENT_TYPES.PURCHASE_FAILED,
+          eventCategory: "purchase",
+          success: false,
+          ipAddress,
+          userAgent,
+          errorMessage: "Missing booster_id or telegram_id",
+          severity: "warning",
+        });
         return json({ error: "Missing booster_id or telegram_id" }, 400);
       }
 
-      const booster = BOOSTERS[booster_id];
+      const validatedTelegramId = validateTelegramId(telegram_id);
+      if (!validatedTelegramId) {
+        await logSecurityEvent({
+          telegramId: telegram_id ?? null,
+          eventType: EVENT_TYPES.PURCHASE_FAILED,
+          eventCategory: "purchase",
+          success: false,
+          ipAddress,
+          userAgent,
+          errorMessage: "Invalid telegram_id",
+          severity: "warning",
+        });
+        return json({ error: "Invalid telegram_id" }, 400);
+      }
+
+      const validatedBoosterId = validateBoosterId(booster_id);
+      if (!validatedBoosterId) {
+        await logSecurityEvent({
+          telegramId: validatedTelegramId,
+          eventType: EVENT_TYPES.PURCHASE_FAILED,
+          eventCategory: "purchase",
+          success: false,
+          ipAddress,
+          userAgent,
+          errorMessage: "Invalid booster_id",
+          severity: "warning",
+        });
+        return json({ error: "Invalid booster" }, 400);
+      }
+
+      const booster = BOOSTERS[validatedBoosterId];
       if (!booster) {
+        await logSecurityEvent({
+          telegramId: validatedTelegramId,
+          eventType: EVENT_TYPES.PURCHASE_FAILED,
+          eventCategory: "purchase",
+          success: false,
+          ipAddress,
+          userAgent,
+          errorMessage: "Unknown booster",
+          severity: "warning",
+        });
         return json({ error: "Unknown booster" }, 400);
       }
 
+      // Rate limiting: 10 invoice creates per minute
+      const rateLimitResult = await checkRateLimit(validatedTelegramId, "purchase_create");
+      if (!rateLimitResult.allowed) {
+        await logSecurityEvent({
+          telegramId: validatedTelegramId,
+          eventType: EVENT_TYPES.RATE_LIMIT_EXCEEDED,
+          eventCategory: "abuse",
+          success: false,
+          ipAddress,
+          userAgent,
+          details: { action: "create_invoice" },
+          severity: "warning",
+        });
+        return rateLimitResponse(rateLimitResult);
+      }
+
       // Anti-abuse: Validate purchase before creating invoice
-      const validation = await validatePurchaseInternal(supabase, telegram_id, booster_id);
+      const validation = await validatePurchaseInternal(supabase, validatedTelegramId, validatedBoosterId);
       if (!validation.allowed) {
-        return json({ 
+        await logPurchaseEvent(
+          req,
+          validatedTelegramId,
+          EVENT_TYPES.PURCHASE_FAILED,
+          false,
+          validatedBoosterId,
+          validation.error
+        );
+        return json({
           error: validation.error || "Purchase not allowed",
-          retry_after: validation.retry_after 
+          retry_after: validation.retry_after
         }, 429);
       }
 
       const result = await tgCall("createInvoiceLink", {
         title: booster.title,
         description: booster.description,
-        payload: `${booster_id}:${telegram_id}`,
-        provider_token: "", // empty string = Telegram Stars (XTR)
+        payload: `${validatedBoosterId}:${validatedTelegramId}`,
+        provider_token: "",
         currency: "XTR",
         prices: [{ label: booster.title, amount: booster.price }],
       });
 
       if (!result.ok) {
         console.error("createInvoiceLink failed:", result);
+        await logPurchaseEvent(
+          req,
+          validatedTelegramId,
+          EVENT_TYPES.PURCHASE_FAILED,
+          false,
+          validatedBoosterId,
+          result.description ?? "Failed to create invoice"
+        );
         return json({ error: result.description ?? "Failed to create invoice" }, 500);
       }
+
+      // Log successful invoice creation
+      await logPurchaseEvent(
+        req,
+        validatedTelegramId,
+        EVENT_TYPES.PURCHASE_CREATE_INVOICE,
+        true,
+        validatedBoosterId
+      );
 
       return json({ invoice_url: result.result });
     }

@@ -1,5 +1,12 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
+import { 
+  logSecurityEvent, 
+  extractClientInfo,
+  EVENT_TYPES 
+} from "../_shared/security-log.ts";
+import { validateOpenChestRequest } from "../_shared/validation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,6 +22,11 @@ const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
  *
  * Server-authoritative chest/skychest opening.
  * Generates artifact fragment rewards with proper rarity chances.
+ *
+ * Security features:
+ * - Input validation
+ * - Rate limiting: 30 chest opens per minute
+ * - Security audit logging
  *
  * Rarity chances:
  * - Common: 60%
@@ -236,16 +248,46 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: "Method not allowed" }, 405);
   }
 
-  try {
-    const body: OpenChestRequest = await req.json();
-    const { telegram_id, epoch_id, chest_type = "daily", epoch_index = 0 } = body;
+  // Extract client info for logging
+  const { ipAddress, userAgent } = extractClientInfo(req);
 
-    if (!telegram_id || typeof telegram_id !== "number" || telegram_id <= 0) {
-      return jsonResponse({ error: "Invalid telegram_id" }, 400);
+  try {
+    const body = await req.json();
+    
+    // Validate request payload
+    const validation = validateOpenChestRequest(body);
+    if (!validation.valid) {
+      const errorMsg = validation.errors?.join(", ") ?? "Invalid request";
+      await logSecurityEvent({
+        telegramId: null,
+        eventType: EVENT_TYPES.PAYLOAD_VALIDATION_FAILED,
+        eventCategory: "abuse",
+        success: false,
+        ipAddress,
+        userAgent,
+        errorMessage: errorMsg,
+        details: { errors: validation.errors },
+        severity: "warning",
+      });
+      return jsonResponse({ error: errorMsg }, 400);
     }
 
-    if (!epoch_id) {
-      return jsonResponse({ error: "Missing epoch_id" }, 400);
+    const { telegram_id, epoch_id, chest_type = "daily", epoch_index = 0 } = validation.sanitized as OpenChestRequest;
+
+    // Rate limiting: 30 chest opens per minute
+    const rateLimitResult = await checkRateLimit(telegram_id as number, "open_chest");
+    if (!rateLimitResult.allowed) {
+      await logSecurityEvent({
+        telegramId: telegram_id as number,
+        eventType: EVENT_TYPES.RATE_LIMIT_EXCEEDED,
+        eventCategory: "abuse",
+        success: false,
+        ipAddress,
+        userAgent,
+        details: { action: "open_chest" },
+        severity: "warning",
+      });
+      return rateLimitResponse(rateLimitResult);
     }
 
     // Calculate chest cost: 100 * (epoch_index + 1)
@@ -262,10 +304,30 @@ Deno.serve(async (req: Request) => {
 
     if (fetchError) {
       console.error("Error fetching player:", fetchError);
+      await logSecurityEvent({
+        telegramId: telegram_id as number,
+        eventType: EVENT_TYPES.DB_ERROR,
+        eventCategory: "system",
+        success: false,
+        ipAddress,
+        userAgent,
+        errorMessage: fetchError.message,
+        severity: "error",
+      });
       return jsonResponse({ error: "Database error" }, 500);
     }
 
     if (!player) {
+      await logSecurityEvent({
+        telegramId: telegram_id as number,
+        eventType: EVENT_TYPES.CHEST_OPENED,
+        eventCategory: "general",
+        success: false,
+        ipAddress,
+        userAgent,
+        errorMessage: "Player not found",
+        severity: "warning",
+      });
       return jsonResponse({ error: "Player not found" }, 404);
     }
 
@@ -324,10 +386,35 @@ Deno.serve(async (req: Request) => {
 
     if (updateError) {
       console.error("Error updating artifacts:", updateError);
+      await logSecurityEvent({
+        telegramId: telegram_id as number,
+        eventType: EVENT_TYPES.DB_ERROR,
+        eventCategory: "system",
+        success: false,
+        ipAddress,
+        userAgent,
+        errorMessage: updateError.message,
+        severity: "error",
+      });
       return jsonResponse({ error: "Failed to save rewards" }, 500);
     }
 
     console.log(`Chest opened: user=${telegram_id}, epoch=${epoch_id}, type=${chest_type}, rewards=${rewards.length}`);
+
+    // Log successful chest open
+    await logSecurityEvent({
+      telegramId: telegram_id as number,
+      eventType: EVENT_TYPES.CHEST_OPENED,
+      eventCategory: "general",
+      success: true,
+      ipAddress,
+      userAgent,
+      details: {
+        epoch_id,
+        chest_type,
+        rewards_count: rewards.length,
+      },
+    });
 
     return jsonResponse({
       success: true,
@@ -336,6 +423,19 @@ Deno.serve(async (req: Request) => {
     });
   } catch (err) {
     console.error("Open chest error:", err);
+    const errorMsg = err instanceof Error ? err.message : "Internal server error";
+    
+    await logSecurityEvent({
+      telegramId: null,
+      eventType: EVENT_TYPES.EDGE_FUNCTION_ERROR,
+      eventCategory: "system",
+      success: false,
+      ipAddress,
+      userAgent,
+      errorMessage: errorMsg,
+      severity: "error",
+    });
+    
     return jsonResponse({ error: "Internal server error" }, 500);
   }
 });
