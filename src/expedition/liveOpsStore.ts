@@ -83,7 +83,6 @@ interface LiveOpsActions {
     npcTrustLevels: Record<string, RelationshipLevel>;
     arcsCompleted: number;
     questsCompleted: number;
-    academyLevel: number;
     reputation: number;
     totalXP: number;
     legendaryArtifacts: number;
@@ -314,11 +313,7 @@ export const useLiveOpsStore = create<LiveOpsStore>((set, get) => ({
           }
           break;
         case 'level':
-          if (achievement.requirement.target === 'academy') {
-            isUnlocked = stats.academyLevel >= achievement.requirement.value;
-          } else {
-            isUnlocked = stats.highestHeroLevel >= achievement.requirement.value;
-          }
+          isUnlocked = stats.highestHeroLevel >= achievement.requirement.value;
           break;
         case 'rarity':
           if (achievement.requirement.target === 'legendary') {

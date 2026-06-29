@@ -178,7 +178,7 @@ export const STORY_ARCS: ArcMetadata[] = [
     icon: '🏺',
     color: '#FFC72C',
     requirements: {},
-    npcIds: ['story-archaeologist-academy'],
+    npcIds: ['story-museum-curator'],
     regionIds: ['region-1'],
     estimatedDuration: '1-2 days',
   },
@@ -193,7 +193,7 @@ export const STORY_ARCS: ArcMetadata[] = [
       completedArcs: [1],
       reputation: 100,
     },
-    npcIds: ['story-archaeologist-academy'],
+    npcIds: ['story-museum-curator'],
     regionIds: ['region-2'],
     estimatedDuration: '3-5 days',
   },
@@ -384,7 +384,7 @@ export type QuestStatus = 'available' | 'in_progress' | 'completed' | 'rewarded'
 
 // Quest Reward
 export interface QuestReward {
-  type: 'karbovanets' | 'xp' | 'reputation' | 'hero_fragment' | 'artifact' | 'academy_xp';
+  type: 'karbovanets' | 'xp' | 'reputation' | 'hero_fragment' | 'artifact';
   amount: number;
   itemId?: string;
 }
@@ -552,38 +552,6 @@ export const storyNpcs: StoryNpc[] = [
       3: 'quest-khmelnytsky-1',
       4: 'region-zaporizhia-unlock',
       5: 'hero-cossack-scout',
-    },
-  },
-  {
-    id: 'story-archaeologist-academy',
-    nameKey: 'npc.archaeologist_academy.name',
-    role: 'archaeologist',
-    roleKey: 'npc.archaeologist_academy.role',
-    portrait: '🔍',
-    backgroundColor: '#00E5FF',
-    rarity: 'rare',
-    biographyKey: 'npc.archaeologist_academy.biography',
-    dialogues: {
-      greeting: [
-        'Що нового в розкопках?',
-        'Привіт колего!',
-        'Маєш знахідки для каталогізації?',
-      ],
-      relationship: {
-        1: ['Розкажи про свої дослідження.'],
-        2: ['Твоя методика вражає.'],
-        3: ['Разом ми зробимо відкриття!'],
-        4: ['Академія пишається тобою!'],
-        5: ['Найкращі артефакти чекають на тебе!'],
-      },
-    },
-    questIds: ['quest-archaeologist-1'],
-    unlocksAtRelationship: {
-      1: null,
-      2: 'dialogue_extra_4',
-      3: 'quest-archaeologist-1',
-      4: 'expedition-speed-bonus',
-      5: 'artifact-trypillia-ceramics',
     },
   },
   {
@@ -878,7 +846,7 @@ export const storyQuests: StoryQuest[] = [
   // ========== ARC 1: TRYPILLIA ==========
   {
     id: 'arc1-quest-1',
-    npcId: 'story-archaeologist-academy',
+    npcId: 'story-museum-curator',
     titleKey: 'quest.arc1_1.title',
     descriptionKey: 'quest.arc1_1.description',
     objectives: [
@@ -898,7 +866,7 @@ export const storyQuests: StoryQuest[] = [
   },
   {
     id: 'arc1-quest-2',
-    npcId: 'story-archaeologist-academy',
+    npcId: 'story-museum-curator',
     titleKey: 'quest.arc1_2.title',
     descriptionKey: 'quest.arc1_2.description',
     objectives: [
@@ -940,7 +908,7 @@ export const storyQuests: StoryQuest[] = [
   },
   {
     id: 'arc1-quest-4',
-    npcId: 'story-archaeologist-academy',
+    npcId: 'story-museum-curator',
     titleKey: 'quest.arc1_4.title',
     descriptionKey: 'quest.arc1_4.description',
     objectives: [
@@ -950,7 +918,6 @@ export const storyQuests: StoryQuest[] = [
     rewards: [
       { type: 'karbovanets', amount: 800 },
       { type: 'xp', amount: 200 },
-      { type: 'academy_xp', amount: 30 },
     ],
     status: 'available',
     dialogue: {
@@ -1123,7 +1090,6 @@ export const storyQuests: StoryQuest[] = [
     ],
     rewards: [
       { type: 'karbovanets', amount: 1500 },
-      { type: 'academy_xp', amount: 100 },
       { type: 'hero_fragment', amount: 10, itemId: 'hero-olga' },
     ],
     status: 'available',
@@ -1300,7 +1266,7 @@ export const storyQuests: StoryQuest[] = [
     ],
     rewards: [
       { type: 'karbovanets', amount: 1500 },
-      { type: 'academy_xp', amount: 150 },
+      { type: 'xp', amount: 100 },
     ],
     status: 'available',
     dialogue: {
@@ -1370,7 +1336,6 @@ export const storyQuests: StoryQuest[] = [
       { type: 'karbovanets', amount: 5000 },
       { type: 'reputation', amount: 1000 },
       { type: 'xp', amount: 1000 },
-      { type: 'academy_xp', amount: 500 },
     ],
     status: 'available',
     dialogue: {
@@ -1384,7 +1349,7 @@ export const storyQuests: StoryQuest[] = [
   // ========== DAILY QUESTS ==========
   {
     id: 'daily-expedition-1',
-    npcId: 'story-archaeologist-academy',
+    npcId: 'story-museum-curator',
     titleKey: 'quest.daily_expedition.title',
     descriptionKey: 'quest.daily_expedition.description',
     objectives: [

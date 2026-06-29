@@ -1,10 +1,9 @@
 /**
  * Game Balance Configuration
  * 
- * OPTIMIZED FOR MARCH 2027 - PRESTIGE 1 ONLY (NO ACADEMY)
+ * OPTIMIZED FOR MARCH 2027 - PRESTIGE 1 ONLY
  * 
  * Target: Player with Prestige 1 plays until March 2027
- * - Academy (Prestige 2+) has been REMOVED
  * - Max prestige level is now 1
  * - Game progression extended with new content
  * 
@@ -368,7 +367,6 @@ export const QUEST_BALANCE = {
     karbovanets: 200,
     xp: 50,
     reputation: 25,
-    academy_xp: 30,
   },
   
   // Arc difficulty multipliers

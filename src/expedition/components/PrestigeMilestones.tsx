@@ -2,7 +2,7 @@
  * Prestige Milestones Component
  * 
  * Shows milestone progress with rewards celebration.
- * Each milestone gives rewards and creates anticipation for Academy.
+ * Each milestone gives rewards and creates anticipation.
  */
 
 import { useState, useEffect } from 'react';
@@ -55,7 +55,7 @@ export function PrestigeMilestones() {
           </span>
         </div>
         <Badge style={{ backgroundColor: '#FFC72C', color: '#0D1117', fontSize: '10px' }}>
-          {t('milestone.next_in')} {nextMilestone?.prestige || 3000} {t('academy.prestige')}
+          {t('milestone.next_in')} {nextMilestone?.prestige || 3000} престижу
         </Badge>
       </div>
       
@@ -207,13 +207,7 @@ export function PrestigeMilestones() {
                 </div>
               </div>
               
-              {celebratingMilestone === 3000 && (
-                <div className="bg-[#10B981]/20 border border-[#10B981]/30 rounded-lg p-3 mb-4">
-                  <p className="text-sm text-[#10B981] font-medium">
-                    🏛️ {t('milestone.academy_unlocked')}
-                  </p>
-                </div>
-              )}
+
               
               <button
                 onClick={() => setCelebratingMilestone(null)}

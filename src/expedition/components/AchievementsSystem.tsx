@@ -5,7 +5,7 @@
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { Trophy, Star, Users, Map, BookOpen, Building, Lock, Unlock } from 'lucide-react';
+import { Star, Users, Map, BookOpen, Building, Lock, Unlock, Trophy } from 'lucide-react';
 import { Card, Badge, Progress } from '../ui';
 import { useExpeditionStore } from '../store';
 import { useLiveOpsStore } from '../liveOpsStore';
@@ -17,7 +17,6 @@ const categoryIcons: Record<AchievementCategory, typeof Star> = {
   museum: Building,
   npc: Users,
   story: BookOpen,
-  academy: Trophy,
 };
 
 const categoryNames: Record<AchievementCategory, string> = {
@@ -26,7 +25,6 @@ const categoryNames: Record<AchievementCategory, string> = {
   museum: 'Музей',
   npc: 'NPC',
   story: 'Сюжет',
-  academy: 'Академія',
 };
 
 const categoryColors: Record<AchievementCategory, string> = {
@@ -35,7 +33,6 @@ const categoryColors: Record<AchievementCategory, string> = {
   museum: '#A855F7',
   npc: '#F59E0B',
   story: '#FF6B6B',
-  academy: '#10B981',
 };
 
 function AchievementCard({ achievement }: { achievement: Achievement }) {
@@ -142,8 +139,8 @@ export function AchievementsSystem() {
     ? achievements 
     : achievements.filter(a => a.category === activeCategory);
 
-  const categories: (AchievementCategory | 'all')[] = [
-    'all', 'expedition', 'hero', 'museum', 'npc', 'story', 'academy'
+  const categories: AchievementCategory[] = [
+    'expedition', 'hero', 'museum', 'npc', 'story'
   ];
 
   return (
@@ -175,16 +172,30 @@ export function AchievementsSystem() {
 
       {/* Category Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
+        {/* All category tab */}
+        <button
+          onClick={() => setActiveCategory('all')}
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg whitespace-nowrap text-sm font-medium transition-colors ${
+            activeCategory === 'all'
+              ? 'text-black'
+              : 'bg-white/5 text-[#8B949E] hover:text-[#E6EDF3]'
+          }`}
+          style={{ 
+            backgroundColor: activeCategory === 'all' ? '#FFD700' : undefined 
+          }}
+        >
+          <Trophy className="w-4 h-4" />
+          <span>Всі</span>
+          <span className={`text-xs ${activeCategory === 'all' ? 'opacity-70' : 'text-[#8B949E]'}`}>
+            {unlockedAchievements}/{totalAchievements}
+          </span>
+        </button>
         {categories.map(cat => {
-          const count = cat === 'all' 
-            ? totalAchievements 
-            : achievements.filter(a => a.category === cat).length;
-          const unlockedCount = cat === 'all'
-            ? unlockedAchievements
-            : achievements.filter(a => a.category === cat && achievementsProgress[a.id]?.unlocked).length;
+          const count = achievements.filter(a => a.category === cat).length;
+          const unlockedCount = achievements.filter(a => a.category === cat && achievementsProgress[a.id]?.unlocked).length;
           
-          const Icon = cat === 'all' ? Trophy : categoryIcons[cat];
-          const color = cat === 'all' ? '#FFD700' : categoryColors[cat];
+          const Icon = categoryIcons[cat];
+          const color = categoryColors[cat];
           
           return (
             <button
@@ -200,7 +211,7 @@ export function AchievementsSystem() {
               }}
             >
               <Icon className="w-4 h-4" />
-              <span>{cat === 'all' ? 'Всі' : categoryNames[cat]}</span>
+              <span>{categoryNames[cat]}</span>
               <span className={`text-xs ${activeCategory === cat ? 'opacity-70' : 'text-[#8B949E]'}`}>
                 {unlockedCount}/{count}
               </span>

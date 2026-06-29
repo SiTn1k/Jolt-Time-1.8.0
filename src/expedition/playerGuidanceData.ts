@@ -14,7 +14,6 @@ export type JourneyStage =
   | 'clicker'
   | 'prestige_1'
   | 'prestige_2'
-  | 'academy'
   | 'heroes'
   | 'expeditions'
   | 'npc'
@@ -81,18 +80,8 @@ export const JOURNEY_MAP: JourneyNode[] = [
     icon: '🎓',
     color: '#A855F7',
     requirements: { minPrestige: 2 },
-    nextNodes: ['academy'],
-    milestone: { type: 'feature', id: 'academy', nameKey: 'journey.milestone.academy' },
-  },
-  {
-    id: 'academy',
-    nameKey: 'journey.academy.name',
-    descriptionKey: 'journey.academy.desc',
-    icon: '🏫',
-    color: '#6366F1',
-    requirements: { minPrestige: 2 },
-    nextNodes: ['heroes', 'expeditions', 'npc'],
-    milestone: { type: 'feature', id: 'academy', nameKey: 'journey.milestone.academy' },
+    nextNodes: ['heroes'],
+    milestone: { type: 'prestige', id: 'prestige_2', nameKey: 'journey.milestone.prestige_2' },
   },
   {
     id: 'heroes',

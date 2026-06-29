@@ -2,7 +2,6 @@ import { useEffect, useState, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Map, Users, FlaskConical, Landmark, HardHat, Gift, Loader2, BarChart3, Star } from 'lucide-react';
 import { useExpeditionStore } from './store';
-import { useAcademySync } from './expeditionSync';
 import { WorldMap } from './screens/WorldMap';
 import { Heroes } from './screens/Heroes';
 import { Laboratory } from './screens/Laboratory';
@@ -67,30 +66,12 @@ function ToastStack() {
 export function ExpeditionApp() {
   const tick = useExpeditionStore((s) => s.tick);
   const [screen, setScreen] = useState<ScreenId>('map');
-  
-  // Supabase sync - loads from server and syncs changes
-  const { syncToServer } = useAcademySync();
 
   useEffect(() => {
     tick();
     const interval = setInterval(() => tick(), 1000);
     return () => clearInterval(interval);
   }, [tick]);
-
-  // Sync to Supabase periodically + on page unload
-  useEffect(() => {
-    syncToServer();
-    const syncInterval = setInterval(() => syncToServer(), 30000);
-    
-    // Sync on page unload
-    const handleUnload = () => syncToServer();
-    window.addEventListener('beforeunload', handleUnload);
-    
-    return () => {
-      clearInterval(syncInterval);
-      window.removeEventListener('beforeunload', handleUnload);
-    };
-  }, [syncToServer]);
 
   return (
     <div

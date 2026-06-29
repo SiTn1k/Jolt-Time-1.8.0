@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════
 // PREMIUM SHOP COMPONENT
-// Telegram Stars shop for Academy
+// Telegram Stars shop
 // ═══════════════════════════════════════════════════════════════════════
 
 import { motion } from 'framer-motion';

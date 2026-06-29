@@ -80,7 +80,6 @@ export function Statistics() {
   const historicalPrestige = useExpeditionStore(s => s.historicalPrestige);
   const reputation = useExpeditionStore(s => s.reputation);
   const karbovanets = useExpeditionStore(s => s.karbovanets);
-  const academyLevel = useExpeditionStore(s => s.academyLevel);
   
   // LiveOps store data
   const achievementsProgress = useLiveOpsStore(s => s.achievementsProgress);
@@ -217,7 +216,7 @@ export function Statistics() {
         </Card>
       </motion.div>
 
-      {/* Hero & Academy Stats */}
+      {/* Stats */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -226,16 +225,10 @@ export function Statistics() {
         <Card className="bg-[#161B22] border-white/5 p-4">
           <h3 className="text-sm font-semibold text-[#E6EDF3] mb-4 flex items-center gap-2">
             <Star className="w-4 h-4 text-[#FFD700]" />
-            Герої та Академія
+            Герої та Прогрес
           </h3>
           
           <div className="space-y-1">
-            <StatRow
-              icon={<Star className="w-4 h-4" />}
-              label="Рівень Академії"
-              value={academyLevel}
-              color="#FFD700"
-            />
             <StatRow
               icon={<TrendingUp className="w-4 h-4" />}
               label="Репутація"

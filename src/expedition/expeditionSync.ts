@@ -1,7 +1,7 @@
 /**
- * Academy Timeline Sync Service
+ * Expedition Sync Service
  *
- * Syncs Academy Timeline state to Supabase using edge functions.
+ * Syncs game state to Supabase using edge functions.
  * All writes go through secure edge functions with HMAC validation.
  * 
  * Security:
@@ -17,11 +17,10 @@ import type { MuseumState } from './museumData';
 import type { StoryProgress } from './storyData';
 import type { Hero, Artifact, Region, Expedition, Npc } from './data';
 
-const EXPEDITION_SYNC_KEY = 'academy_sync_pending';
+const EXPEDITION_SYNC_KEY = 'expedition_sync_pending';
 const SYNC_DEBOUNCE_MS = 3000;
 
 interface ExpeditionData {
-  academyLevel: number;
   reputation: number;
   karbovanets: number;
   historicalPrestige: number;
@@ -43,7 +42,7 @@ interface SyncResult {
   data?: unknown;
 }
 
-class AcademySyncService {
+class ExpeditionSyncService {
   private syncTimer: ReturnType<typeof setTimeout> | null = null;
 
   /**
@@ -77,7 +76,6 @@ class AcademySyncService {
    */
   async saveExpeditionData(data: ExpeditionData): Promise<boolean> {
     const result = await this.callEdgeFunction('save_expedition', {
-      academyLevel: data.academyLevel,
       reputation: data.reputation,
       karbovanets: data.karbovanets,
       historicalPrestige: data.historicalPrestige,
@@ -252,7 +250,7 @@ class AcademySyncService {
   }
 
   /**
-   * Debounced sync all Academy data
+   * Debounced sync all expedition data
    */
   debouncedFullSync(expeditionData: ExpeditionData, storyData: StoryProgress, museumState: MuseumState, museumRep: number, museumVis: number): void {
     if (this.syncTimer) {
@@ -346,12 +344,12 @@ class AcademySyncService {
   }
 }
 
-export const academySync = new AcademySyncService();
+export const expeditionSync = new ExpeditionSyncService();
 
 import { useEffect, useCallback, useRef } from 'react';
 import { useExpeditionStore } from './store';
 
-export function useAcademySync() {
+export function useExpeditionSync() {
   const store = useExpeditionStore((s) => s);
   const hasHydrated = useRef(false);
 
@@ -360,14 +358,13 @@ export function useAcademySync() {
       if (hasHydrated.current) return;
 
       const [expeditionData, storyData, museumData] = await Promise.all([
-        academySync.loadExpeditionData(),
-        academySync.loadStoryData(),
-        academySync.loadMuseumData(),
+        expeditionSync.loadExpeditionData(),
+        expeditionSync.loadStoryData(),
+        expeditionSync.loadMuseumData(),
       ]);
 
       if (expeditionData) {
         const updates: Partial<ReturnType<typeof useExpeditionStore.getState>> = {};
-        if (expeditionData.academyLevel !== undefined) updates.academyLevel = expeditionData.academyLevel;
         if (expeditionData.reputation !== undefined) updates.reputation = expeditionData.reputation;
         if (expeditionData.karbovanets !== undefined) updates.karbovanets = expeditionData.karbovanets;
         if (expeditionData.historicalPrestige !== undefined) updates.historicalPrestige = expeditionData.historicalPrestige;
@@ -400,12 +397,11 @@ export function useAcademySync() {
     };
 
     loadFromServer();
-    academySync.retryPendingSync();
+    expeditionSync.retryPendingSync();
   }, []);
 
   const syncToServer = useCallback(() => {
     const expeditionData: ExpeditionData = {
-      academyLevel: store.academyLevel,
       reputation: store.reputation,
       karbovanets: store.karbovanets,
       historicalPrestige: store.historicalPrestige,
@@ -421,7 +417,7 @@ export function useAcademySync() {
       buildingUpgradeEndTimes: store.buildingUpgradeEndTimes,
     };
 
-    academySync.debouncedFullSync(
+    expeditionSync.debouncedFullSync(
       expeditionData,
       store.storyState,
       store.museumState,
@@ -455,5 +451,3 @@ export function useAcademySync() {
 
   return { syncToServer };
 }
-
-export const useExpeditionSync = useAcademySync;

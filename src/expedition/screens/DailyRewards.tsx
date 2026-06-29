@@ -5,7 +5,6 @@ import { Gift, Calendar, Star, Coins, Sparkles, Clock, Check, Loader2 } from 'lu
 import { ChallengesSystem } from '../components/ChallengesSystem';
 import { Card } from '../ui';
 import { useTranslation } from '../../i18n';
-import { useAcademySync } from '../expeditionSync';
 
 const rewardIcons: Record<string, React.ReactNode> = {
   karbovanets: <Coins className="w-8 h-8 text-[#FFC72C]" />,
@@ -23,7 +22,6 @@ const rewardColors: Record<string, string> = {
 
 export function DailyRewards() {
   const { t } = useTranslation();
-  const { syncToServer } = useAcademySync();
   
   const addKarbovanets = useExpeditionStore((s) => s.addKarbovanets);
   const addArtifactFragment = useExpeditionStore((s) => s.addArtifactFragment);
@@ -111,13 +109,10 @@ export function DailyRewards() {
       // Update local state
       setRewardState(result.newState);
       setClaimedToday(true);
-      
-      // Trigger sync
-      syncToServer();
     }
     
     setClaiming(false);
-  }, [claiming, claimedToday, rewardState, addKarbovanets, addArtifactFragment, pushToast, syncToServer]);
+  }, [claiming, claimedToday, rewardState, addKarbovanets, addArtifactFragment, pushToast]);
 
   const formatTime = (ms: number): string => {
     if (ms <= 0) return '00:00:00';

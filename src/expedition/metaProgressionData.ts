@@ -5,7 +5,7 @@
 
 // ═══════════════════════════════════════════════════════════════════════
 // PRESTIGE REWARDS EXTENDED (Level 3-5)
-// Data-driven prestige rewards beyond Academy unlock
+// Data-driven prestige rewards beyond Prestige 1
 // ═══════════════════════════════════════════════════════════════════════
 
 export interface PrestigeReward {
@@ -64,7 +64,7 @@ export const PRESTIGE_REWARDS: PrestigeReward[] = [
     icon: '⭐',
     color: '#FFD700',
   },
-  // Prestige 2: Academy unlock
+  // Prestige 1 only
   {
     prestigeLevel: 2,
     nameKey: 'prestige.level_2',

@@ -3,7 +3,7 @@
  * 
  * Manages tiered ad rewards based on player prestige.
  * P0-P1: XP Boost, Currency Boost, Offline Income
- * P2+: Academy Currency, Expedition Speed, Museum Bonuses, Artifact Chance
+ * P2+: Expedition Speed, Museum Bonuses, Artifact Chance
  */
 
 import { ADSGRAM_BLOCK_ID, initAdsgram, showRewardAd, AdShowResult } from '../services/adsgram';
@@ -15,7 +15,6 @@ export type AdRewardType =
   | 'offline_income'
   | 'artifact_chance_p0'
   // P2+ Rewards
-  | 'academy_currency'
   | 'expedition_speed'
   | 'museum_bonus'
   | 'artifact_chance_p2';
@@ -68,14 +67,6 @@ export const P0_P1_REWARDS: AdReward[] = [
 // P2+ Reward Pool (Prestige 2+)
 export const P2_PLUS_REWARDS: AdReward[] = [
   {
-    type: 'academy_currency',
-    titleKey: 'ad_reward.academy_currency_title',
-    descriptionKey: 'ad_reward.academy_currency_description',
-    duration: 0, // Instant
-    value: 50, // 50 AC
-    icon: '🏛️',
-  },
-  {
     type: 'expedition_speed',
     titleKey: 'ad_reward.expedition_speed_title',
     descriptionKey: 'ad_reward.expedition_speed_description',
@@ -114,7 +105,6 @@ export interface AdRewardState {
     speed_boost_end?: number;
     speed_boost_mult?: number;
   };
-  academyCurrency: number;
 }
 
 /**
@@ -142,8 +132,6 @@ export function getAvailableRewards(prestigeLevel: number, currentState: AdRewar
       case 'artifact_chance_p0':
       case 'artifact_chance_p2':
         return !currentState.activeBoosters.artifact_boost_end || currentState.activeBoosters.artifact_boost_end < now;
-      case 'academy_currency':
-        return true; // Always available
       case 'expedition_speed':
         return !currentState.activeBoosters.speed_boost_end || currentState.activeBoosters.speed_boost_end < now;
       case 'museum_bonus':
@@ -177,9 +165,6 @@ export function applyReward(state: AdRewardState, reward: AdReward): AdRewardSta
     case 'artifact_chance_p2':
       newState.activeBoosters.artifact_boost_end = now + reward.duration;
       newState.activeBoosters.artifact_boost_mult = reward.value;
-      break;
-    case 'academy_currency':
-      newState.academyCurrency += reward.value;
       break;
     case 'expedition_speed':
       newState.activeBoosters.speed_boost_end = now + reward.duration;

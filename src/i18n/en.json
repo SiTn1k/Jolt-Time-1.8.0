@@ -204,7 +204,6 @@
     "reward_xp": "experience",
     "reward_hero_fragment": "hero fragment",
     "reward_artifact": "artifact",
-    "reward_academy_xp": "academy experience",
     "arc5_2": {
       "description": "Explore modern history",
       "title": "Modern Ukraine"
@@ -433,10 +432,10 @@
       "role": "Hetman",
       "biography": "Leader of the Cossack uprising and founder of the Hetmanate."
     },
-    "archaeologist_academy": {
-      "name": "Academy Archaeologist",
+    "museum_archaeologist": {
+      "name": "Museum Archaeologist",
       "role": "Archaeologist",
-      "biography": "Experienced researcher of antiquities at the Academy of Time."
+      "biography": "Experienced researcher of antiquities at the museum."
     },
     "museum_curator": {
       "name": "Museum Curator",
@@ -665,8 +664,6 @@
   },
   "tutorial": {
     "guide_name": "Young Researcher",
-    "academy_welcome_title": "🇺🇦 Welcome to the Academy!",
-    "academy_welcome_content": "Welcome to the Academy. Together we will restore the history of Ukraine.",
     "map_title": "🗺️ World Map",
     "map_content": "Let's start with the map. This is where expeditions are launched.",
     "expedition_title": "⚔️ First Expedition",
@@ -680,8 +677,8 @@
     "heroes_title": "🧙 Heroes",
     "heroes_content": "Heroes give bonuses to expeditions.",
     "buildings_title": "🏗️ Buildings",
-    "buildings_content": "Buildings enhance the Academy's development.",
-    "complete_title": "🎓 Academy Mastered!",
+    "buildings_content": "Buildings enhance your progress.",
+    "complete_title": "🎓 Complete!",
     "complete_content": "You are ready. Good luck with your research!",
     "got_it": "Got it",
     "finish": "Complete",
@@ -700,9 +697,7 @@
     "boosters_title": "⚡ Boosters",
     "boosters_content": "Watch ads for x3 XP for 30 minutes! This is the ONLY way to get such a powerful boost — use it wisely!",
     "expeditions_title": "🗺️ Expeditions",
-    "expeditions_content": "Send expeditions to find artifacts and heroes. Higher difficulty means better rewards!",
-    "academy_title": "🏛️ Academy",
-    "academy_content": "The Academy is the heart of your research. Develop it to unlock new possibilities and increase income."
+    "expeditions_content": "Send expeditions to find artifacts and heroes. Higher difficulty means better rewards!"
   },
   "arc": {
     "arcs": "Arcs",
@@ -711,8 +706,6 @@
     "unlock": "Unlock"
   },
   "expedition": {
-    "academy_unlock_title": "Academy Timeline Unlocked",
-    "academy_unlock_description": "Your research has changed the very fabric of time. Now you can manage the Academy of Time and explore the history of Ukraine.",
     "second_prestige_reached": "Second Prestige Reached",
     "start_research": "Start Research",
     "feature_expeditions": "Expeditions",
@@ -721,8 +714,6 @@
     "feature_story": "History",
     "feature_npc": "NPC",
     "feature_reputation": "Reputation",
-    "academy_title": "Archaeological Academy",
-    "academy_subtitle": "of Ukraine",
     "reputation": "Reputation",
     "karbovanets": "Karbovanets",
     "visitors": "Visitors",
@@ -808,11 +799,6 @@
     "speed_up": "Speed up for ad",
     "sped_up": "Expedition sped up by 50%!"
   },
-  "academy_unlock": {
-    "title": "Academy of Time Unlocked!",
-    "description": "Your research has changed the very fabric of time. The Academy of Time is now available for exploring the history of Ukraine through time expeditions.",
-    "start_research": "Start Research"
-  },
   "notifications": {
     "connection_error": "Connection issues. Progress will be saved locally",
     "syncing": "Syncing...",
@@ -827,59 +813,26 @@
     "server_error": "Server error",
     "try_again_later": "Try again later"
   },
-  "academy": {
-    "progress_title": "To the Academy",
-    "milestone_reached": "Milestone reached!",
-    "locked_preview": "What unlocks:",
-    "next_milestone": "Next:",
-    "remaining": "Remaining:",
-    "prestige": "Prestige",
-    "prestige_short": "Prestige",
-    "unlocked": "ACADEMY UNLOCKED!",
-    "unlocked_description": "Welcome to the Historical Academy!",
-    "milestones_reached": "Milestones reached:",
-    "invitation_title": "INVITATION",
-    "invitation_body": "The Historical Academy has sent a letter...",
-    "milestone_discovery": "Discovery",
-    "milestone_expansion": "Expansion",
-    "milestone_advancement": "Advancement",
-    "milestone_mastery": "Mastery",
-    "milestone_academy": "ACADEMY",
-    "feature_hero_speed": "Hero Speed",
-    "feature_hero_speed_desc": "Heroes return faster",
-    "feature_extra_slot": "Extra Slot",
-    "feature_extra_slot_desc": "3 expeditions at once",
-    "feature_legend_chance": "Legend Chance",
-    "feature_legend_chance_desc": "+5% legendary artifacts",
-    "feature_museum_curator": "Museum Curator",
-    "feature_museum_curator_desc": "Manage exhibitions"
-  },
   "milestone": {
     "prestige_milestones": "Prestige Milestones",
     "next_in": "Next:",
     "reached": "Milestone Reached!",
     "achieved": "achieved!",
     "rewards": "Rewards:",
-    "academy_unlocked": "ACADEMY UNLOCKED!",
     "p0_prestige_milestone": "First Step",
     "p1_prestige_milestone": "Discovery",
     "p2_prestige_milestone": "Explorer",
     "p3_prestige_milestone": "Master",
-    "p4_prestige_milestone": "Expert",
-    "academy_unlock": "Academy Unlock",
     "prestige": "Prestige Milestone"
   },
   "teaser": {
-    "locked_academy": "LOCKED",
     "unlock_at": "Unlock at",
-    "academy_title": "Historical Academy",
-    "academy_subtitle": "The next chapter of your journey",
     "heroes": "Heroes",
     "heroes_desc": "New heroes with unique skills",
     "expeditions": "Expeditions",
     "expeditions_desc": "More challenging expeditions",
     "buildings": "Buildings",
-    "buildings_desc": "Expand and upgrade Academy",
+    "buildings_desc": "Expand and upgrade your museum",
     "story": "Campaign",
     "story_desc": "Deep historical campaign",
     "progress": "Progress to unlock",
@@ -888,19 +841,8 @@
       "first_journey": "First Journey",
       "treasure_seeker": "Treasure Seeker",
       "collector": "Collector",
-      "academy_master": "Academy Master",
       "remaining": "Remaining"
     }
-  },
-  "story_events": {
-    "academy_first_discovery": "First Discovery",
-    "academy_rising_fame": "Rising Fame",
-    "academy_invitation": "Invitation"
-  },
-  "npc_hints": {
-    "academy_hint_1": "I've heard legends about the Historical Academy...",
-    "academy_hint_3": "Accumulate Prestige — and you'll get there.",
-    "academy_hint_5": "To get there, you need to become a real historian."
   },
   "ad_reward": {
     "xp_boost_title": "XP Boost",
@@ -912,8 +854,6 @@
     "artifact_chance_title": "Artifact Chance",
     "artifact_chance_description": "+10% find chance for 30 min",
     "artifact_chance_p2_description": "+15% find chance for 30 min",
-    "academy_currency_title": "Academy Currency",
-    "academy_currency_description": "+50 Academy Coins",
     "expedition_speed_title": "Expedition Speed",
     "expedition_speed_description": "x1.5 speed for 30 min",
     "museum_bonus_title": "Museum Bonus",

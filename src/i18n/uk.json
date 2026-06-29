@@ -252,11 +252,6 @@
       "role": "Гетьман",
       "biography": "Очільник козацького повстання та засновник Гетьманщини."
     },
-    "archaeologist_academy": {
-      "name": "Археолог Академії",
-      "role": "Археолог",
-      "biography": "Досвідчений дослідник старожитностей Академії Часу."
-    },
     "museum_curator": {
       "name": "Куратор музею",
       "role": "Куратор",
@@ -329,7 +324,6 @@
     "reward_xp": "досвіду",
     "reward_hero_fragment": "фрагмент героя",
     "reward_artifact": "артефакт",
-    "reward_academy_xp": "академічного досвіду",
     "daily_museum": {
       "title": "Музейний візит",
       "description": "Відвідай музей"
@@ -643,8 +637,6 @@
   },
   "tutorial": {
     "guide_name": "Молодий дослідник",
-    "academy_welcome_title": "🇺🇦 Вітаємо в Академію!",
-    "academy_welcome_content": "Вітаю в Академії. Разом ми будемо відновлювати історію України.",
     "map_title": "🗺️ Карта світу",
     "map_content": "Почнемо з карти. Саме тут запускаються експедиції.",
     "expedition_title": "⚔️ Перша експедиція",
@@ -677,8 +669,6 @@
     "prestige_content": "Збери 1500 престижу — і зроби перше переродження! Ти збережеш артефакти, але почнеш з більшим бонусом.",
     "expeditions_title": "🗺️ Експедиції",
     "expeditions_content": "Відправляй експедиції, щоб знаходити артефакти та героїв. Чим вища складність — тим кращі нагороди!",
-    "academy_title": "🏛️ Академія",
-    "academy_content": "Академія — це серце твоїх досліджень. Розвивай її, щоб відкривати нові можливості та збільшувати дохід.",
     "boosters_title": "⚡ Бустери",
     "boosters_content": "Дивись рекламу за x3 XP на 30 хвилин! Це єдиний спосіб отримати такий потужний буст — використовуй мудро!"
   },
@@ -689,8 +679,6 @@
     "unlock": "Розблокувати"
   },
   "expedition": {
-    "academy_unlock_title": "Академія Часу Відкрита",
-    "academy_unlock_description": "Ваші дослідження змінили саму тканину часу. Відтепер ви можете керувати Академією Часу та досліджувати історію України.",
     "second_prestige_reached": "Досягнуто другого переродження!",
     "start_research": "Почати дослідження",
     "feature_expeditions": "Експедиції",
@@ -699,8 +687,6 @@
     "feature_story": "Історія",
     "feature_npc": "NPC",
     "feature_reputation": "Репутація",
-    "academy_title": "Академія",
-    "academy_subtitle": "Академія дослідників",
     "reputation": "Репутація",
     "karbovanets": "Карбованці",
     "visitors": "Відвідувачі",
@@ -786,11 +772,6 @@
     "speed_up": "Прискорити за рекламу",
     "sped_up": "Експедицію прискорено на 50%!"
   },
-  "academy_unlock": {
-    "title": "Академія Часу Відкрита!",
-    "description": "Ваші дослідження змінили саму тканину часу. Академія Часу тепер доступна для вивчення історії України через часові експедиції.",
-    "start_research": "Розпочати дослідження"
-  },
   "notifications": {
     "connection_error": "Проблеми зі з'єднанням. Прогрес збережеться локально",
     "syncing": "Синхронізація...",
@@ -807,7 +788,7 @@
   },
   "buildings": {
     "title": "Будівлі",
-    "subtitle": "Розвивайте свою Академію",
+    "subtitle": "Розвивайте свій музей",
     "total_levels": "Всього рівнів",
     "karbovanets": "Карбованці",
     "level": "Рівень",
@@ -836,80 +817,36 @@
     "artifact_unlocked": "Відкрито новий артефакт",
     "region_unlocked": "Відкрито новий регіон"
   },
-  "academy": {
-    "progress_title": "До Академії",
-    "milestone_reached": "Етап досягнуто!",
-    "locked_preview": "Що відкриється:",
-    "next_milestone": "Наступний:",
-    "remaining": "Залишилось:",
-    "prestige": "Престижу",
-    "prestige_short": "Престижу",
-    "unlocked": "АКАДЕМІЯ ВІДКРИТА!",
-    "unlocked_description": "Ласкаво просимо до Історичної Академії!",
-    "milestones_reached": "Досягнуті етапи:",
-    "invitation_title": "ЗАПРОШЕННЯ",
-    "invitation_body": "Історична Академія надіслала листа...",
-    "milestone_discovery": "Відкриття",
-    "milestone_expansion": "Розширення",
-    "milestone_advancement": "Просування",
-    "milestone_mastery": "Майстерність",
-    "milestone_academy": "АКАДЕМІЯ",
-    "feature_hero_speed": "Швидкість Героїв",
-    "feature_hero_speed_desc": "Герої повертаються швидше",
-    "feature_extra_slot": "Додатковий Слот",
-    "feature_extra_slot_desc": "Одночасно 3 експедиції",
-    "feature_legend_chance": "Шанс Легенд",
-    "feature_legend_chance_desc": "+5% легендарних артефактів",
-    "feature_museum_curator": "Куратор Музею",
-    "feature_museum_curator_desc": "Керуйте виставками"
-  },
   "milestone": {
     "prestige_milestones": "Етапи Престижу",
     "next_in": "Далі:",
     "reached": "Етап досягнуто!",
     "achieved": "досягнуто!",
     "rewards": "Нагороди:",
-    "academy_unlocked": "АКАДЕМІЯ ВІДКРИТА!",
     "p0_prestige_milestone": "Перший Крок",
     "p1_prestige_milestone": "Відкриття",
     "p2_prestige_milestone": "Дослідник",
     "p3_prestige_milestone": "Майстер",
-    "p4_prestige_milestone": "Експерт",
-    "prestige": "Престиж",
-    "academy_unlock": "Академія Відкрита!"
+    "prestige": "Престиж"
   },
   "teaser": {
-    "academy_subtitle": "Академія відкриється на престижі 50",
-    "academy_title": "Академія",
     "collect_artifacts": "Збери 10 артефактів щоб відкрити",
-    "locked_academy": "Академія заблокована",
     "progress": "Прогрес",
     "unlock_at": "Відкриється на престижі",
     "milestones": {
       "first_journey": "Перша подорож",
       "treasure_seeker": "Шукач скарбів",
       "collector": "Колекціонер",
-      "academy_master": "Володар Академії",
       "remaining": "Залишилось"
     },
     "story_desc": "Deep historical campaign",
-    "buildings_desc": "Покращуйте свою академію",
+    "buildings_desc": "Покращуйте свій музей",
     "buildings": "Buildings",
     "expeditions_desc": "More challenging expeditions",
     "story": "Campaign",
     "heroes": "Heroes",
     "heroes_desc": "Найміть легендарних героїв",
     "expeditions": "Expeditions"
-  },
-  "story_events": {
-    "academy_first_discovery": "Перше відкриття",
-    "academy_rising_fame": "Слава зростає",
-    "academy_invitation": "Запрошення"
-  },
-  "npc_hints": {
-    "academy_hint_1": "Чула легенди про Історичну Академію...",
-    "academy_hint_3": "Накопичуй Престиж — і ти там опинишся.",
-    "academy_hint_5": "Щоб туди потрапити, треба стати справжнім істориком."
   },
   "ad_reward": {
     "xp_boost_title": "XP Буст",
@@ -921,8 +858,6 @@
     "artifact_chance_title": "Шанс артефактів",
     "artifact_chance_description": "+10% шанс знахідки на 30 хв",
     "artifact_chance_p2_description": "+15% шанс знахідки на 30 хв",
-    "academy_currency_title": "Академічна валюта",
-    "academy_currency_description": "+50 Академічних монет",
     "expedition_speed_title": "Швидкість експедицій",
     "expedition_speed_description": "x1.5 швидкість на 30 хв",
     "museum_bonus_title": "Бонус музею",

@@ -372,8 +372,7 @@ export type AchievementCategory =
   | 'hero'
   | 'museum'
   | 'npc'
-  | 'story'
-  | 'academy';
+  | 'story';
 
 export interface Achievement {
   id: string;
@@ -619,45 +618,6 @@ export const achievements: Achievement[] = [
     requirement: { type: 'count', target: 'quest', value: 50 },
     reward: { xp: 2000, expeditionSpeedBoost: 10 },
   },
-
-  // ===== ACADEMY ACHIEVEMENTS =====
-  {
-    id: 'ach-academy-level-5',
-    category: 'academy',
-    nameKey: 'achievement.academy_level_5.name',
-    descriptionKey: 'achievement.academy_level_5.desc',
-    icon: '🏫',
-    requirement: { type: 'level', target: 'academy', value: 5 },
-    reward: { xp: 300, karbovanets: 800 },
-  },
-  {
-    id: 'ach-academy-level-10',
-    category: 'academy',
-    nameKey: 'achievement.academy_level_10.name',
-    descriptionKey: 'achievement.academy_level_10.desc',
-    icon: '🏫',
-    requirement: { type: 'level', target: 'academy', value: 10 },
-    reward: { xp: 800, reputation: 50, karbovanets: 2000 },
-  },
-  {
-    id: 'ach-reputation-1000',
-    category: 'academy',
-    nameKey: 'achievement.reputation_1000.name',
-    descriptionKey: 'achievement.reputation_1000.desc',
-    icon: '⭐',
-    requirement: { type: 'count', target: 'reputation', value: 1000 },
-    reward: { xp: 500, karbovanets: 1500 },
-  },
-  {
-    id: 'ach-reputation-10000',
-    category: 'academy',
-    nameKey: 'achievement.reputation_10000.name',
-    descriptionKey: 'achievement.reputation_10000.desc',
-    icon: '⭐',
-    requirement: { type: 'count', target: 'reputation', value: 10000 },
-    reward: { xp: 3000, expeditionSpeedBoost: 15 },
-    secret: true,
-  },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -833,8 +793,7 @@ export interface PlayerStats {
   arcsCompleted: number;
   questsCompleted: number;
   
-  // Academy stats
-  academyLevel: number;
+  // Reputation and XP
   totalReputation: number;
   totalXP: number;
   
@@ -864,7 +823,6 @@ export function getInitialPlayerStats(): PlayerStats {
     totalInteractions: 0,
     arcsCompleted: 0,
     questsCompleted: 0,
-    academyLevel: 1,
     totalReputation: 0,
     totalXP: 0,
     totalPlayTime: 0,

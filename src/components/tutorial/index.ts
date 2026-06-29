@@ -1,7 +1,7 @@
 /**
  * Tutorial Components
  * 
- * Academy onboarding system for new players.
+ * Onboarding system for new players.
  */
 
 export { TutorialGuide } from './TutorialGuide';

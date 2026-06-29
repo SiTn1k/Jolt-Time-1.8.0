@@ -6,7 +6,7 @@
  * - OneSignal (optional, requires setup)
  * - Firebase Cloud Messaging (optional, requires setup)
  * 
- * NOTE: Academy notifications removed - Academy system disabled
+ * NOTE: Prestige 1 only - Academy system removed
  */
 
 import { supabase } from '../lib/supabase';
