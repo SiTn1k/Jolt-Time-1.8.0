@@ -1,6 +1,13 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createHmac } from "node:crypto";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
+import { 
+  logSecurityEvent, 
+  extractClientInfo,
+  EVENT_TYPES 
+} from "../_shared/security-log.ts";
+import { validateGameActionRequest, validateEpochId } from "../_shared/validation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,6 +25,12 @@ const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
  * All actions require a valid `init_data` field which is verified via
  * HMAC-SHA256 against the bot token.  This prevents users from forging
  * their telegram_id or manipulating request payloads via DevTools.
+ *
+ * Security features:
+ * - HMAC-SHA256 validation of initData
+ * - Input validation
+ * - Rate limiting: 60 game actions per minute
+ * - Security audit logging
  *
  * Supported actions:
  *   - buy_generator:  Verify currency balance, deduct cost, add generator.
@@ -127,8 +140,30 @@ Deno.serve(async (req: Request) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 
+  // Extract client info for logging
+  const { ipAddress, userAgent } = extractClientInfo(req);
+
   try {
     const body = await req.json();
+    
+    // Validate request payload
+    const validation = validateGameActionRequest(body);
+    if (!validation.valid) {
+      const errorMsg = validation.errors?.join(", ") ?? "Invalid request";
+      await logSecurityEvent({
+        telegramId: null,
+        eventType: EVENT_TYPES.PAYLOAD_VALIDATION_FAILED,
+        eventCategory: "abuse",
+        success: false,
+        ipAddress,
+        userAgent,
+        errorMessage: errorMsg,
+        details: { errors: validation.errors },
+        severity: "warning",
+      });
+      return json({ error: errorMsg }, 400);
+    }
+
     const { action, init_data, generator_id, epoch_id } = body as {
       action: string;
       init_data?: string;
@@ -136,14 +171,75 @@ Deno.serve(async (req: Request) => {
       epoch_id?: string;
     };
 
-    if (!init_data) return json({ error: "Missing init_data" }, 400);
+    if (!init_data) {
+      await logSecurityEvent({
+        telegramId: null,
+        eventType: EVENT_TYPES.INVALID_INIT_DATA,
+        eventCategory: "auth",
+        success: false,
+        ipAddress,
+        userAgent,
+        errorMessage: "Missing init_data",
+        severity: "warning",
+      });
+      return json({ error: "Missing init_data" }, 400);
+    }
 
-    const validation = validateInitData(init_data);
-    if (!validation.valid) return json({ error: validation.error }, 401);
-    if (!validation.userId) return json({ error: "No user_id in initData" }, 401);
+    const initDataValidation = validateInitData(init_data);
+    if (!initDataValidation.valid) {
+      await logSecurityEvent({
+        telegramId: null,
+        eventType: EVENT_TYPES.INVALID_INIT_DATA,
+        eventCategory: "auth",
+        success: false,
+        ipAddress,
+        userAgent,
+        errorMessage: initDataValidation.error ?? "HMAC validation failed",
+        severity: "warning",
+      });
+      return json({ error: initDataValidation.error }, 401);
+    }
+    if (!initDataValidation.userId) {
+      return json({ error: "No user_id in initData" }, 401);
+    }
+
+    // Rate limiting: 60 game actions per minute
+    const rateLimitResult = await checkRateLimit(initDataValidation.userId, "game_action");
+    if (!rateLimitResult.allowed) {
+      await logSecurityEvent({
+        telegramId: initDataValidation.userId,
+        eventType: EVENT_TYPES.RATE_LIMIT_EXCEEDED,
+        eventCategory: "abuse",
+        success: false,
+        ipAddress,
+        userAgent,
+        details: { action },
+        severity: "warning",
+      });
+      return rateLimitResponse(rateLimitResult);
+    }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-    const telegramId = validation.userId;
+    const telegramId = initDataValidation.userId;
+
+    // Validate epoch_id for switch_epoch
+    if (action === "switch_epoch" && epoch_id) {
+      const validatedEpoch = validateEpochId(epoch_id);
+      if (!validatedEpoch) {
+        await logSecurityEvent({
+          telegramId,
+          eventType: EVENT_TYPES.INVALID_PARAMETERS,
+          eventCategory: "abuse",
+          success: false,
+          ipAddress,
+          userAgent,
+          errorMessage: "Invalid epoch_id",
+          details: { epoch_id },
+          severity: "warning",
+        });
+        return json({ error: "Invalid epoch_id" }, 400);
+      }
+    }
 
     switch (action) {
       case "upgrade_tap":
@@ -155,10 +251,34 @@ Deno.serve(async (req: Request) => {
         if (!generator_id) return json({ error: "Missing generator_id" }, 400);
         return json(await buyGenerator(supabase, telegramId));
       default:
+        await logSecurityEvent({
+          telegramId,
+          eventType: EVENT_TYPES.INVALID_PARAMETERS,
+          eventCategory: "abuse",
+          success: false,
+          ipAddress,
+          userAgent,
+          errorMessage: `Unknown action: ${action}`,
+          details: { action },
+          severity: "warning",
+        });
         return json({ error: `Unknown action: ${action}` }, 400);
     }
   } catch (err) {
     console.error("game-action error:", err);
+    const errorMsg = err instanceof Error ? err.message : "Internal server error";
+    
+    await logSecurityEvent({
+      telegramId: null,
+      eventType: EVENT_TYPES.EDGE_FUNCTION_ERROR,
+      eventCategory: "system",
+      success: false,
+      ipAddress,
+      userAgent,
+      errorMessage: errorMsg,
+      severity: "error",
+    });
+    
     return json({ error: String(err) }, 500);
   }
 });

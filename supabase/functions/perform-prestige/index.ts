@@ -1,5 +1,13 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts";
+import { 
+  logSecurityEvent, 
+  logPrestigeEvent, 
+  extractClientInfo,
+  EVENT_TYPES 
+} from "../_shared/security-log.ts";
+import { validatePrestigeRequest, validateTelegramId } from "../_shared/validation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,35 +24,15 @@ const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
  * Server-authoritative prestige (rebirth) system.
  * Resets player progress in exchange for permanent prestige points.
  *
+ * Security features:
+ * - Rate limiting: 1 prestige per hour per user
+ * - Input validation
+ * - Security audit logging
+ *
  * Requirements:
  * - Minimum level 950
  * - Calculated prestige points based on total_xp
- *
- * Resets:
- * - level → 1
- * - xp → 0
- * - currency → 20
- * - owned_generators → []
- * - tap_power → 1
- * - passive_xp_per_second → 0
- * - unlocked_epochs → ['trypillia']
- * - epoch_id → 'trypillia'
- * - energy → 1000
- * - artifact_parts → {} (keep artifact_levels)
- *
- * Keeps:
- * - prestige_level (+1)
- * - prestige_points (new points added)
- * - prestige_research
- * - artifact_levels (completed artifacts)
- * - completed_artifacts
- * - referrals_count
- * - referral_earnings
  */
-
-interface PrestigeRequest {
-  telegram_id: number;
-}
 
 interface PrestigeResponse {
   success: boolean;
@@ -92,12 +80,47 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: "Method not allowed" }, 405);
   }
 
-  try {
-    const body: PrestigeRequest = await req.json();
-    const { telegram_id } = body;
+  // Extract client info for logging
+  const { ipAddress, userAgent } = extractClientInfo(req);
 
-    if (!telegram_id || typeof telegram_id !== "number" || telegram_id <= 0) {
-      return jsonResponse({ error: "Invalid telegram_id" }, 400);
+  try {
+    const body = await req.json();
+    
+    // Validate request payload
+    const validation = validatePrestigeRequest(body);
+    if (!validation.valid) {
+      const errorMsg = validation.errors?.join(", ") ?? "Invalid request";
+      await logSecurityEvent({
+        telegramId: null,
+        eventType: EVENT_TYPES.PRESTIGE_FAILED,
+        eventCategory: "prestige",
+        success: false,
+        ipAddress,
+        userAgent,
+        errorMessage: errorMsg,
+        details: { errors: validation.errors },
+        severity: "warning",
+      });
+      return jsonResponse({ error: errorMsg }, 400);
+    }
+
+    const { telegram_id } = validation.sanitized!;
+    const validatedTelegramId = telegram_id as number;
+
+    // Rate limiting: 1 prestige per hour
+    const rateLimitResult = await checkRateLimit(validatedTelegramId, "prestige");
+    if (!rateLimitResult.allowed) {
+      await logSecurityEvent({
+        telegramId: validatedTelegramId,
+        eventType: EVENT_TYPES.RATE_LIMIT_EXCEEDED,
+        eventCategory: "abuse",
+        success: false,
+        ipAddress,
+        userAgent,
+        details: { action: "prestige" },
+        severity: "warning",
+      });
+      return rateLimitResponse(rateLimitResult);
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
@@ -105,27 +128,57 @@ Deno.serve(async (req: Request) => {
     // Fetch current player state
     const { data: player, error: fetchError } = await supabase
       .from("game_progress")
-      .select("level, total_xp, prestige_level, prestige_points, prestige_research, artifact_levels, completed_artifacts")
-      .eq("telegram_id", telegram_id)
+      .select("level, total_xp, prestige_level, prestige_points, prestige_research, artifact_levels, completed_artifacts, active_boosters")
+      .eq("telegram_id", validatedTelegramId)
       .maybeSingle();
 
     if (fetchError) {
       console.error("Error fetching player:", fetchError);
+      await logSecurityEvent({
+        telegramId: validatedTelegramId,
+        eventType: EVENT_TYPES.DB_ERROR,
+        eventCategory: "system",
+        success: false,
+        ipAddress,
+        userAgent,
+        errorMessage: fetchError.message,
+        severity: "error",
+      });
       return jsonResponse({ error: "Database error" }, 500);
     }
 
     if (!player) {
+      await logSecurityEvent({
+        telegramId: validatedTelegramId,
+        eventType: EVENT_TYPES.PRESTIGE_FAILED,
+        eventCategory: "prestige",
+        success: false,
+        ipAddress,
+        userAgent,
+        errorMessage: "Player not found",
+        severity: "warning",
+      });
       return jsonResponse({ error: "Player not found" }, 404);
     }
 
+    const currentLevel = player.level as number;
+
     // Check requirements
-    const prestigeCheck = canPrestige(player.level as number);
+    const prestigeCheck = canPrestige(currentLevel);
     if (!prestigeCheck.canPrestige) {
+      await logPrestigeEvent(
+        req,
+        validatedTelegramId,
+        false,
+        currentLevel,
+        player.prestige_level as number,
+        prestigeCheck.reason
+      );
       return jsonResponse({ error: prestigeCheck.reason }, 400);
     }
 
     // Calculate prestige points
-    const pointsEarned = calculatePrestigePoints(player.total_xp as number, player.level as number);
+    const pointsEarned = calculatePrestigePoints(player.total_xp as number, currentLevel);
     const newPrestigeLevel = (player.prestige_level as number) + 1;
     const newPrestigePoints = (player.prestige_points as number) + pointsEarned;
 
@@ -151,18 +204,9 @@ Deno.serve(async (req: Request) => {
       last_saved_at: new Date().toISOString(),
       last_online_at: new Date().toISOString(),
       session_start_at: new Date().toISOString(),
-      // Keep these:
-      // prestige_research (unchanged)
-      // artifact_levels (unchanged)
-      // completed_artifacts (unchanged)
-      // referrals_count (unchanged)
-      // referral_earnings (unchanged)
-      // active_boosters (clear non-permanent)
       active_boosters: {
-        // Keep purchase_log for refund support
         purchase_log: (player.active_boosters as Record<string, unknown>)?.purchase_log || [],
       },
-      // Reset daily counters
       daily_ad_views: {},
     };
 
@@ -170,22 +214,41 @@ Deno.serve(async (req: Request) => {
     const { error: updateError } = await supabase
       .from("game_progress")
       .update(resetData)
-      .eq("telegram_id", telegram_id);
+      .eq("telegram_id", validatedTelegramId);
 
     if (updateError) {
       console.error("Error updating player for prestige:", updateError);
+      await logSecurityEvent({
+        telegramId: validatedTelegramId,
+        eventType: EVENT_TYPES.PRESTIGE_FAILED,
+        eventCategory: "prestige",
+        success: false,
+        ipAddress,
+        userAgent,
+        errorMessage: updateError.message,
+        severity: "error",
+      });
       return jsonResponse({ error: "Failed to perform prestige" }, 500);
     }
 
     // Record prestige in prestige_records
     await supabase.from("prestige_records").insert({
-      telegram_id,
+      telegram_id: validatedTelegramId,
       prestige_number: newPrestigeLevel,
-      previous_level: player.level,
+      previous_level: currentLevel,
       total_xp_at_prestige: player.total_xp,
     });
 
-    console.log(`Prestige completed: user=${telegram_id}, new_level=${newPrestigeLevel}, points_earned=${pointsEarned}`);
+    console.log(`Prestige completed: user=${validatedTelegramId}, new_level=${newPrestigeLevel}, points_earned=${pointsEarned}`);
+
+    // Log success
+    await logPrestigeEvent(
+      req,
+      validatedTelegramId,
+      true,
+      currentLevel,
+      newPrestigeLevel
+    );
 
     return jsonResponse({
       success: true,
@@ -195,6 +258,19 @@ Deno.serve(async (req: Request) => {
     });
   } catch (err) {
     console.error("Prestige error:", err);
+    const errorMsg = err instanceof Error ? err.message : "Internal server error";
+    
+    await logSecurityEvent({
+      telegramId: null,
+      eventType: EVENT_TYPES.EDGE_FUNCTION_ERROR,
+      eventCategory: "system",
+      success: false,
+      ipAddress,
+      userAgent,
+      errorMessage: errorMsg,
+      severity: "error",
+    });
+    
     return jsonResponse({ error: "Internal server error" }, 500);
   }
 });
