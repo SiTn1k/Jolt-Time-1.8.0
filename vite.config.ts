@@ -8,9 +8,9 @@ export default defineConfig({
     include: ['react', 'react-dom', 'motion'],
   },
   build: {
-    // DEBUG MODE - Disable minification to see real errors
-    minify: false,
-    sourcemap: true,
+    // Production: use default minification (esbuild)
+    // Sourcemaps only in development
+    sourcemap: false,
     commonjsOptions: {
       include: [/react/, /node_modules/],
     },

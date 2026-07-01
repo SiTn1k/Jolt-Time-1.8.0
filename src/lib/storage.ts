@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
-import { GameState, EpochId, OwnedGenerator, LeaderboardEntry, ActiveBoosters, DailyTasksState, PrestigeResearch, DailyAdViews, Epoch } from '../types/game';
+import { GameState, EpochId, OwnedGenerator, LeaderboardEntry, ActiveBoosters, DailyTasksState, PrestigeResearch, DailyAdViews } from '../types/game';
 import { getTelegramUserId, getTelegramUserInfo, getReferrerId } from './telegram';
-import { getCurrentEpochByLevel, EPOCHS } from '../data/epochs';
+import { EPOCHS, calculateXpToLevel } from '../data/epochs';
 import { generateUUID } from './cryptoUtils';
 
 const LOCAL_STORAGE_KEY = 'ukraine_tap_game_state';
@@ -24,47 +24,6 @@ function fixUnlockedEpochs(saved: EpochId[], level: number, currentEpochId: Epoc
     }
   }
   return [...result];
-}
-
-function calculateXpToLevel(level: number): number {
-  const epoch = getCurrentEpochByLevel(level);
-  const { min, max } = epoch.levelRange;
-  const rangeSize = Math.max(1, max - min + 1);
-  const progress = Math.min(1, Math.max(0, (level - min) / rangeSize));
-
-  const epochIndex = EPOCHS.findIndex(e => e.id === epoch.id);
-  let minSeconds: number;
-  let maxSeconds: number;
-
-  if (epochIndex === 0) {
-    minSeconds = 60;
-    maxSeconds = 300;
-  } else if (epochIndex === 1) {
-    minSeconds = 60;
-    maxSeconds = 480;
-  } else if (epochIndex === 2) {
-    minSeconds = 120;
-    maxSeconds = 900;
-  } else {
-    minSeconds = 120 + (epochIndex - 3) * 60;
-    maxSeconds = 1800 + (epochIndex - 3) * 600;
-  }
-
-  const targetSeconds = minSeconds + progress * (maxSeconds - minSeconds);
-  const levelInEpoch = Math.max(1, level - min + 1);
-  const estimatedPassive = estimatePassiveForEpoch(epoch, levelInEpoch);
-  return Math.max(50, Math.floor(estimatedPassive * targetSeconds));
-}
-
-function estimatePassiveForEpoch(epoch: Epoch, levelInEpoch: number): number {
-  const tierWeights = [1, 0.5, 0.25, 0.1, 0.03];
-  let total = 0;
-  for (let i = 0; i < epoch.generators.length && i < tierWeights.length; i++) {
-    const g = epoch.generators[i];
-    const owned = Math.max(1, Math.floor(levelInEpoch * tierWeights[i]));
-    total += g.baseProduction * owned;
-  }
-  return Math.max(1, total);
 }
 
 function ensureJson<T>(value: T | string): T {

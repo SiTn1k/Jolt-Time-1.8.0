@@ -1,4 +1,4 @@
-export type Rarity = 'common' | 'rare' | 'epic' | 'legendary';
+export type Rarity = 'common' | 'rare' | 'epic' | 'legendary' | 'secret';
 export type HeroSpecialization = 'archaeologist' | 'diplomat' | 'warrior' | 'scholar';
 export type HeroRank = 'novice' | 'adept' | 'expert' | 'master' | 'legend';
 
@@ -98,6 +98,7 @@ export const STAT_GROWTH_PER_LEVEL: Record<Rarity, { base: number; perLevel: num
   rare: { base: 7, perLevel: 3 },
   epic: { base: 10, perLevel: 4 },
   legendary: { base: 15, perLevel: 6 },
+  secret: { base: 20, perLevel: 8 },
 };
 
 /**
@@ -108,6 +109,7 @@ export const ARTIFACT_FRAGMENT_COSTS: Record<Rarity, number> = {
   rare: 50,
   epic: 100,
   legendary: 250,
+  secret: 500,
 };
 
 /**
@@ -118,6 +120,7 @@ export const RARITY_NAMES: Record<Rarity, string> = {
   rare: 'Рідкісний',
   epic: 'Епічний',
   legendary: 'Легендарний',
+  secret: 'Секретний',
 };
 
 /**
