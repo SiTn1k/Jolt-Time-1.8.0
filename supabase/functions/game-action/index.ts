@@ -59,21 +59,119 @@ function validateInitData(initData: string): { valid: boolean; userId: number | 
 
 // ── Action handlers ───────────────────────────────────────────────────────
 
-async function buyGenerator(supabase: ReturnType<typeof createClient>, telegramId: number) {
+// Server-side generator definitions (must match epochs.ts)
+const GENERATOR_DEFS: Record<string, { baseCost: number; costMultiplier: number; baseProduction: number }> = {
+  // Trypillia
+  clay_pit:      { baseCost: 10,    costMultiplier: 1.15, baseProduction: 2 },
+  pottery:       { baseCost: 50,    costMultiplier: 1.15, baseProduction: 8 },
+  settlement:    { baseCost: 300,   costMultiplier: 1.15, baseProduction: 40 },
+  megastructure: { baseCost: 3000,  costMultiplier: 1.15, baseProduction: 200 },
+  temple:        { baseCost: 30000, costMultiplier: 1.15, baseProduction: 1000 },
+  // Scythia
+  pasture:       { baseCost: 10,    costMultiplier: 1.15, baseProduction: 5 },
+  gold_mine:     { baseCost: 50,    costMultiplier: 1.15, baseProduction: 20 },
+  kurgan:        { baseCost: 300,   costMultiplier: 1.15, baseProduction: 100 },
+  fortress:      { baseCost: 3000,  costMultiplier: 1.15, baseProduction: 500 },
+  royal_tomb:    { baseCost: 30000, costMultiplier: 1.15, baseProduction: 2500 },
+  // Antiquity
+  port:          { baseCost: 10,    costMultiplier: 1.15, baseProduction: 10 },
+  agora:         { baseCost: 50,    costMultiplier: 1.15, baseProduction: 40 },
+  colony:        { baseCost: 300,   costMultiplier: 1.15, baseProduction: 200 },
+  amphitheater:  { baseCost: 3000,  costMultiplier: 1.15, baseProduction: 1000 },
+  acropolis:     { baseCost: 30000, costMultiplier: 1.15, baseProduction: 5000 },
+  // Kyiv Rus
+  field:         { baseCost: 10,    costMultiplier: 1.15, baseProduction: 15 },
+  craft_workshop:{ baseCost: 50,    costMultiplier: 1.15, baseProduction: 60 },
+  city:          { baseCost: 300,   costMultiplier: 1.15, baseProduction: 300 },
+  saint_sophia:  { baseCost: 3000,  costMultiplier: 1.15, baseProduction: 1500 },
+  golden_gate:   { baseCost: 30000, costMultiplier: 1.15, baseProduction: 7500 },
+  // Halych-Volhynia
+  salt_mine:     { baseCost: 10,    costMultiplier: 1.15, baseProduction: 20 },
+  caravan:       { baseCost: 50,    costMultiplier: 1.15, baseProduction: 80 },
+  castle:        { baseCost: 300,   costMultiplier: 1.15, baseProduction: 400 },
+  cathedral:     { baseCost: 3000,  costMultiplier: 1.15, baseProduction: 2000 },
+  principality:  { baseCost: 30000, costMultiplier: 1.15, baseProduction: 10000 },
+  // Polish-Lithuanian
+  manor:         { baseCost: 10,    costMultiplier: 1.15, baseProduction: 25 },
+  market:        { baseCost: 50,    costMultiplier: 1.15, baseProduction: 100 },
+  cossack_sich:  { baseCost: 300,   costMultiplier: 1.15, baseProduction: 500 },
+  brotherhood:   { baseCost: 3000,  costMultiplier: 1.15, baseProduction: 2500 },
+  university:    { baseCost: 30000, costMultiplier: 1.15, baseProduction: 12500 },
+  // Cossack
+  homestead:     { baseCost: 10,    costMultiplier: 1.15, baseProduction: 30 },
+  cannon:        { baseCost: 50,    costMultiplier: 1.15, baseProduction: 120 },
+  regiment:      { baseCost: 300,   costMultiplier: 1.15, baseProduction: 600 },
+  fortress_sich: { baseCost: 3000,  costMultiplier: 1.15, baseProduction: 3000 },
+  hetman_capital:{ baseCost: 30000, costMultiplier: 1.15, baseProduction: 15000 },
+  // Hetmanate
+  farm:          { baseCost: 10,    costMultiplier: 1.15, baseProduction: 40 },
+  factory:       { baseCost: 50,    costMultiplier: 1.15, baseProduction: 160 },
+  gymnasium:     { baseCost: 300,   costMultiplier: 1.15, baseProduction: 800 },
+  theater:       { baseCost: 3000,  costMultiplier: 1.15, baseProduction: 4000 },
+  railway:       { baseCost: 30000, costMultiplier: 1.15, baseProduction: 20000 },
+  // Empire
+  estate:        { baseCost: 10,    costMultiplier: 1.15, baseProduction: 50 },
+  enterprise:    { baseCost: 50,    costMultiplier: 1.15, baseProduction: 200 },
+  bank:          { baseCost: 300,   costMultiplier: 1.15, baseProduction: 1000 },
+  ministry:      { baseCost: 3000,  costMultiplier: 1.15, baseProduction: 5000 },
+  imperial_palace:{ baseCost: 30000, costMultiplier: 1.15, baseProduction: 25000 },
+  // Revolution
+  print_shop:    { baseCost: 10,    costMultiplier: 1.15, baseProduction: 60 },
+  warehouse:     { baseCost: 50,    costMultiplier: 1.15, baseProduction: 240 },
+  militia:       { baseCost: 300,   costMultiplier: 1.15, baseProduction: 1200 },
+  radio_station: { baseCost: 3000,  costMultiplier: 1.15, baseProduction: 6000 },
+  parliament:    { baseCost: 30000, costMultiplier: 1.15, baseProduction: 30000 },
+  // Soviet
+  collective:    { baseCost: 10,    costMultiplier: 1.15, baseProduction: 80 },
+  soviet_farm:  { baseCost: 50,    costMultiplier: 1.15, baseProduction: 320 },
+  industrial_complex:{ baseCost: 300, costMultiplier: 1.15, baseProduction: 1600 },
+  khrushchevka: { baseCost: 3000,  costMultiplier: 1.15, baseProduction: 8000 },
+  kremlin:      { baseCost: 30000, costMultiplier: 1.15, baseProduction: 40000 },
+  // Independence
+  startup:       { baseCost: 10,    costMultiplier: 1.15, baseProduction: 100 },
+  mall:          { baseCost: 50,    costMultiplier: 1.15, baseProduction: 400 },
+  tech_park:     { baseCost: 300,   costMultiplier: 1.15, baseProduction: 2000 },
+  stock_exchange:{ baseCost: 3000,  costMultiplier: 1.15, baseProduction: 10000 },
+  independence_monument:{ baseCost: 30000, costMultiplier: 1.15, baseProduction: 50000 },
+};
+
+function getGeneratorCost(generatorId: string, currentLevel: number): number {
+  const def = GENERATOR_DEFS[generatorId];
+  if (!def) return Infinity;
+  return Math.floor(def.baseCost * Math.pow(def.costMultiplier, currentLevel));
+}
+
+async function buyGenerator(supabase: ReturnType<typeof createClient>, telegramId: number, generatorId: string) {
+  // Validate generator exists
+  const def = GENERATOR_DEFS[generatorId];
+  if (!def) return { ok: false, error: "Unknown generator" };
+
   // Read current state
   const { data: row } = await supabase.from("game_progress")
-    .select("currency, owned_generators, unlocked_epochs, epoch_id")
+    .select("currency, owned_generators")
     .eq("telegram_id", telegramId).maybeSingle();
   if (!row) return { ok: false, error: "User not found" };
 
-  // Generator lookup — currently we need epoch data; for simplicity we expect
-  // the client to send the cost. Server still verifies balance.
-  // TODO: Move epoch/generator definitions into a shared config or DB table
-  // so the server can independently compute costs.
+  const ownedGenerators = (row.owned_generators as Array<{ generatorId: string; level: number }>) || [];
+  const existing = ownedGenerators.find(og => og.generatorId === generatorId);
+  const currentLevel = existing?.level || 0;
+  const cost = getGeneratorCost(generatorId, currentLevel);
 
-  // The client sends the expected cost so we can validate it
-  // In a future iteration, compute cost server-side from generator defs
-  return { ok: false, error: "buy_generator: cost validation requires server-side generator definitions — coming soon" };
+  const currency = (row.currency as number) ?? 0;
+  if (currency < cost) return { ok: false, error: "Not enough currency" };
+
+  // Update owned generators
+  const newOwned = existing
+    ? ownedGenerators.map(og => og.generatorId === generatorId ? { ...og, level: og.level + 1 } : og)
+    : [...ownedGenerators, { generatorId, level: 1 }];
+
+  const { error } = await supabase.from("game_progress")
+    .update({ currency: currency - cost, owned_generators: newOwned })
+    .eq("telegram_id", telegramId);
+
+  if (error) return { ok: false, error: error.message };
+
+  return { ok: true, new_level: currentLevel + 1, cost };
 }
 
 async function upgradeTap(supabase: ReturnType<typeof createClient>, telegramId: number) {
@@ -153,7 +251,7 @@ Deno.serve(async (req: Request) => {
         return json(await switchEpoch(supabase, telegramId, epoch_id));
       case "buy_generator":
         if (!generator_id) return json({ error: "Missing generator_id" }, 400);
-        return json(await buyGenerator(supabase, telegramId));
+        return json(await buyGenerator(supabase, telegramId, generator_id));
       default:
         return json({ error: `Unknown action: ${action}` }, 400);
     }
