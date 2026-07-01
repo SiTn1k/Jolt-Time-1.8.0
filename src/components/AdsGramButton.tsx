@@ -4,7 +4,7 @@ import { useTranslation } from '../i18n';
 import { getTelegramUserId } from '../lib/telegram';
 import { hapticImpact, hapticNotification } from '../lib/telegram';
 import {
-  initAdsgram,
+  initAdsgramAsync,
   showRewardAd,
   isXpBoostActive,
   getXpBoostRemainingTime,
@@ -28,16 +28,22 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
   // Check if x3 boost is active
   const boostActive = isXpBoostActive(activeBoosters);
 
-  // Initialize AdsGram SDK
+  // Initialize AdsGram SDK asynchronously with polling
   useEffect(() => {
+    let cancelled = false;
     console.log('[AdsGramButton] Initializing AdsGram SDK...');
-    const sad = initAdsgram();
-    if (!sad) {
-      console.error('[AdsGramButton] Failed to initialize AdsGram SDK');
-    } else {
-      console.log('[AdsGramButton] AdsGram SDK initialized successfully');
-      setSdkReady(true);
-    }
+    
+    (async () => {
+      const sad = await initAdsgramAsync();
+      if (!cancelled && sad) {
+        console.log('[AdsGramButton] AdsGram SDK initialized successfully');
+        setSdkReady(true);
+      } else if (!cancelled) {
+        console.error('[AdsGramButton] Failed to initialize AdsGram SDK');
+      }
+    })();
+    
+    return () => { cancelled = true; };
   }, []);
 
   // Update remaining time every second
@@ -57,13 +63,6 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
   const handleShowAd = useCallback(async () => {
     if (isLoading || boostActive) return;
 
-    const sad = initAdsgram();
-    if (!sad) {
-      console.error('[AdsGramButton] SDK not ready');
-      setError('Реклама наразі недоступна. Спробуйте пізніше.');
-      return;
-    }
-
     const telegramId = getTelegramUserId();
     if (!telegramId) {
       console.error('[AdsGramButton] Telegram ID not found');
@@ -75,9 +74,16 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
     setError(null);
     hapticImpact('medium');
 
-    console.log('[AdsGramButton] Showing reward ad...');
+    console.log('[AdsGramButton] Waiting for SDK and showing ad...');
 
     try {
+      const sad = await initAdsgramAsync();
+      if (!sad) {
+        setError('Реклама наразі недоступна. Спробуйте пізніше.');
+        hapticNotification('error');
+        return;
+      }
+
       const result = await showRewardAd(sad, telegramId);
       console.log('[AdsGramButton] Ad result:', result);
 

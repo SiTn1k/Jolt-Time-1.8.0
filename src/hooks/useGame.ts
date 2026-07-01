@@ -26,6 +26,7 @@ import {
   fetchActiveBoosters,
 } from '../lib/storage';
 import { hapticNotification, hapticImpact } from '../lib/telegram';
+import { rpcBuyGenerator } from '../lib/rpc';
 import type { ActiveBoosters } from '../types/game';
 
 const LOCAL_SAVE_INTERVAL = 2000;
@@ -665,6 +666,7 @@ export function useGame() {
 
     if (state.currency < cost) return false;
 
+    // Optimistic local update
     setState(prev => {
       const existing = prev.ownedGenerators.find(og => og.generatorId === generatorId);
       const newOwned = existing
@@ -688,6 +690,16 @@ export function useGame() {
         passiveXpPerSecond: newPassiveXp,
         dailyTasksState: updatedTasks,
       };
+    });
+
+    // Server validation (async, non-blocking for UX)
+    rpcBuyGenerator(generatorId).then(result => {
+      if (!result.ok) {
+        console.error('Server rejected generator purchase:', result.error);
+        // TODO: Rollback local state on server rejection
+      }
+    }).catch(err => {
+      console.error('Failed to call buy_generator:', err);
     });
 
     return true;

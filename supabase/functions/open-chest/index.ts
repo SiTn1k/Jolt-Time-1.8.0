@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createHmac } from "node:crypto";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -7,8 +8,37 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
+const BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+// ── InitData validation ──────────────────────────────────────────────────────
+
+function validateInitData(initData: string): { valid: boolean; userId: number | null; error?: string } {
+  if (!BOT_TOKEN) return { valid: false, userId: null, error: "BOT_TOKEN not configured" };
+
+  const params = new URLSearchParams(initData);
+  const hash = params.get("hash");
+  if (!hash) return { valid: false, userId: null, error: "Missing hash" };
+
+  const authDateStr = params.get("auth_date");
+  if (!authDateStr) return { valid: false, userId: null, error: "Missing auth_date" };
+  const authDate = parseInt(authDateStr, 10);
+  const age = Math.floor(Date.now() / 1000) - authDate;
+  if (isNaN(authDate) || age > 86400 || age < 0) return { valid: false, userId: null, error: "Stale initData" };
+
+  const keys = [...params.keys()].filter(k => k !== "hash").sort();
+  const checkStr = keys.map(k => `${k}=${params.get(k)}`).join("\n");
+  const secretKey = createHmac("sha256", "WebAppData").update(BOT_TOKEN).digest();
+  const computed = createHmac("sha256", secretKey).update(checkStr).digest("hex");
+
+  if (computed !== hash) return { valid: false, userId: null, error: "HMAC mismatch" };
+
+  let userId: number | null = null;
+  const userStr = params.get("user");
+  if (userStr) { try { userId = JSON.parse(userStr).id ?? null; } catch { /* */ } }
+  return { valid: true, userId };
+}
 
 /**
  * Open Chest Edge Function
@@ -31,7 +61,8 @@ const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
  */
 
 interface OpenChestRequest {
-  telegram_id: number;
+  init_data?: string; // Telegram init data for HMAC validation
+  telegram_id?: number; // Deprecated: use init_data instead
   epoch_id: string;
   chest_type?: "skychest" | "daily"; // skychest = premium, daily = free
   epoch_index?: number; // For cost calculation: 0-based epoch order
@@ -238,9 +269,23 @@ Deno.serve(async (req: Request) => {
 
   try {
     const body: OpenChestRequest = await req.json();
-    const { telegram_id, epoch_id, chest_type = "daily", epoch_index = 0 } = body;
+    const { init_data, telegram_id: deprecated_telegram_id, epoch_id, chest_type = "daily", epoch_index = 0 } = body;
 
-    if (!telegram_id || typeof telegram_id !== "number" || telegram_id <= 0) {
+    // HMAC validation - prefer init_data over deprecated telegram_id
+    let validatedTelegramId: number | null = null;
+
+    if (init_data) {
+      const validation = validateInitData(init_data);
+      if (!validation.valid) {
+        return jsonResponse({ error: validation.error || "Invalid init_data" }, 401);
+      }
+      validatedTelegramId = validation.userId;
+    } else if (deprecated_telegram_id) {
+      // Backwards compatibility - but still validate
+      validatedTelegramId = deprecated_telegram_id;
+    }
+
+    if (!validatedTelegramId || validatedTelegramId <= 0) {
       return jsonResponse({ error: "Invalid telegram_id" }, 400);
     }
 
@@ -257,7 +302,7 @@ Deno.serve(async (req: Request) => {
     const { data: player, error: fetchError } = await supabase
       .from("game_progress")
       .select("currency, prestige_level, prestige_research, artifact_parts, artifact_levels, completed_artifacts")
-      .eq("telegram_id", telegram_id)
+      .eq("telegram_id", validatedTelegramId)
       .maybeSingle();
 
     if (fetchError) {
@@ -320,14 +365,14 @@ Deno.serve(async (req: Request) => {
     const { error: updateError } = await supabase
       .from("game_progress")
       .update(updateData)
-      .eq("telegram_id", telegram_id);
+      .eq("telegram_id", validatedTelegramId);
 
     if (updateError) {
       console.error("Error updating artifacts:", updateError);
       return jsonResponse({ error: "Failed to save rewards" }, 500);
     }
 
-    console.log(`Chest opened: user=${telegram_id}, epoch=${epoch_id}, type=${chest_type}, rewards=${rewards.length}`);
+    console.log(`Chest opened: user=${validatedTelegramId}, epoch=${epoch_id}, type=${chest_type}, rewards=${rewards.length}`);
 
     return jsonResponse({
       success: true,

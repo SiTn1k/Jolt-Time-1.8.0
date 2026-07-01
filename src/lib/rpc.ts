@@ -82,9 +82,12 @@ export async function rpcOpenChest(
 }> {
   if (!supabase) return { ok: false, error: 'No Supabase connection' };
 
+  const init_data = getRawInitData();
+  if (!init_data) return { ok: false, error: 'Not running in Telegram' };
+
   try {
     const { data, error } = await supabase.functions.invoke('open-chest', {
-      body: { telegram_id: telegramId, epoch_id: epochId, chest_type: chestType, epoch_index: epochIndex },
+      body: { init_data, telegram_id: telegramId, epoch_id: epochId, chest_type: chestType, epoch_index: epochIndex },
     });
 
     if (error) return { ok: false, error: error.message || 'Edge function error' };
