@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createHmac } from "node:crypto";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { validateInitData } from "../_shared/validate";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,35 +10,8 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
 
-// ── InitData validation (same as game-action/index.ts) ──────────────────────
 
-function validateInitData(initData: string): { valid: boolean; userId: number | null; error?: string } {
-  if (!BOT_TOKEN) return { valid: false, userId: null, error: "BOT_TOKEN not configured" };
-
-  const params = new URLSearchParams(initData);
-  const hash = params.get("hash");
-  if (!hash) return { valid: false, userId: null, error: "Missing hash" };
-
-  const authDateStr = params.get("auth_date");
-  if (!authDateStr) return { valid: false, userId: null, error: "Missing auth_date" };
-  const authDate = parseInt(authDateStr, 10);
-  const age = Math.floor(Date.now() / 1000) - authDate;
-  if (isNaN(authDate) || age > 86400 || age < 0) return { valid: false, userId: null, error: "Stale initData" };
-
-  const keys = [...params.keys()].filter(k => k !== "hash").sort();
-  const checkStr = keys.map(k => `${k}=${params.get(k)}`).join("\n");
-  const secretKey = createHmac("sha256", "WebAppData").update(BOT_TOKEN).digest();
-  const computed = createHmac("sha256", secretKey).update(checkStr).digest("hex");
-
-  if (computed !== hash) return { valid: false, userId: null, error: "HMAC mismatch" };
-
-  let userId: number | null = null;
-  const userStr = params.get("user");
-  if (userStr) { try { userId = JSON.parse(userStr).id ?? null; } catch { /* */ } }
-  return { valid: true, userId };
-}
 
 /**
  * Open Chest Edge Function

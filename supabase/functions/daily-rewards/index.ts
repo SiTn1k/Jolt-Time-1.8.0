@@ -12,6 +12,7 @@
  */
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { validateInitData } from "../_shared/validate";
 import { createHmac } from "node:crypto";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
@@ -35,37 +36,6 @@ const DAILY_REWARDS = [
   { day: 6, currency: 4000, xp: 1000 },
   { day: 7, currency: 5000, xp: 1500 }, // Day 7 also grants bonus
 ];
-
-function validateInitData(initData: string): { valid: boolean; userId: number | null; error?: string } {
-  if (!BOT_TOKEN) return { valid: false, userId: null, error: "BOT_TOKEN not configured" };
-
-  const params = new URLSearchParams(initData);
-  const hash = params.get("hash");
-  if (!hash) return { valid: false, userId: null, error: "Missing hash" };
-
-  const authDateStr = params.get("auth_date");
-  if (!authDateStr) return { valid: false, userId: null, error: "Missing auth_date" };
-  const authDate = parseInt(authDateStr, 10);
-  const ageSeconds = Math.floor(Date.now() / 1000) - authDate;
-  if (isNaN(authDate) || ageSeconds > 86400 || ageSeconds < 0) {
-    return { valid: false, userId: null, error: "initData too old or invalid" };
-  }
-
-  const keys = [...params.keys()].filter(k => k !== "hash").sort();
-  const dataCheckString = keys.map(k => `${k}=${params.get(k)}`).join("\n");
-  const secretKey = createHmac("sha256", "WebAppData").update(BOT_TOKEN).digest();
-  const computedHash = createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
-
-  if (computedHash !== hash) return { valid: false, userId: null, error: "HMAC mismatch" };
-
-  const userStr = params.get("user");
-  let userId: number | null = null;
-  if (userStr) {
-    try { userId = JSON.parse(userStr).id ?? null; } catch { return { valid: false, userId: null, error: "Invalid user JSON" }; }
-  }
-
-  return { valid: true, userId };
-}
 
 function jsonResponse(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {

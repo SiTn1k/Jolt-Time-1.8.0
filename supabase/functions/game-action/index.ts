@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createHmac } from "node:crypto";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { validateInitData } from "../_shared/validate";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,51 +29,154 @@ const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
  * back — all server-side, so the client cannot bypass cost checks.
  */
 
-// ── InitData validation (same as validate-init-data) ──────────────────────
-
-function validateInitData(initData: string): { valid: boolean; userId: number | null; error?: string } {
-  if (!BOT_TOKEN) return { valid: false, userId: null, error: "BOT_TOKEN not configured" };
-
-  const params = new URLSearchParams(initData);
-  const hash = params.get("hash");
-  if (!hash) return { valid: false, userId: null, error: "Missing hash" };
-
-  const authDateStr = params.get("auth_date");
-  if (!authDateStr) return { valid: false, userId: null, error: "Missing auth_date" };
-  const authDate = parseInt(authDateStr, 10);
-  const age = Math.floor(Date.now() / 1000) - authDate;
-  if (isNaN(authDate) || age > 86400 || age < 0) return { valid: false, userId: null, error: "Stale initData" };
-
-  const keys = [...params.keys()].filter(k => k !== "hash").sort();
-  const checkStr = keys.map(k => `${k}=${params.get(k)}`).join("\n");
-  const secretKey = createHmac("sha256", "WebAppData").update(BOT_TOKEN).digest();
-  const computed = createHmac("sha256", secretKey).update(checkStr).digest("hex");
-
-  if (computed !== hash) return { valid: false, userId: null, error: "HMAC mismatch" };
-
-  let userId: number | null = null;
-  const userStr = params.get("user");
-  if (userStr) { try { userId = JSON.parse(userStr).id ?? null; } catch { /* */ } }
-  return { valid: true, userId };
-}
-
 // ── Action handlers ───────────────────────────────────────────────────────
 
-async function buyGenerator(supabase: ReturnType<typeof createClient>, telegramId: number) {
+// ── Server-side generator definitions ───────────────────────────────────────
+// These must match src/data/epochs.ts definitions exactly
+// Cost formula: baseCost * (costMultiplier ^ currentLevel)
+
+interface GeneratorDef {
+  id: string;
+  epochId: string;
+  baseCost: number;
+  baseProduction: number;
+  costMultiplier: number;
+}
+
+const GENERATORS: GeneratorDef[] = [
+  // Epoch 1: Trypillia
+  { id: 'clay_pit', epochId: 'trypillia', baseCost: 10, baseProduction: 2, costMultiplier: 1.15 },
+  { id: 'pottery', epochId: 'trypillia', baseCost: 50, baseProduction: 8, costMultiplier: 1.15 },
+  { id: 'settlement', epochId: 'trypillia', baseCost: 300, baseProduction: 40, costMultiplier: 1.15 },
+  { id: 'megastructure', epochId: 'trypillia', baseCost: 3000, baseProduction: 200, costMultiplier: 1.15 },
+  { id: 'temple', epochId: 'trypillia', baseCost: 30000, baseProduction: 1000, costMultiplier: 1.15 },
+  // Epoch 2: Scythia
+  { id: 'pasture', epochId: 'scythia', baseCost: 10, baseProduction: 5, costMultiplier: 1.15 },
+  { id: 'gold_mine', epochId: 'scythia', baseCost: 50, baseProduction: 20, costMultiplier: 1.15 },
+  { id: 'kurgan', epochId: 'scythia', baseCost: 300, baseProduction: 100, costMultiplier: 1.15 },
+  { id: 'fortress', epochId: 'scythia', baseCost: 3000, baseProduction: 500, costMultiplier: 1.15 },
+  { id: 'royal_tomb', epochId: 'scythia', baseCost: 30000, baseProduction: 2500, costMultiplier: 1.15 },
+  // Epoch 3: Antiquity
+  { id: 'port', epochId: 'antiquity', baseCost: 10, baseProduction: 10, costMultiplier: 1.15 },
+  { id: 'agora', epochId: 'antiquity', baseCost: 50, baseProduction: 40, costMultiplier: 1.15 },
+  { id: 'colony', epochId: 'antiquity', baseCost: 300, baseProduction: 200, costMultiplier: 1.15 },
+  { id: 'amphitheater', epochId: 'antiquity', baseCost: 3000, baseProduction: 1000, costMultiplier: 1.15 },
+  { id: 'acropolis', epochId: 'antiquity', baseCost: 30000, baseProduction: 5000, costMultiplier: 1.15 },
+  // Epoch 4: Kyiv Rus
+  { id: 'field', epochId: 'kyiv_rus', baseCost: 10, baseProduction: 15, costMultiplier: 1.15 },
+  { id: 'craft_workshop', epochId: 'kyiv_rus', baseCost: 50, baseProduction: 60, costMultiplier: 1.15 },
+  { id: 'city', epochId: 'kyiv_rus', baseCost: 300, baseProduction: 300, costMultiplier: 1.15 },
+  { id: 'saint_sophia', epochId: 'kyiv_rus', baseCost: 3000, baseProduction: 1500, costMultiplier: 1.15 },
+  { id: 'golden_gate', epochId: 'kyiv_rus', baseCost: 30000, baseProduction: 7500, costMultiplier: 1.15 },
+  // Epoch 5: Halych-Volhynia
+  { id: 'salt_mine', epochId: 'halych_volhynia', baseCost: 10, baseProduction: 20, costMultiplier: 1.15 },
+  { id: 'caravan', epochId: 'halych_volhynia', baseCost: 50, baseProduction: 80, costMultiplier: 1.15 },
+  { id: 'castle', epochId: 'halych_volhynia', baseCost: 300, baseProduction: 400, costMultiplier: 1.15 },
+  { id: 'cathedral', epochId: 'halych_volhynia', baseCost: 3000, baseProduction: 2000, costMultiplier: 1.15 },
+  { id: 'principality', epochId: 'halych_volhynia', baseCost: 30000, baseProduction: 10000, costMultiplier: 1.15 },
+  // Epoch 6: Polish-Lithuanian
+  { id: 'manor', epochId: 'polish_lithuanian', baseCost: 10, baseProduction: 25, costMultiplier: 1.15 },
+  { id: 'market', epochId: 'polish_lithuanian', baseCost: 50, baseProduction: 100, costMultiplier: 1.15 },
+  { id: 'cossack_sich', epochId: 'polish_lithuanian', baseCost: 300, baseProduction: 500, costMultiplier: 1.15 },
+  { id: 'brotherhood', epochId: 'polish_lithuanian', baseCost: 3000, baseProduction: 2500, costMultiplier: 1.15 },
+  { id: 'university', epochId: 'polish_lithuanian', baseCost: 30000, baseProduction: 12500, costMultiplier: 1.15 },
+  // Epoch 7: Cossack
+  { id: 'homestead', epochId: 'cossack', baseCost: 10, baseProduction: 30, costMultiplier: 1.15 },
+  { id: 'cannon', epochId: 'cossack', baseCost: 50, baseProduction: 120, costMultiplier: 1.15 },
+  { id: 'regiment', epochId: 'cossack', baseCost: 300, baseProduction: 600, costMultiplier: 1.15 },
+  { id: 'fortress_sich', epochId: 'cossack', baseCost: 3000, baseProduction: 3000, costMultiplier: 1.15 },
+  { id: 'hetman_capital', epochId: 'cossack', baseCost: 30000, baseProduction: 15000, costMultiplier: 1.15 },
+  // Epoch 8: Hetmanate
+  { id: 'farm', epochId: 'hetmanate', baseCost: 10, baseProduction: 40, costMultiplier: 1.15 },
+  { id: 'factory', epochId: 'hetmanate', baseCost: 50, baseProduction: 160, costMultiplier: 1.15 },
+  { id: 'gymnasium', epochId: 'hetmanate', baseCost: 300, baseProduction: 800, costMultiplier: 1.15 },
+  { id: 'theater', epochId: 'hetmanate', baseCost: 3000, baseProduction: 4000, costMultiplier: 1.15 },
+  { id: 'railway', epochId: 'hetmanate', baseCost: 30000, baseProduction: 20000, costMultiplier: 1.15 },
+  // Epoch 9: Empire
+  { id: 'mine', epochId: 'empire', baseCost: 10, baseProduction: 50, costMultiplier: 1.15 },
+  { id: 'mill', epochId: 'empire', baseCost: 50, baseProduction: 200, costMultiplier: 1.15 },
+  { id: 'university_city', epochId: 'empire', baseCost: 300, baseProduction: 1000, costMultiplier: 1.15 },
+  { id: 'opera', epochId: 'empire', baseCost: 3000, baseProduction: 5000, costMultiplier: 1.15 },
+  { id: 'skyscraper', epochId: 'empire', baseCost: 30000, baseProduction: 25000, costMultiplier: 1.15 },
+  // Epoch 10: Revolution
+  { id: 'printing', epochId: 'revolution', baseCost: 10, baseProduction: 60, costMultiplier: 1.15 },
+  { id: 'military_unit', epochId: 'revolution', baseCost: 50, baseProduction: 250, costMultiplier: 1.15 },
+  { id: 'rada', epochId: 'revolution', baseCost: 300, baseProduction: 1200, costMultiplier: 1.15 },
+  { id: 'embassy', epochId: 'revolution', baseCost: 3000, baseProduction: 6000, costMultiplier: 1.15 },
+  { id: 'independence_hall', epochId: 'revolution', baseCost: 30000, baseProduction: 30000, costMultiplier: 1.15 },
+  // Epoch 11: Soviet
+  { id: 'kolkhoz', epochId: 'soviet', baseCost: 10, baseProduction: 80, costMultiplier: 1.15 },
+  { id: 'power_plant', epochId: 'soviet', baseCost: 50, baseProduction: 320, costMultiplier: 1.15 },
+  { id: 'research_institute', epochId: 'soviet', baseCost: 300, baseProduction: 1600, costMultiplier: 1.15 },
+  { id: 'space_factory', epochId: 'soviet', baseCost: 3000, baseProduction: 8000, costMultiplier: 1.15 },
+  { id: 'city_million', epochId: 'soviet', baseCost: 30000, baseProduction: 40000, costMultiplier: 1.15 },
+  // Epoch 12: Independence
+  { id: 'startup', epochId: 'independence', baseCost: 10, baseProduction: 100, costMultiplier: 1.15 },
+  { id: 'logistics', epochId: 'independence', baseCost: 50, baseProduction: 400, costMultiplier: 1.15 },
+  { id: 'tech_park', epochId: 'independence', baseCost: 300, baseProduction: 2000, costMultiplier: 1.15 },
+  { id: 'eu_integration', epochId: 'independence', baseCost: 3000, baseProduction: 10000, costMultiplier: 1.15 },
+  { id: 'new_ukraine', epochId: 'independence', baseCost: 30000, baseProduction: 50000, costMultiplier: 1.15 },
+];
+
+async function buyGenerator(
+  supabase: ReturnType<typeof createClient>,
+  telegramId: number,
+  generatorId: string,
+  epochId: string
+) {
+  // Find generator definition
+  const generator = GENERATORS.find(g => g.id === generatorId && g.epochId === epochId);
+  if (!generator) {
+    return { ok: false, error: "Invalid generator_id or epoch_id" };
+  }
+
   // Read current state
   const { data: row } = await supabase.from("game_progress")
     .select("currency, owned_generators, unlocked_epochs, epoch_id")
     .eq("telegram_id", telegramId).maybeSingle();
   if (!row) return { ok: false, error: "User not found" };
 
-  // Generator lookup — currently we need epoch data; for simplicity we expect
-  // the client to send the cost. Server still verifies balance.
-  // TODO: Move epoch/generator definitions into a shared config or DB table
-  // so the server can independently compute costs.
+  // Verify epoch is unlocked
+  const unlocked = (row.unlocked_epochs as string[]) ?? [];
+  if (!unlocked.includes(epochId)) {
+    return { ok: false, error: "Epoch not unlocked" };
+  }
 
-  // The client sends the expected cost so we can validate it
-  // In a future iteration, compute cost server-side from generator defs
-  return { ok: false, error: "buy_generator: cost validation requires server-side generator definitions — coming soon" };
+  // Get current level of this generator
+  const ownedGenerators = (row.owned_generators as Array<{ generatorId: string; level: number }>) ?? [];
+  const currentOwned = ownedGenerators.find(og => og.generatorId === generatorId);
+  const currentLevel = currentOwned?.level || 0;
+
+  // Calculate cost: baseCost * (costMultiplier ^ currentLevel)
+  const cost = Math.floor(generator.baseCost * Math.pow(generator.costMultiplier, currentLevel));
+  const currency = (row.currency as number) ?? 0;
+
+  if (currency < cost) {
+    return { ok: false, error: "Not enough currency" };
+  }
+
+  // Update owned generators
+  const newOwned = currentOwned
+    ? ownedGenerators.map(og => og.generatorId === generatorId ? { ...og, level: og.level + 1 } : og)
+    : [...ownedGenerators, { generatorId, level: 1 }];
+
+  // Deduct currency and save new generators
+  const { error } = await supabase.from("game_progress")
+    .update({
+      currency: currency - cost,
+      owned_generators: newOwned,
+    })
+    .eq("telegram_id", telegramId);
+
+  if (error) return { ok: false, error: error.message };
+
+  return {
+    ok: true,
+    generator_id: generatorId,
+    level: currentLevel + 1,
+    cost,
+    new_currency: currency - cost,
+  };
 }
 
 async function upgradeTap(supabase: ReturnType<typeof createClient>, telegramId: number) {
@@ -153,7 +256,8 @@ Deno.serve(async (req: Request) => {
         return json(await switchEpoch(supabase, telegramId, epoch_id));
       case "buy_generator":
         if (!generator_id) return json({ error: "Missing generator_id" }, 400);
-        return json(await buyGenerator(supabase, telegramId));
+        if (!epoch_id) return json({ error: "Missing epoch_id" }, 400);
+        return json(await buyGenerator(supabase, telegramId, generator_id, epoch_id));
       default:
         return json({ error: `Unknown action: ${action}` }, 400);
     }

@@ -26,6 +26,7 @@ import {
   getUserRank,
   fetchActiveBoosters,
 } from '../lib/storage';
+import { rpcBuyGenerator } from '../lib/rpc';
 import { hapticNotification, hapticImpact } from '../lib/telegram';
 import type { ActiveBoosters } from '../types/game';
 
@@ -560,7 +561,7 @@ export function useGame() {
     });
   }, []);
 
-  const buyGenerator = useCallback((generatorId: string) => {
+  const buyGenerator = useCallback(async (generatorId: string) => {
     const generator = epoch.generators.find(g => g.id === generatorId);
     if (!generator) return false;
 
@@ -570,6 +571,14 @@ export function useGame() {
 
     if (state.currency < cost) return false;
 
+    // Call server-side function to validate and process purchase
+    const result = await rpcBuyGenerator(generatorId, epoch.id);
+    if (!result.ok) {
+      console.error('[buyGenerator] Server error:', result.error);
+      return false;
+    }
+
+    // Update local state with server-confirmed purchase
     setState(prev => {
       const existing = prev.ownedGenerators.find(og => og.generatorId === generatorId);
       const newOwned = existing
@@ -588,7 +597,7 @@ export function useGame() {
 
       return {
         ...prev,
-        currency: prev.currency - cost,
+        currency: (result as { new_currency?: number }).new_currency ?? prev.currency - cost,
         ownedGenerators: newOwned,
         passiveXpPerSecond: newPassiveXp,
         dailyTasksState: updatedTasks,
@@ -596,7 +605,7 @@ export function useGame() {
     });
 
     return true;
-  }, [epoch.generators, state.currency, state.ownedGenerators, calculatePassiveXp]);
+  }, [epoch.id, epoch.generators, state.currency, state.ownedGenerators, calculatePassiveXp]);
 
   const upgradeTapPower = useCallback(() => {
     const rawCost = 25 * Math.pow(1.8, state.tapPower - 1);

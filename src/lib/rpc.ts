@@ -55,8 +55,8 @@ export async function rpcSwitchEpoch(epochId: string): Promise<RpcResult> {
   return callGameAction({ action: 'switch_epoch', epoch_id: epochId });
 }
 
-export async function rpcBuyGenerator(generatorId: string): Promise<RpcResult> {
-  return callGameAction({ action: 'buy_generator', generator_id: generatorId });
+export async function rpcBuyGenerator(generatorId: string, epochId: string): Promise<RpcResult> {
+  return callGameAction({ action: 'buy_generator', generator_id: generatorId, epoch_id: epochId });
 }
 
 /**

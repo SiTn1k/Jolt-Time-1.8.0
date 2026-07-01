@@ -11,6 +11,7 @@
  */
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { validateInitData } from "../_shared/validate";
 import { createHmac } from "node:crypto";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
@@ -24,9 +25,7 @@ const BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
-// ── InitData Validation ──────────────────────────────────────────────────────
-
-function validateInitData(initData: string): { valid: boolean; userId: number | null; error?: string } {
+ {
   if (!BOT_TOKEN) {
     return { valid: false, userId: null, error: "BOT_TOKEN not configured" };
   }
