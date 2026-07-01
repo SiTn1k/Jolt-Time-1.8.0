@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { validateInitData } from "../_shared/validate";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,6 +10,8 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+
 
 /**
  * Open Chest Edge Function
@@ -31,7 +34,7 @@ const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
  */
 
 interface OpenChestRequest {
-  telegram_id: number;
+  init_data: string;
   epoch_id: string;
   chest_type?: "skychest" | "daily"; // skychest = premium, daily = free
   epoch_index?: number; // For cost calculation: 0-based epoch order
@@ -238,11 +241,21 @@ Deno.serve(async (req: Request) => {
 
   try {
     const body: OpenChestRequest = await req.json();
-    const { telegram_id, epoch_id, chest_type = "daily", epoch_index = 0 } = body;
+    const { init_data, epoch_id, chest_type = "daily", epoch_index = 0 } = body;
 
-    if (!telegram_id || typeof telegram_id !== "number" || telegram_id <= 0) {
-      return jsonResponse({ error: "Invalid telegram_id" }, 400);
+    // Validate init_data to get telegram_id
+    if (!init_data) {
+      return jsonResponse({ error: "Missing init_data" }, 400);
     }
+
+    const validation = validateInitData(init_data);
+    if (!validation.valid) {
+      return jsonResponse({ error: validation.error }, 401);
+    }
+    if (!validation.userId) {
+      return jsonResponse({ error: "No user_id in initData" }, 401);
+    }
+    const telegram_id = validation.userId;
 
     if (!epoch_id) {
       return jsonResponse({ error: "Missing epoch_id" }, 400);

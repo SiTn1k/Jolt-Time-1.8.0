@@ -4,7 +4,7 @@ import { useTranslation } from '../i18n';
 import { getTelegramUserId } from '../lib/telegram';
 import { hapticImpact, hapticNotification } from '../lib/telegram';
 import {
-  initAdsgram,
+  initAdsgramAsync,
   showRewardAd,
   isXpBoostActive,
   getXpBoostRemainingTime,
@@ -28,16 +28,24 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
   // Check if x3 boost is active
   const boostActive = isXpBoostActive(activeBoosters);
 
-  // Initialize AdsGram SDK
+  // Initialize AdsGram SDK (async with polling)
   useEffect(() => {
+    let cancelled = false;
     console.log('[AdsGramButton] Initializing AdsGram SDK...');
-    const sad = initAdsgram();
-    if (!sad) {
-      console.error('[AdsGramButton] Failed to initialize AdsGram SDK');
-    } else {
-      console.log('[AdsGramButton] AdsGram SDK initialized successfully');
-      setSdkReady(true);
-    }
+    
+    (async () => {
+      const sad = await initAdsgramAsync();
+      if (!cancelled) {
+        if (sad) {
+          console.log('[AdsGramButton] AdsGram SDK initialized successfully');
+          setSdkReady(true);
+        } else {
+          console.error('[AdsGramButton] Failed to initialize AdsGram SDK');
+        }
+      }
+    })();
+    
+    return () => { cancelled = true; };
   }, []);
 
   // Update remaining time every second
@@ -57,10 +65,17 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
   const handleShowAd = useCallback(async () => {
     if (isLoading || boostActive) return;
 
-    const sad = initAdsgram();
+    setIsLoading(true);
+    setError(null);
+    hapticImpact('medium');
+
+    console.log('[AdsGramButton] Initializing SDK...');
+    const sad = await initAdsgramAsync();
+    
     if (!sad) {
       console.error('[AdsGramButton] SDK not ready');
       setError('Реклама наразі недоступна. Спробуйте пізніше.');
+      setIsLoading(false);
       return;
     }
 
@@ -68,12 +83,9 @@ export function AdsGramButton({ activeBoosters, onBoostActivated }: AdsGramButto
     if (!telegramId) {
       console.error('[AdsGramButton] Telegram ID not found');
       setError('Помилка авторизації');
+      setIsLoading(false);
       return;
     }
-
-    setIsLoading(true);
-    setError(null);
-    hapticImpact('medium');
 
     console.log('[AdsGramButton] Showing reward ad...');
 

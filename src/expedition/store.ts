@@ -54,6 +54,7 @@ const rarityRank: Record<Rarity, number> = {
   rare: 1,
   epic: 2,
   legendary: 3,
+  secret: 4,
 };
 
 /** Real expedition timer (seconds) — SPEEDED UP for first prestige */
@@ -71,8 +72,8 @@ export function restorationSeconds(artifact: Artifact): number {
 function pickArtifact(region: Region, artifactBonus: number = 0): { name: string; rarity: Rarity } {
   const name = region.artifacts[Math.floor(Math.random() * region.artifacts.length)];
   // Apply artifact bonus to rarity chance (each % shifts the roll threshold)
-  const bonusShift = artifactBonus / 100;
-  const roll = Math.random() - bonusShift;
+  const bonusShift = Math.min(artifactBonus / 100, 0.95);
+  const roll = Math.max(0, Math.random() - bonusShift);
   let rarity: Rarity = 'common';
   const diff = region.difficulty;
   if (roll > 0.92) rarity = 'legendary';

@@ -398,3 +398,75 @@ export function getGeneratorCost(generator: Generator, currentLevel: number): nu
 export function getGeneratorProduction(generator: Generator, currentLevel: number): number {
   return generator.baseProduction * currentLevel;
 }
+
+// Estimate passive XP/s for a given level within an epoch
+function estimatePassiveForEpoch(epoch: Epoch, levelInEpoch: number): number {
+  const tierWeights = [1, 0.5, 0.25, 0.1, 0.03];
+  let total = 0;
+  for (let i = 0; i < epoch.generators.length && i < tierWeights.length; i++) {
+    const g = epoch.generators[i];
+    const owned = Math.max(1, Math.floor(levelInEpoch * tierWeights[i]));
+    total += g.baseProduction * owned;
+  }
+  return Math.max(1, total);
+}
+
+/**
+ * XP curve: tuned for MARCH 2027 (Prestige 1 only)
+ * Each epoch is 8-10x longer than before.
+ */
+export function calculateXpToLevel(level: number): number {
+  const epoch = getCurrentEpochByLevel(level);
+  const { min, max } = epoch.levelRange;
+  const rangeSize = Math.max(1, max - min + 1);
+  const progress = Math.min(1, Math.max(0, (level - min) / rangeSize));
+
+  const epochIndex = EPOCHS.findIndex(e => e.id === epoch.id);
+  let minSeconds: number;
+  let maxSeconds: number;
+
+  // Extended XP curve for March 2027 target (8-10x slower than before)
+  if (epochIndex === 0) {
+    minSeconds = 480;
+    maxSeconds = 2400;
+  } else if (epochIndex === 1) {
+    minSeconds = 480;
+    maxSeconds = 3840;
+  } else if (epochIndex === 2) {
+    minSeconds = 960;
+    maxSeconds = 7200;
+  } else if (epochIndex === 3) {
+    minSeconds = 1440;
+    maxSeconds = 10800;
+  } else if (epochIndex === 4) {
+    minSeconds = 1920;
+    maxSeconds = 14400;
+  } else if (epochIndex === 5) {
+    minSeconds = 2400;
+    maxSeconds = 18000;
+  } else if (epochIndex === 6) {
+    minSeconds = 2880;
+    maxSeconds = 21600;
+  } else if (epochIndex === 7) {
+    minSeconds = 3360;
+    maxSeconds = 25200;
+  } else if (epochIndex === 8) {
+    minSeconds = 3840;
+    maxSeconds = 28800;
+  } else if (epochIndex === 9) {
+    minSeconds = 4320;
+    maxSeconds = 32400;
+  } else if (epochIndex === 10) {
+    minSeconds = 4800;
+    maxSeconds = 36000;
+  } else {
+    minSeconds = 5760;
+    maxSeconds = 43200;
+  }
+
+  const targetSeconds = minSeconds + progress * (maxSeconds - minSeconds);
+  const levelInEpoch = Math.max(1, level - min + 1);
+  const estimatedPassive = estimatePassiveForEpoch(epoch, levelInEpoch);
+
+  return Math.max(100, Math.floor(estimatedPassive * targetSeconds));
+}

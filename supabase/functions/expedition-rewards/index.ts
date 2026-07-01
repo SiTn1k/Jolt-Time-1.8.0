@@ -11,6 +11,7 @@
  */
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { validateInitData } from "../_shared/validate";
 import { createHmac } from "node:crypto";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
@@ -45,7 +46,7 @@ const RARITY_PRESTIGE: Record<string, number> = {
   legendary: 150,
 };
 
-function validateInitData(initData: string): { valid: boolean; userId: number | null; error?: string } {
+ {
   if (!BOT_TOKEN) return { valid: false, userId: null, error: "BOT_TOKEN not configured" };
 
   const params = new URLSearchParams(initData);

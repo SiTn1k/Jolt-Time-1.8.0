@@ -1,4 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { validateInitData } from "../_shared/validate";
+import { createHmac } from "node:crypto";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -9,6 +11,33 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
+
+ {
+  if (!BOT_TOKEN) return { valid: false, userId: null, error: "BOT_TOKEN not configured" };
+
+  const params = new URLSearchParams(initData);
+  const hash = params.get("hash");
+  if (!hash) return { valid: false, userId: null, error: "Missing hash" };
+
+  const authDateStr = params.get("auth_date");
+  if (!authDateStr) return { valid: false, userId: null, error: "Missing auth_date" };
+  const authDate = parseInt(authDateStr, 10);
+  const age = Math.floor(Date.now() / 1000) - authDate;
+  if (isNaN(authDate) || age > 86400 || age < 0) return { valid: false, userId: null, error: "Stale initData" };
+
+  const keys = [...params.keys()].filter(k => k !== "hash").sort();
+  const checkStr = keys.map(k => `${k}=${params.get(k)}`).join("\n");
+  const secretKey = createHmac("sha256", "WebAppData").update(BOT_TOKEN).digest();
+  const computed = createHmac("sha256", secretKey).update(checkStr).digest("hex");
+
+  if (computed !== hash) return { valid: false, userId: null, error: "HMAC mismatch" };
+
+  let userId: number | null = null;
+  const userStr = params.get("user");
+  if (userStr) { try { userId = JSON.parse(userStr).id ?? null; } catch { /* */ } }
+  return { valid: true, userId };
+}
 
 /**
  * Track Session Edge Function
@@ -23,7 +52,7 @@ const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
  */
 
 interface TrackSessionRequest {
-  telegram_id: number;
+  init_data: string;
   event: "start" | "activity" | "end";
 }
 
@@ -45,11 +74,21 @@ Deno.serve(async (req: Request) => {
 
   try {
     const body: TrackSessionRequest = await req.json();
-    const { telegram_id, event } = body;
+    const { init_data, event } = body;
 
-    if (!telegram_id || typeof telegram_id !== "number" || telegram_id <= 0) {
-      return jsonResponse({ error: "Invalid telegram_id" }, 400);
+    // Validate init_data to get telegram_id
+    if (!init_data) {
+      return jsonResponse({ error: "Missing init_data" }, 400);
     }
+
+    const validation = validateInitData(init_data);
+    if (!validation.valid) {
+      return jsonResponse({ error: validation.error }, 401);
+    }
+    if (!validation.userId) {
+      return jsonResponse({ error: "No user_id in initData" }, 401);
+    }
+    const telegram_id = validation.userId;
 
     if (!event || !["start", "activity", "end"].includes(event)) {
       return jsonResponse({ error: "Invalid event type" }, 400);

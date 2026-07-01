@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { validateInitData } from "../_shared/validate";
 import { createHmac } from "node:crypto";
 
 const corsHeaders = {
@@ -21,11 +22,7 @@ const BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
  * If they match, the data is authentic and was signed by Telegram.
  * The `auth_date` is also checked — reject if older than 24 hours.
  */
-function validateInitData(initData: string): {
-  valid: boolean;
-  userId: number | null;
-  error?: string;
-} {
+ {
   if (!BOT_TOKEN) {
     return { valid: false, userId: null, error: "TELEGRAM_BOT_TOKEN not configured" };
   }

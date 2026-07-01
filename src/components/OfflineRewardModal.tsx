@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Clock, Play, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { useTranslation } from '../i18n';
 import { formatNumber } from '../lib/utils';
-import { initAdsgram } from '../services/adsgram';
+import { initAdsgramAsync, showRewardAd } from '../services/adsgram';
 import { hapticImpact, hapticNotification } from '../lib/telegram';
+import { getTelegramUserId } from '../lib/telegram';
 
 interface OfflineGains {
   xp: number;
@@ -31,33 +32,36 @@ export function OfflineRewardModal({
   const [isLoading, setIsLoading] = useState(false);
   const [adError, setAdError] = useState<string | null>(null);
   const [claimed, setClaimed] = useState(false);
-  const controllerRef = useRef<ReturnType<typeof initAdsgram>>(null);
-
-  useEffect(() => {
-    controllerRef.current = initAdsgram();
-  }, []);
 
   const handleWatchAd = useCallback(async () => {
-    const controller = controllerRef.current;
-    if (!controller) {
-      setAdError('AdsGram SDK не завантажено');
-      return;
-    }
-
     setIsLoading(true);
     setAdError(null);
     hapticImpact('medium');
 
-    try {
-      const result = await controller.show();
+    const sad = await initAdsgramAsync();
+    if (!sad) {
+      setAdError('Реклама наразі недоступна. Спробуйте пізніше.');
+      setIsLoading(false);
+      return;
+    }
 
-      if (result.done) {
+    const telegramId = getTelegramUserId();
+    if (!telegramId) {
+      setAdError('Помилка авторизації');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const result = await showRewardAd(sad, telegramId);
+
+      if (result.success) {
         // Ad watched successfully - claim via server
         await onClaim(true);
         setClaimed(true);
         hapticNotification('success');
       } else {
-        setAdError('Рекламу не завершено. Подивись до кінця для x2 бонусу.');
+        setAdError(result.error || 'Рекламу не завершено. Подивись до кінця для x2 бонусу.');
         hapticNotification('warning');
       }
     } catch (err) {

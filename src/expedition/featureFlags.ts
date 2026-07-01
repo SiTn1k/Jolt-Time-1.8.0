@@ -157,15 +157,8 @@ export function useFeatureFlag(flag: FeatureFlag, userId?: string): boolean {
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
-    // Check flag with potential server fetch
-    checkFlagFromServer(flag).then(serverEnabled => {
-      if (serverEnabled !== null) {
-        setEnabled(serverEnabled);
-      } else {
-        // Fallback to local check
-        setEnabled(isFeatureEnabled(flag, userId));
-      }
-    });
+    // Use local feature flags (server-side flag updates not implemented yet)
+    setEnabled(isFeatureEnabled(flag, userId));
   }, [flag, userId]);
 
   return enabled;
@@ -173,15 +166,19 @@ export function useFeatureFlag(flag: FeatureFlag, userId?: string): boolean {
 
 // Hook for multiple flags
 export function useFeatureFlags(flags: FeatureFlag[], userId?: string): Record<FeatureFlag, boolean> {
-  const [states, setStates] = useState<Record<FeatureFlag, boolean>>(
-    () => flags.reduce((acc, flag) => ({ ...acc, [flag]: false }), {} as Record<FeatureFlag, boolean>)
-  );
+  const [states, setStates] = useState<Record<FeatureFlag, boolean>>(() => {
+    const initial: Partial<Record<FeatureFlag, boolean>> = {};
+    for (const flag of flags) {
+      initial[flag] = false;
+    }
+    return initial as Record<FeatureFlag, boolean>;
+  });
 
   useEffect(() => {
-    const newStates: Record<FeatureFlag, boolean> = {};
-    flags.forEach(flag => {
+    const newStates: Record<FeatureFlag, boolean> = {} as Record<FeatureFlag, boolean>;
+    for (const flag of flags) {
       newStates[flag] = isFeatureEnabled(flag, userId);
-    });
+    }
     setStates(newStates);
   }, [flags, userId]);
 

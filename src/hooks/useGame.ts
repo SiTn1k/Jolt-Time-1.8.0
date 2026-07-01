@@ -7,6 +7,7 @@ import {
   getCurrentEpochByLevel,
   getGeneratorCost,
   getGeneratorProduction,
+  calculateXpToLevel,
 } from '../data/epochs';
 import {
   getTodayDateStr,
@@ -25,109 +26,14 @@ import {
   getUserRank,
   fetchActiveBoosters,
 } from '../lib/storage';
+import { rpcBuyGenerator } from '../lib/rpc';
 import { hapticNotification, hapticImpact } from '../lib/telegram';
 import type { ActiveBoosters } from '../types/game';
 
-const LOCAL_SAVE_INTERVAL = 2000;
-const REMOTE_SAVE_INTERVAL = 15000;
+const LOCAL_SAVE_INTERVAL = 5000;
+const REMOTE_SAVE_INTERVAL = 30000;
 const MAX_LEVEL = 999;
 const TAB_ID = `tab_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-
-/**
- * XP curve: tuned for MARCH 2027 (Prestige 1 only)
- * 
- * TARGET PROGRESSION:
- * - Day 3-5: First prestige ready (level 950)
- * - Month 1: Prestige 1 player at level 100+
- * - Month 3: Prestige 1 player at level 200+
- * - Month 6: Prestige 1 player at level 400+
- * - Month 9: Prestige 1 player at level 600+
- * - Month 12: Prestige 1 player at level 800+
- * 
- * This is achieved by making each epoch 8-10x longer than before.
- */
-function calculateXpToLevel(level: number): number {
-  const epoch = getCurrentEpochByLevel(level);
-  const { min, max } = epoch.levelRange;
-  const rangeSize = Math.max(1, max - min + 1);
-  const progress = Math.min(1, Math.max(0, (level - min) / rangeSize));
-
-  const epochIndex = EPOCHS.findIndex(e => e.id === epoch.id);
-  let minSeconds: number;
-  let maxSeconds: number;
-
-  // Extended XP curve for March 2027 target (8-10x slower than before)
-  if (epochIndex === 0) {
-    // Epoch 1: 8 min → 40 min (avg ~20 min per level = ~16 hrs for 50 levels)
-    minSeconds = 480;
-    maxSeconds = 2400;
-  } else if (epochIndex === 1) {
-    // Epoch 2: 8 min → 64 min (avg ~30 min = ~25 hrs for 50 levels)
-    minSeconds = 480;
-    maxSeconds = 3840;
-  } else if (epochIndex === 2) {
-    // Epoch 3: 16 min → 120 min (avg ~60 min = ~50 hrs for 50 levels)
-    minSeconds = 960;
-    maxSeconds = 7200;
-  } else if (epochIndex === 3) {
-    // Epoch 4: 24 min → 180 min (avg ~90 min = ~75 hrs for 100 levels)
-    minSeconds = 1440;
-    maxSeconds = 10800;
-  } else if (epochIndex === 4) {
-    // Epoch 5: 32 min → 240 min (avg ~120 min = ~100 hrs for 70 levels)
-    minSeconds = 1920;
-    maxSeconds = 14400;
-  } else if (epochIndex === 5) {
-    // Epoch 6: 40 min → 300 min (avg ~150 min = ~125 hrs for 100 levels)
-    minSeconds = 2400;
-    maxSeconds = 18000;
-  } else if (epochIndex === 6) {
-    // Epoch 7: 48 min → 360 min (avg ~180 min = ~150 hrs for 100 levels)
-    minSeconds = 2880;
-    maxSeconds = 21600;
-  } else if (epochIndex === 7) {
-    // Epoch 8: 56 min → 420 min (avg ~210 min = ~175 hrs for 100 levels)
-    minSeconds = 3360;
-    maxSeconds = 25200;
-  } else if (epochIndex === 8) {
-    // Epoch 9: 64 min → 480 min (avg ~240 min = ~200 hrs for 130 levels)
-    minSeconds = 3840;
-    maxSeconds = 28800;
-  } else if (epochIndex === 9) {
-    // Epoch 10: 72 min → 540 min (avg ~270 min = ~225 hrs for 70 levels)
-    minSeconds = 4320;
-    maxSeconds = 32400;
-  } else if (epochIndex === 10) {
-    // Epoch 11: 80 min → 600 min (avg ~300 min = ~250 hrs for 100 levels)
-    minSeconds = 4800;
-    maxSeconds = 36000;
-  } else {
-    // Epoch 12+: 96 min → 720 min (avg ~360 min = ~300 hrs for 129 levels)
-    minSeconds = 5760;
-    maxSeconds = 43200;
-  }
-
-  const targetSeconds = minSeconds + progress * (maxSeconds - minSeconds);
-
-  // Estimate passive XP/s for this level within the epoch
-  const levelInEpoch = Math.max(1, level - min + 1);
-  const estimatedPassive = estimatePassiveForEpoch(epoch, levelInEpoch);
-
-  return Math.max(100, Math.floor(estimatedPassive * targetSeconds));
-}
-
-function estimatePassiveForEpoch(epoch: Epoch, levelInEpoch: number): number {
-  // Rough estimate: sum of production if player owns ~2 generators per tier
-  // scaled by their level within the epoch
-  const tierWeights = [1, 0.5, 0.25, 0.1, 0.03];
-  let total = 0;
-  for (let i = 0; i < epoch.generators.length && i < tierWeights.length; i++) {
-    const g = epoch.generators[i];
-    const owned = Math.max(1, Math.floor(levelInEpoch * tierWeights[i]));
-    total += g.baseProduction * owned;
-  }
-  return Math.max(1, total);
-}
 
 export interface ArtifactMultipliers {
   xp: number;
@@ -618,9 +524,9 @@ export function useGame() {
       const value = Math.max(baseTap, passiveFloor);
 
       setTapEvents(te => [
-        ...te.slice(-9),
+        ...te.slice(-49),
         { id: eventId, x, y, value, createdAt: Date.now() },
-      ]);
+      ].slice(-50));
       setTimeout(() => {
         setTapEvents(te => te.filter(e => e.id !== eventId));
       }, 1000);
@@ -655,7 +561,7 @@ export function useGame() {
     });
   }, []);
 
-  const buyGenerator = useCallback((generatorId: string) => {
+  const buyGenerator = useCallback(async (generatorId: string) => {
     const generator = epoch.generators.find(g => g.id === generatorId);
     if (!generator) return false;
 
@@ -665,6 +571,14 @@ export function useGame() {
 
     if (state.currency < cost) return false;
 
+    // Call server-side function to validate and process purchase
+    const result = await rpcBuyGenerator(generatorId, epoch.id);
+    if (!result.ok) {
+      console.error('[buyGenerator] Server error:', result.error);
+      return false;
+    }
+
+    // Update local state with server-confirmed purchase
     setState(prev => {
       const existing = prev.ownedGenerators.find(og => og.generatorId === generatorId);
       const newOwned = existing
@@ -683,7 +597,7 @@ export function useGame() {
 
       return {
         ...prev,
-        currency: prev.currency - cost,
+        currency: (result as { new_currency?: number }).new_currency ?? prev.currency - cost,
         ownedGenerators: newOwned,
         passiveXpPerSecond: newPassiveXp,
         dailyTasksState: updatedTasks,
@@ -691,7 +605,7 @@ export function useGame() {
     });
 
     return true;
-  }, [epoch.generators, state.currency, state.ownedGenerators, calculatePassiveXp]);
+  }, [epoch.id, epoch.generators, state.currency, state.ownedGenerators, calculatePassiveXp]);
 
   const upgradeTapPower = useCallback(() => {
     const rawCost = 25 * Math.pow(1.8, state.tapPower - 1);
