@@ -1,10 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Battery, Gift, Zap, AlertCircle, Loader2, X } from 'lucide-react';
+import { Battery, Gift, Zap, AlertCircle, Loader2, X, Play } from 'lucide-react';
 import { hapticImpact, hapticNotification } from '../lib/telegram';
 import { useTranslation } from '../i18n';
 import { getTelegramUserId } from '../lib/telegram';
 import {
-  initAdsgram,
+  initAdsgramAsync,
   showRewardAd,
 } from '../services/adsgram';
 
@@ -26,21 +26,23 @@ export function SessionAdModal({ prestigeLevel, onReward, onClose }: SessionAdMo
   const [error, setError] = useState<string | null>(null);
 
   const handleWatchAd = useCallback(async () => {
-    const sad = initAdsgram();
+    setIsLoading(true);
+    setError(null);
+    hapticImpact('medium');
+
+    const sad = await initAdsgramAsync();
     if (!sad) {
       setError(t('ad_system.sdk_not_loaded'));
+      setIsLoading(false);
       return;
     }
 
     const telegramId = getTelegramUserId();
     if (!telegramId) {
       setError(t('ad_system.auth_error'));
+      setIsLoading(false);
       return;
     }
-
-    setIsLoading(true);
-    setError(null);
-    hapticImpact('medium');
 
     try {
       const result = await showRewardAd(sad, telegramId);
@@ -160,17 +162,18 @@ export function ChestAdModal({ prestigeLevel, chestsOpened, onReward, onClose }:
   }, []);
 
   const handleWatchAd = useCallback(async () => {
-    const sad = initAdsgram();
+    setIsLoading(true);
+    setError(null);
+    hapticImpact('medium');
+
+    const sad = await initAdsgramAsync();
     if (!sad) {
       setError(t('ad_system.sdk_not_loaded'));
+      setIsLoading(false);
       return;
     }
 
     const telegramId = getTelegramUserId();
-
-    setIsLoading(true);
-    setError(null);
-    hapticImpact('medium');
 
     try {
       const result = await showRewardAd(sad, telegramId || 0);
@@ -302,21 +305,23 @@ export function EnergyRestoreAdButton({
   const [error, setError] = useState<string | null>(null);
 
   const handleWatchAd = useCallback(async () => {
-    const sad = initAdsgram();
+    setIsLoading(true);
+    setError(null);
+    hapticImpact('medium');
+
+    const sad = await initAdsgramAsync();
     if (!sad) {
       setError(t('ad_system.sdk_not_loaded'));
+      setIsLoading(false);
       return;
     }
 
     const telegramId = getTelegramUserId();
     if (!telegramId) {
       setError(t('ad_system.auth_error'));
+      setIsLoading(false);
       return;
     }
-
-    setIsLoading(true);
-    setError(null);
-    hapticImpact('medium');
 
     try {
       const result = await showRewardAd(sad, telegramId);

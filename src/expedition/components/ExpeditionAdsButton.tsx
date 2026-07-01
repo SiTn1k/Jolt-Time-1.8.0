@@ -1,6 +1,7 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Zap } from 'lucide-react';
-import { initAdsgram, showRewardAd } from '../../services/adsgram';
+import { initAdsgramAsync, showRewardAd } from '../../services/adsgram';
+import { getTelegramUserId } from '../../lib/telegram';
 
 interface ExpeditionAdsButtonProps {
   onComplete: () => void;
@@ -9,22 +10,24 @@ interface ExpeditionAdsButtonProps {
 
 export function ExpeditionAdsButton({ onComplete, onError }: ExpeditionAdsButtonProps) {
   const [loading, setLoading] = useState(false);
-  const controllerRef = useRef<ReturnType<typeof initAdsgram>>(null);
-
-  useEffect(() => {
-    controllerRef.current = initAdsgram();
-  }, []);
 
   const handleWatchAd = useCallback(async () => {
     setLoading(true);
     try {
-      const success = await showRewardAd({
-        blockId: '35644',
-        userId: 'expedition_speedup',
-      });
+      const sad = await initAdsgramAsync();
+      if (!sad) {
+        onError?.('Реклама наразі недоступна');
+        setLoading(false);
+        return;
+      }
       
-      if (success) {
+      const telegramId = getTelegramUserId();
+      const result = await showRewardAd(sad, telegramId || 0);
+      
+      if (result.success) {
         onComplete();
+      } else {
+        onError?.(result.error || 'Рекламу не завершено');
       }
     } catch {
       onError?.('Помилка показу реклами');

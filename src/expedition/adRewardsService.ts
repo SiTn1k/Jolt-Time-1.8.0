@@ -6,7 +6,7 @@
  * P2+: Expedition Speed, Museum Bonuses, Artifact Chance
  */
 
-import { ADSGRAM_BLOCK_ID, initAdsgram, showRewardAd, AdShowResult } from '../services/adsgram';
+import { ADSGRAM_BLOCK_ID, initAdsgramAsync, showRewardAd, AdShowResult } from '../services/adsgram';
 
 export type AdRewardType = 
   // P0-P1 Rewards
@@ -267,16 +267,17 @@ export function getBoostMultiplier(
   }
 }
 
-// AdsGram Controller (lazy initialization)
-let adsgramController: ReturnType<typeof initAdsgram> | null = null;
+// AdsGram Controller (async initialization)
+let adsgramControllerPromise: Promise<ReturnType<typeof initAdsgramAsync>> | null = null;
 
 /**
- * Initialize AdsGram SDK
+ * Initialize AdsGram SDK asynchronously
  */
-export function initializeAdSystem(): void {
-  if (!adsgramController) {
-    adsgramController = initAdsgram(ADSGRAM_BLOCK_ID, false);
+export async function initializeAdSystem(): Promise<Awaited<ReturnType<typeof initAdsgramAsync>>> {
+  if (!adsgramControllerPromise) {
+    adsgramControllerPromise = initAdsgramAsync();
   }
+  return adsgramControllerPromise;
 }
 
 /**
@@ -286,9 +287,7 @@ export async function watchAdAndClaimReward(
   _reward: AdReward, // Reward type determines which boosters to activate
   telegramId: number
 ): Promise<{ success: boolean; error?: string }> {
-  if (!adsgramController) {
-    initializeAdSystem();
-  }
+  const adsgramController = await initializeAdSystem();
   
   if (!adsgramController) {
     return { success: false, error: 'Ad system not available' };
